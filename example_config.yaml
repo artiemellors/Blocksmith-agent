@@ -1,0 +1,59 @@
+# Blocksmith Training Block Configuration Example
+# This is a complete example configuration for Arthur Mellors
+
+athlete:
+  name: "Arthur Mellors"
+  age: 41
+
+physiological_parameters:
+  hr_max: 188
+  threshold_t1_pace: "4:37"  # mm:ss per km (T1 threshold)
+  threshold_t2_pace: "4:17"  # mm:ss per km (T2 threshold)
+
+injury_information:
+  # List any active injuries that need to be considered
+  active_injuries: []
+  # Example: ["quad pain", "shoulder soreness"]
+
+  # Pain thresholds (0-10 scale)
+  pain_threshold_during: 2      # Max acceptable pain during session
+  pain_threshold_next_day: 3    # Max acceptable pain the next day
+
+  # If soreness persists beyond this many hours, reduce next run volume
+  soreness_cutoff_hours: 36
+
+  # Percentage to reduce volume if soreness exceeds cutoff
+  volume_reduction_percent: 25
+
+block_objectives:
+  # Primary goal: REBUILD (after time off), BUILD (general preparation),
+  # PEAK (race-specific), MAINTAIN, etc.
+  primary_goal: "REBUILD"
+
+  # Starting weekly running mileage in kilometers
+  running_mileage_week1: 40
+
+  # Percentage increase in mileage per week
+  weekly_progression_percent: 10
+
+  # Number of progressive build weeks before deload
+  block_duration_weeks: 4
+
+  # Include a deload week at the end?
+  deload_week: true
+
+  # Specific areas to focus on during this block
+  specific_focus_areas:
+    - "threshold running"
+    - "sled work"
+    - "wall balls"
+    - "VO2 max development"
+
+# Optional: Path to your previous training block markdown file
+# This helps maintain continuity and build progressively
+previous_training_block_file: null
+# Example: "blocks/previous_block_2024_11.md"
+
+# Optional: Any additional context or special requests
+additional_context: null
+# Example: "Prioritize shoulder health; avoid heavy overhead work in Week 1"
