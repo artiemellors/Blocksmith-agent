@@ -4,6 +4,8 @@
 
 Blocksmith automates the creation of comprehensive, multi-week HYROX training blocks using a layered prompt engineering approach with Claude AI.
 
+> **New to coding?** Check out the [beginner-friendly setup guide](SETUP_GUIDE.md) for step-by-step installation instructions!
+
 ## What It Does
 
 Instead of manually applying 11+ prompts one by one to build a training block, Blocksmith allows you to:
