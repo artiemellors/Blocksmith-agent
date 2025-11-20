@@ -195,7 +195,7 @@ injury_information:
   volume_reduction_percent: 25
 
 block_objectives:
-  primary_goal: "REBUILD"  # REBUILD, BUILD, PEAK, etc.
+  primary_goal: "BUILD"  # Examples: BUILD, PEAK, Base building, etc.
   running_mileage_week1: 40  # km
   weekly_progression_percent: 10  # % increase per week
   block_duration_weeks: 4  # number of build weeks

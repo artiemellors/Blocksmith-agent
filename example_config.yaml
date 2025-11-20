@@ -26,9 +26,9 @@ injury_information:
   volume_reduction_percent: 25
 
 block_objectives:
-  # Primary goal: REBUILD (after time off), BUILD (general preparation),
-  # PEAK (race-specific), MAINTAIN, etc.
-  primary_goal: "REBUILD"
+  # Primary goal: Describe your training phase
+  # Examples: "BUILD endurance and strength", "PEAK for race", "Base building", etc.
+  primary_goal: "BUILD"
 
   # Starting weekly running mileage in kilometers
   running_mileage_week1: 40

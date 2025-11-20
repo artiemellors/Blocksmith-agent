@@ -40,7 +40,7 @@ Edit `my_first_block.yaml` with your details:
 - `physiological_parameters.hr_max`: Your maximum heart rate
 - `physiological_parameters.threshold_t1_pace`: Your T1 threshold pace (mm:ss format)
 - `physiological_parameters.threshold_t2_pace`: Your T2 threshold pace (mm:ss format)
-- `block_objectives.primary_goal`: Your training phase (REBUILD, BUILD, PEAK, etc.)
+- `block_objectives.primary_goal`: Your training phase (BUILD, PEAK, Base building, etc.)
 - `block_objectives.running_mileage_week1`: Starting weekly mileage in km
 
 **Optional But Recommended:**
@@ -153,7 +153,7 @@ injury_information:
   volume_reduction_percent: 30  # More conservative
 
 block_objectives:
-  primary_goal: "REBUILD"  # Rebuild phase
+  primary_goal: "Return to training"  # Conservative build phase
   running_mileage_week1: 25  # Low starting volume
   weekly_progression_percent: 8  # Slower progression
   block_duration_weeks: 4
@@ -203,7 +203,7 @@ python main.py generate --config my_config.yaml --no-save-layers
 ### Complete Training Block Structure
 
 ```
-HYROX 4+1 Training Block – REBUILD Phase (Arthur Mellors)
+HYROX 4+1 Training Block – BUILD Phase (Arthur Mellors)
 
 ├── Athlete Profile
 │   ├── Physiological Parameters
@@ -324,8 +324,8 @@ If it takes >15 minutes, check your internet connection.
 ### Monthly Block Generation
 
 ```bash
-# January - REBUILD
-python main.py generate --config configs/2025_01_rebuild.yaml \
+# January - Base building
+python main.py generate --config configs/2025_01_base.yaml \
   --output-dir blocks/2025_01
 
 # February - BUILD

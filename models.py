@@ -59,7 +59,7 @@ class InjuryInformation(BaseModel):
 
 class BlockObjectives(BaseModel):
     """Objectives and focus areas for the training block."""
-    primary_goal: str = Field(..., description="Main goal for this block (e.g., 'REBUILD', 'BUILD', 'PEAK')")
+    primary_goal: str = Field(..., description="Main goal for this block (e.g., 'BUILD', 'PEAK', 'Base building')")
     running_mileage_week1: int = Field(..., description="Starting weekly mileage in km")
     weekly_progression_percent: int = Field(default=10, description="% increase in mileage per week")
     block_duration_weeks: int = Field(default=4, description="Number of build weeks before deload")

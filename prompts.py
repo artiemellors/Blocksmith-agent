@@ -36,11 +36,11 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
 
 - Pain ≤{athlete_profile.injury_info.pain_threshold_during}/10 during & ≤{athlete_profile.injury_info.pain_threshold_next_day}/10 next-day → cut volume or swap run→bike
 - Soreness >{athlete_profile.injury_info.soreness_cutoff_hours}h → reduce next run volume {athlete_profile.injury_info.volume_reduction_percent}–40%
-- Plyometrics minimal in REBUILD phase
+- Manage plyometric load based on athlete readiness and injury status
 
 **Macrocycle Logic:**
 
-- {block_objectives.block_duration_weeks}-week build (W1 baseline, W2 modest progression, W3 density, W4 overload/peak) + 1-week deload (cut volume 40–50%, intensity 20%)
+- {block_objectives.block_duration_weeks}-week progressive build + 1-week deload (cut volume 40–50%, intensity 20%)
 
 **Session Archetypes (must appear each microcycle):**
 
@@ -69,7 +69,7 @@ def get_layer_1_prompt(block_objectives):
 
 **Objectives:**
 
-- Reintroduce running carefully ({block_objectives.running_mileage_week1}km total mileage).
+- Establish baseline weekly running volume ({block_objectives.running_mileage_week1}km total mileage).
 - Balance intensity: alternate hard/easy days, prevent overload.
 - Cover all session archetypes (Running Quality, Running Endurance, Max Strength, Strength Endurance, HYROX Combo, Aerobic Engine/Recovery, Minis).
 - Ensure **2 double-days** (both "main" sessions), plus **3 home-based mini sessions** assigned to days.

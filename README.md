@@ -83,7 +83,7 @@ Open `my_block_config.yaml` and customize:
 - **Athlete information**: Name, age
 - **Physiological parameters**: HR max, threshold paces
 - **Injury information**: Active injuries, pain thresholds
-- **Block objectives**: Goal (REBUILD/BUILD/PEAK), mileage, duration
+- **Block objectives**: Goal (BUILD/PEAK/Base building), mileage, duration
 - **Previous block** (optional): Path to your last training block markdown file
 
 ### 3. Generate your training block
@@ -125,7 +125,7 @@ injury_information:
   volume_reduction_percent: 25
 
 block_objectives:
-  primary_goal: "REBUILD"  # REBUILD, BUILD, PEAK
+  primary_goal: "BUILD"  # Examples: BUILD, PEAK, Base building
   running_mileage_week1: 40  # km
   weekly_progression_percent: 10
   block_duration_weeks: 4
