@@ -23,8 +23,7 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
 **Training Week Structure:**
 
 - Training days: {athlete_profile.week_structure.training_days} ({athlete_profile.week_structure.rest_day} = rest)
-- Main sessions: {athlete_profile.week_structure.main_sessions_per_week} total per week (2 double-days where both are "main sessions," not minis)
-- Minis: exactly {athlete_profile.week_structure.mini_sessions_per_week} per week (home-only, 15–35 min, pre-assigned to specific days)
+- Main sessions: {athlete_profile.week_structure.main_sessions_per_week} total per week (includes 2 double-days)
 - Session time budgets: {athlete_profile.week_structure.weekday_session_time_min}–{athlete_profile.week_structure.weekday_session_time_max} min weekdays; {athlete_profile.week_structure.weekend_session_time_min}–{athlete_profile.week_structure.weekend_session_time_max} min weekends
 - Equipment: Gym ({', '.join(athlete_profile.equipment.gym_equipment)}); Home ({', '.join(athlete_profile.equipment.home_equipment)})
 
@@ -50,17 +49,15 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
 - **Strength Endurance** (circuits/EMOM/AMRAP including cardio engines)
 - **HYROX Combo/Brick** (run + station, compromised running, Zone 4–5)
 - **Aerobic Engine/Recovery** (bike/erg steady Z2, technique, mobility)
-- **Mini Sessions** (home-only; use EMOM, AMRAP, Tabata, Ladder, bike steady-state)
 
 **Design Rules (apply to every session):**
 
-- Each main session must include: Purpose, Warm-up, 2–3 Main Blocks, Cooldown, Substitutions, Transfer Explanation, Progression Dials.
-- Each mini session must include: Purpose, Structure, Assigned Day, Progression Knob.
+- Each session must include: Purpose, Warm-up, 2–3 Main Blocks, Cooldown, Substitutions, Transfer Explanation, Progression Dials.
 - Occasional overload allowed only in Week {block_objectives.block_duration_weeks}.
 - Strength Endurance sessions must **always include cardio modalities (run, SkiErg, RowErg, Echo bike, or bike)** within the session.
 - Maintain strict alternation of hard/easy days to avoid burnout.
 
-**Output Convention:** Follow subsequent layer prompts (Layers 1–11). Do not jump ahead."""
+**Output Convention:** Follow subsequent layer prompts. Do not jump ahead."""
 
 
 def get_layer_1_prompt(block_objectives):
@@ -71,12 +68,12 @@ def get_layer_1_prompt(block_objectives):
 
 - Establish baseline weekly running volume ({block_objectives.running_mileage_week1}km total mileage).
 - Balance intensity: alternate hard/easy days, prevent overload.
-- Cover all session archetypes (Running Quality, Running Endurance, Max Strength, Strength Endurance, HYROX Combo, Aerobic Engine/Recovery, Minis).
-- Ensure **2 double-days** (both "main" sessions), plus **3 home-based mini sessions** assigned to days.
+- Cover all session archetypes (Running Quality, Running Endurance, Max Strength, Strength Endurance, HYROX Combo, Aerobic Engine/Recovery).
+- Ensure **2 double-days** (both "main" sessions) for a total of 8 main sessions.
 
 **Structure required in output:**
 
-- Show **Tuesday → Sunday** schedule as a table with columns: *Day | Main AM | Main PM | Mini*.
+- Show **Tuesday → Sunday** schedule as a table with columns: *Day | Main AM | Main PM*.
 - Indicate run mileage distribution to total {block_objectives.running_mileage_week1}km.
 - Label each session by **archetype** only (e.g., "Run Quality – Threshold Intervals," "Strength Endurance – EMOM w/ SkiErg").
 - Flag which sessions are high intensity (Z4–5) and which are low/moderate (Z1–3).
@@ -86,7 +83,6 @@ def get_layer_1_prompt(block_objectives):
 - Avoid consecutive high-intensity days.
 - Long run should anchor the weekend (90–105 min, Zone 2).
 - HYROX Combo (Zone 4–5) occurs once this week.
-- Minis must be **specific**: tied to actual days, home-only, 15–35 min.
 
 **Output convention:** Just provide the **skeleton schedule** — no full session details yet. Full designs come in later layers."""
 
@@ -233,44 +229,28 @@ For the HYROX Combo / Brick session, include:
 
 
 def get_layer_6_prompt():
-    """Layer 6 - Aerobic Engine/Recovery & Mini Sessions"""
-    return """Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand the Aerobic Engine/Recovery session and all 3 Mini sessions into full detail.
+    """Layer 6 - Aerobic Engine/Recovery Session"""
+    return """Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand the Aerobic Engine/Recovery session into full detail.
 
 **Objectives:**
 
-- **Aerobic Engine/Recovery**: Build aerobic base without running stress; promote recovery; maintain movement quality.
-- **Mini Sessions**: Provide additional training stimulus at home; support specific skills (station technique, core, mobility, light aerobic); fit within 15–35 min; no equipment limitations.
+- Build aerobic base without running stress
+- Promote recovery between high-intensity sessions
+- Maintain movement quality and cardiovascular training stimulus
 
 **Structure required in output:**
-
-**For Aerobic Engine/Recovery session:**
 
 - **Purpose** (why low-intensity bike/erg work supports HYROX training).
 - **Warm-up** (5–10 min ramp-up).
 - **Main work** (30–50 min steady Z2 on bike or erg; technique cues; HR targets).
 - **Cooldown** (mobility, stretch, breathwork).
+- **Substitutions** (alternative modalities if needed).
+- **HYROX Transfer** (how this supports race performance).
 - **Progression knob** (extend duration, add short tempo surges in later weeks).
-
-**For each Mini session (3 total):**
-
-- **Assigned Day** (which day of the week it falls on).
-- **Purpose** (what adaptation or skill it targets).
-- **Structure** (format: EMOM, AMRAP, Tabata, Ladder, steady bike, etc.; explicit exercises/reps/duration).
-- **Equipment** (must be home-only: bike, wall balls, KB, bodyweight).
-- **Progression knob** (how to advance in later weeks).
-
-**Rules:**
-
-- Minis must be **low to moderate intensity** (Z1–Z3, RPE ≤6).
-- At least one mini should focus on **aerobic base** (bike, easy movement).
-- At least one mini should target **HYROX station skills** (wall balls, sandbag, KB).
-- At least one mini should emphasize **core/durability/mobility**.
 
 **Output convention:**
 
-- Present as:
-  - **1 Aerobic Engine/Recovery session** (full detail).
-  - **3 Mini sessions** (each with assigned day, purpose, structure, progression)."""
+- Present as **1 complete Aerobic Engine/Recovery session** with full detail."""
 
 
 def get_layer_7_prompt(block_objectives):
@@ -287,7 +267,7 @@ def get_layer_7_prompt(block_objectives):
 
 - Present as a **chronological plan (Tuesday → Sunday)**.
 - For each day:
-    - List **Main AM**, **Main PM (if double day)**, and **Mini (if assigned)**.
+    - List **Main AM** and **Main PM (if double day)**.
     - Under each session, include the **full detail** from its relevant layer:
         - **Purpose** (how it supports HYROX + {block_objectives.primary_goal} phase).
         - **Warm-up** (carry over from layer).
@@ -308,7 +288,7 @@ def get_layer_7_prompt(block_objectives):
 - Label clearly: *Week 1 – {block_objectives.primary_goal} Phase*.
 - End with a summary line:
     - "Total run mileage = XX km (target ~{block_objectives.running_mileage_week1} km)"
-    - "Total sessions = 8 main + 3 minis."
+    - "Total sessions = 8 main sessions."
 
 **After the full week, provide an intensity audit:**
 
@@ -361,7 +341,7 @@ def get_week_progression_prompt(week_number, previous_week_content, block_object
 **Output Requirements:**
 
 - Provide a **full Week {week_number} schedule (Tue → Sun)**.
-- Include all **main sessions + minis** with explicit structure (sets, reps, paces, HR zones, rests).
+- Include all **8 main sessions** with explicit structure (sets, reps, paces, HR zones, rests).
 - Indicate expected **km per run session** so weekly total = ~{week_km:.0f} km.
 - Tag each session as **Easy / Moderate / Hard**.
 - Provide a short **note on progression rationale** for each session (e.g., "increased intervals from 4x6min → 5x6min").
@@ -395,17 +375,14 @@ def get_deload_prompt(week_number, peak_week_content, block_objectives):
     - **Strength endurance**: Simplify to 1–2 lighter density circuits (≤12 mins); keep technique sharp.
     - **No new overloads** — this week is **about recovery, not gains**.
 
-4. **Mini Sessions**
-    - Maintain **2–3 minis (12–20 mins)**, but all should be **easy Z2 or technique-focused** (bike spin, mobility, light KB flow, easy wall balls).
-
-5. **Guardrails**
+4. **Guardrails**
     - No back-to-back intensity days.
     - Keep pain ≤1–2/10 during, ≤2–3/10 next day.
     - Prioritize **sleep, nutrition, and recovery habits**.
 
 **Output Requirements:**
 
-- Provide a **full Week {week_number} schedule (Tue → Sun)** with all main + mini sessions.
+- Provide a **full Week {week_number} schedule (Tue → Sun)** with all 8 main sessions.
 - Give **explicit detail**: sets, reps, distances, paces, HR zones, and rests.
 - Mark each session as **Easy / Moderate / Hard**.
 - Specify **expected km per run session** so weekly total ≈ {deload_km:.0f} km.
@@ -413,22 +390,3 @@ def get_deload_prompt(week_number, peak_week_content, block_objectives):
 - End with a **weekly intensity distribution breakdown** and confirm it ✅ fits the deload balance."""
 
 
-def get_layer_11_prompt(all_weeks_content, athlete_profile, block_objectives):
-    """Layer 11 - Full Block Artefact Assembly"""
-    return f"""Using all previous layers (0–10), assemble a single artefact titled:
-
-*HYROX {block_objectives.block_duration_weeks}+1 Training Block – {block_objectives.primary_goal} Phase ({athlete_profile.name})*
-
-**Rules:**
-
-- Include Athlete Profile, Parameters, Guardrails, Block Logic.
-- Present Weeks 1–{block_objectives.block_duration_weeks + 1} chronologically, with every session fully detailed.
-- Append audits after each week (mileage, intensity distribution, ✅/⚠️/❌).
-- End with block summary: mileage progression, intensity splits, adaptations targeted.
-- Do not summarise, reword, or omit detail.
-- Copy verbatim from previous layer outputs.
-
-**Full Week Content to Include:**
-{all_weeks_content[:3000]}... (see all weeks in full context)
-
-**Output:** Complete *{block_objectives.block_duration_weeks}+1 Week Training Block Artefact*."""

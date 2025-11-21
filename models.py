@@ -29,7 +29,6 @@ class TrainingWeekStructure(BaseModel):
     training_days: str = "Tuesday → Sunday"
     rest_day: str = "Monday"
     main_sessions_per_week: int = 8
-    mini_sessions_per_week: int = 3
     weekday_session_time_min: int = 45
     weekday_session_time_max: int = 75
     weekend_session_time_min: int = 90
