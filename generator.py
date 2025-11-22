@@ -137,7 +137,7 @@ class TrainingBlockGenerator:
         # Layer 1: Week 1 Skeleton
         layer_1 = self.generate_layer(
             "Layer 1",
-            get_layer_1_prompt(objectives),
+            get_layer_1_prompt(objectives, athlete),
             context=layer_0
         )
 
@@ -184,7 +184,7 @@ class TrainingBlockGenerator:
         week_1_context = f"{layer_0}\n\n{layer_1}\n\n{layer_2}\n\n{layer_3}\n\n{layer_4}\n\n{layer_5}\n\n{layer_6}"
         week_1 = self.generate_layer(
             "Layer 7 - Week 1",
-            get_layer_7_prompt(objectives),
+            get_layer_7_prompt(objectives, athlete),
             context=week_1_context
         )
 
@@ -194,7 +194,7 @@ class TrainingBlockGenerator:
             week_context = f"{layer_0}\n\n{weeks[week_num - 1]}"
             week = self.generate_layer(
                 f"Layer {7 + week_num - 1} - Week {week_num}",
-                get_week_progression_prompt(week_num, weeks[week_num - 1], objectives),
+                get_week_progression_prompt(week_num, weeks[week_num - 1], objectives, athlete),
                 context=week_context
             )
             weeks[week_num] = week
@@ -208,7 +208,8 @@ class TrainingBlockGenerator:
                 get_deload_prompt(
                     deload_week_num,
                     weeks[objectives.block_duration_weeks],
-                    objectives
+                    objectives,
+                    athlete
                 ),
                 context=deload_context
             )
@@ -236,7 +237,7 @@ class TrainingBlockGenerator:
             summary_content += f"""### Week {week_num} ({week_type})
 - **File:** `layer_{7 + week_num - 1}_-_week_{week_num}.md`
 - **Target Mileage:** ~{mileage:.1f} km
-- **Sessions:** 8 main sessions (2 double-days)
+- **Sessions:** {athlete.week_structure.main_sessions_per_week} main sessions
 
 """
 
