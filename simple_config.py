@@ -8,6 +8,7 @@ from models import (
     PhysiologicalParameters,
     BlockObjectives,
     InjuryInformation,
+    TrainingWeekStructure,
 )
 
 
@@ -87,11 +88,19 @@ def load_simple_config(file_path: str) -> TrainingBlockInput:
         volume_reduction_percent=int(config.get('volume_reduction_percent', 25))
     )
 
+    # Build week structure (with optional customization)
+    week_structure = TrainingWeekStructure(
+        rest_day=config.get('rest_day', 'Monday'),
+        main_sessions_per_week=int(config.get('main_sessions_per_week', 8)),
+        double_days=config.get('double_days', 'Wednesday, Saturday')
+    )
+
     # Build athlete profile
     athlete = AthleteProfile(
         name=config['name'],
         age=int(config['age']),
         physiological_params=phys_params,
+        week_structure=week_structure,
         injury_info=injury_info
     )
 
@@ -170,6 +179,21 @@ soreness_cutoff_hours=36
 
 # Percentage to reduce volume if soreness persists
 volume_reduction_percent=25
+
+# ============================================================
+# TRAINING WEEK STRUCTURE (OPTIONAL)
+# ============================================================
+
+# Which day is your rest day?
+rest_day=Monday
+
+# Total number of main sessions per week
+main_sessions_per_week=8
+
+# Which days should have double sessions (AM + PM)?
+# Comma-separated list
+# Examples: Wednesday, Saturday OR Tuesday, Thursday, Saturday
+double_days=Wednesday, Saturday
 
 # ============================================================
 # BLOCK OBJECTIVES
