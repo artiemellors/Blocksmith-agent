@@ -257,9 +257,12 @@ def get_layer_7_prompt(block_objectives):
     """Layer 7 - Assemble Full Week 1"""
     return f"""Using Layers 0–6, assemble the complete Week 1 training program.
 
+**CRITICAL: Token Budget Constraint**
+You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential actionable detail over verbose explanations. Be comprehensive but efficient.
+
 **Objectives:**
 
-- Produce a **day-by-day Week 1 program** with **all session detail intact** (do not shorten or summarize what was generated in Layers 2–6).
+- Produce a **day-by-day Week 1 program** with **all essential session detail**.
 - Maintain **consistency with the skeleton plan from Layer 1**.
 - Ensure **weekly running volume totals ~{block_objectives.running_mileage_week1} km**.
 
@@ -268,25 +271,33 @@ def get_layer_7_prompt(block_objectives):
 - Present as a **chronological plan (Tuesday → Sunday)**.
 - For each day:
     - List **Main AM** and **Main PM (if double day)**.
-    - Under each session, include the **full detail** from its relevant layer:
-        - **Purpose** (how it supports HYROX + {block_objectives.primary_goal} phase).
-        - **Warm-up** (carry over from layer).
-        - **Main Work** (all sets/reps/km/HR/paces/rest from layer).
-        - **Cooldown**.
-        - **Progression knobs** (how to evolve in later weeks).
-- Do not condense. Use the original depth of detail provided in Layers 2–6.
+    - Under each session, include:
+        - **Purpose** (1-2 sentences: how it supports HYROX + {block_objectives.primary_goal} phase).
+        - **Warm-up** (brief structure: duration, key movements).
+        - **Main Work** (all sets/reps/km/HR/paces/rest - this is the critical detail).
+        - **Cooldown** (brief structure).
+        - **Progression** (1-2 sentences on how to evolve in later weeks).
+
+**Efficiency Guidelines to Stay Within Token Budget:**
+
+- **Purpose sections:** 1-2 concise sentences (not paragraphs).
+- **Warm-ups:** Structure and duration only (not step-by-step coaching cues).
+- **Main Work:** Full prescription (this is non-negotiable) but remove redundant explanations.
+- **Cooldowns:** Structure only (movements + duration).
+- **Remove:** Verbose coaching narratives, philosophical explanations, redundant examples.
+- **Keep:** All numbers (sets, reps, paces, distances, HR zones, rest periods, progressions).
 
 **Rules:**
 
-- **No detail loss** → do not replace with summaries.
+- **Essential detail preserved** → all workout prescriptions must be complete and actionable.
 - **Explicitly calculate and show total running mileage** at the end.
 - Highlight session intensity (Z1–Z5) clearly.
-- Keep formatting clean (headings, bullet points, spacing).
+- Use clean formatting (headings, tables where appropriate for efficiency).
 
 **Output convention:**
 
 - Label clearly: *Week 1 – {block_objectives.primary_goal} Phase*.
-- End with a summary line:
+- End with a summary:
     - "Total run mileage = XX km (target ~{block_objectives.running_mileage_week1} km)"
     - "Total sessions = 8 main sessions."
 
@@ -299,7 +310,9 @@ Calculate the approximate time spent in each intensity zone across all sessions:
 
 Target: Easy = 60–70%, Moderate = ~20%, Hard = ~10%
 
-Mark the intensity balance as ✅ (on target), ⚠️ (slightly off), or ❌ (needs adjustment)."""
+Mark the intensity balance as ✅ (on target), ⚠️ (slightly off), or ❌ (needs adjustment).
+
+**Remember: You MUST complete the full week (all 7 days) within your response. Prioritize workout prescriptions over explanatory text.**"""
 
 
 def get_week_progression_prompt(week_number, previous_week_content, block_objectives):
@@ -313,6 +326,9 @@ def get_week_progression_prompt(week_number, previous_week_content, block_object
     }.get(week_number, "progression")
 
     return f"""Using the completed Week {week_number - 1} program as the foundation, design a Week {week_number} {phase_description} that builds load in a structured and safe way.
+
+**CRITICAL: Token Budget Constraint**
+You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential workout prescriptions over verbose explanations. Be comprehensive but efficient.
 
 **Previous Week Content:**
 {previous_week_content[:2000]}... (see full context above)
@@ -340,12 +356,19 @@ def get_week_progression_prompt(week_number, previous_week_content, block_object
 
 **Output Requirements:**
 
-- Provide a **full Week {week_number} schedule (Tue → Sun)**.
+- Provide a **full Week {week_number} schedule (Tue → Sun)** - all 7 days MUST be included.
 - Include all **8 main sessions** with explicit structure (sets, reps, paces, HR zones, rests).
 - Indicate expected **km per run session** so weekly total = ~{week_km:.0f} km.
 - Tag each session as **Easy / Moderate / Hard**.
 - Provide a short **note on progression rationale** for each session (e.g., "increased intervals from 4x6min → 5x6min").
-- End with an **intensity distribution check (percentages)** and a ✅/⚠️/❌ rating."""
+- End with an **intensity distribution check (percentages)** and a ✅/⚠️/❌ rating.
+
+**Efficiency Guidelines:**
+- **Keep it concise:** Brief purpose statements (1-2 sentences), workout prescriptions with all numbers, short cooldowns.
+- **Remove:** Lengthy coaching narratives, philosophical explanations, redundant examples.
+- **Preserve:** All workout numbers, progression notes, key technical cues.
+
+**Remember: You MUST complete the full week (all 7 days) within your response. Prioritize workout prescriptions over explanatory text.**"""
 
 
 def get_deload_prompt(week_number, peak_week_content, block_objectives):
@@ -354,6 +377,9 @@ def get_deload_prompt(week_number, peak_week_content, block_objectives):
     deload_km = peak_km * 0.65  # 30-40% reduction
 
     return f"""Using the Week {block_objectives.block_duration_weeks} Peak / Overload week as the foundation, design a Deload Week (Week {week_number}) that reduces training stress to promote recovery and adaptation, while maintaining movement quality and rhythm.
+
+**CRITICAL: Token Budget Constraint**
+You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential workout prescriptions over verbose explanations. Be comprehensive but efficient.
 
 **Peak Week Content:**
 {peak_week_content[:2000]}... (see full context above)
@@ -382,11 +408,18 @@ def get_deload_prompt(week_number, peak_week_content, block_objectives):
 
 **Output Requirements:**
 
-- Provide a **full Week {week_number} schedule (Tue → Sun)** with all 8 main sessions.
+- Provide a **full Week {week_number} schedule (Tue → Sun)** with all 8 main sessions - all 7 days MUST be included.
 - Give **explicit detail**: sets, reps, distances, paces, HR zones, and rests.
 - Mark each session as **Easy / Moderate / Hard**.
 - Specify **expected km per run session** so weekly total ≈ {deload_km:.0f} km.
 - Add a **short rationale** for how this week allows recovery while preserving sharpness.
-- End with a **weekly intensity distribution breakdown** and confirm it ✅ fits the deload balance."""
+- End with a **weekly intensity distribution breakdown** and confirm it ✅ fits the deload balance.
+
+**Efficiency Guidelines:**
+- **Keep it concise:** Brief purpose statements (1-2 sentences), workout prescriptions with all numbers, short cooldowns.
+- **Remove:** Lengthy coaching narratives, philosophical explanations, redundant examples.
+- **Preserve:** All workout numbers, deload reductions, key technical cues.
+
+**Remember: You MUST complete the full week (all 7 days) within your response. Prioritize workout prescriptions over explanatory text.**"""
 
 
