@@ -147,7 +147,8 @@ class TrainingBlockGenerator:
             get_layer_2_prompt(
                 objectives,
                 athlete.physiological_params.threshold_t1_pace,
-                athlete.physiological_params.threshold_t2_pace
+                athlete.physiological_params.threshold_t2_pace,
+                athlete
             ),
             context=f"{layer_0}\n\n{layer_1}"
         )

@@ -30,10 +30,33 @@ class TrainingWeekStructure(BaseModel):
     rest_day: str = "Monday"
     main_sessions_per_week: int = 8
     double_days: str = "Wednesday, Saturday"  # Which days have AM + PM sessions
+    runs_per_week: int = 4  # Number of running sessions per week
+    long_run_day: str = "Sunday"  # Which day should have the long run
     weekday_session_time_min: int = 45
     weekday_session_time_max: int = 75
     weekend_session_time_min: int = 90
     weekend_session_time_max: int = 105
+
+    def get_num_double_days(self) -> int:
+        """Calculate number of double-days from the double_days string."""
+        if not self.double_days:
+            return 0
+        return len([d.strip() for d in self.double_days.split(',') if d.strip()])
+
+    def get_training_days_range(self) -> str:
+        """Calculate training days range based on rest day."""
+        days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        try:
+            rest_idx = days.index(self.rest_day)
+        except ValueError:
+            return "Tuesday → Sunday"  # fallback
+
+        # Training starts day after rest
+        start_idx = (rest_idx + 1) % 7
+        # Training ends day before rest
+        end_idx = (rest_idx - 1) % 7
+
+        return f"{days[start_idx]} → {days[end_idx]}"
 
 
 class Equipment(BaseModel):

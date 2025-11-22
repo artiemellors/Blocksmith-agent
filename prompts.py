@@ -22,8 +22,9 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
 
 **Training Week Structure:**
 
-- Training days: {athlete_profile.week_structure.training_days} ({athlete_profile.week_structure.rest_day} = rest)
-- Main sessions: {athlete_profile.week_structure.main_sessions_per_week} total per week (includes 2 double-days)
+- Training days: {athlete_profile.week_structure.get_training_days_range()} ({athlete_profile.week_structure.rest_day} = rest)
+- Main sessions: {athlete_profile.week_structure.main_sessions_per_week} total per week (includes {athlete_profile.week_structure.get_num_double_days()} double-days)
+- Running sessions: {athlete_profile.week_structure.runs_per_week} runs per week
 - Session time budgets: {athlete_profile.week_structure.weekday_session_time_min}–{athlete_profile.week_structure.weekday_session_time_max} min weekdays; {athlete_profile.week_structure.weekend_session_time_min}–{athlete_profile.week_structure.weekend_session_time_max} min weekends
 - Equipment: Gym ({', '.join(athlete_profile.equipment.gym_equipment)}); Home ({', '.join(athlete_profile.equipment.home_equipment)})
 
@@ -63,6 +64,11 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
 def get_layer_1_prompt(block_objectives, athlete_profile):
     """Layer 1 - Week 1 Skeleton Overview"""
     sessions = athlete_profile.week_structure.main_sessions_per_week
+    training_days = athlete_profile.week_structure.get_training_days_range()
+    long_run_day = athlete_profile.week_structure.long_run_day
+    weekend_min = athlete_profile.week_structure.weekend_session_time_min
+    weekend_max = athlete_profile.week_structure.weekend_session_time_max
+
     return f"""Using Layer 0 rules, design the Week 1 skeleton.
 
 **Objectives:**
@@ -74,7 +80,7 @@ def get_layer_1_prompt(block_objectives, athlete_profile):
 
 **Structure required in output:**
 
-- Show **Tuesday → Sunday** schedule as a table with columns: *Day | Main AM | Main PM*.
+- Show **{training_days}** schedule as a table with columns: *Day | Main AM | Main PM*.
 - Indicate run mileage distribution to total {block_objectives.running_mileage_week1}km.
 - Label each session by **archetype** only (e.g., "Run Quality – Threshold Intervals," "Strength Endurance – EMOM w/ SkiErg").
 - Flag which sessions are high intensity (Z4–5) and which are low/moderate (Z1–3).
@@ -82,19 +88,24 @@ def get_layer_1_prompt(block_objectives, athlete_profile):
 **Important constraints:**
 
 - Avoid consecutive high-intensity days.
-- Long run should anchor the weekend (90–105 min, Zone 2).
+- Long run should anchor {long_run_day} ({weekend_min}–{weekend_max} min, Zone 2).
 - HYROX Combo (Zone 4–5) occurs once this week.
 
 **Output convention:** Just provide the **skeleton schedule** — no full session details yet. Full designs come in later layers."""
 
 
-def get_layer_2_prompt(block_objectives, t1_pace, t2_pace):
+def get_layer_2_prompt(block_objectives, t1_pace, t2_pace, athlete_profile):
     """Layer 2 - Running Sessions Expansion"""
+    runs = athlete_profile.week_structure.runs_per_week
+    long_run_day = athlete_profile.week_structure.long_run_day
+    weekend_min = athlete_profile.week_structure.weekend_session_time_min
+    weekend_max = athlete_profile.week_structure.weekend_session_time_max
+
     return f"""Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand only the running sessions into full detail.
 
 **Objectives:**
 
-- Total weekly volume: **{block_objectives.running_mileage_week1}km** (Week 1), distributed across 4 runs.
+- Total weekly volume: **{block_objectives.running_mileage_week1}km** (Week 1), distributed across {runs} runs.
 - Gradual build: +{block_objectives.weekly_progression_percent}% mileage per week in following weeks.
 - Cover 2x Quality sessions (threshold / intervals), 1x Long Z2 run, 1x Easy Z2 run.
 - Alternate hard and easy days; avoid stacking high intensity.
@@ -112,14 +123,14 @@ For each running session, include:
 
 **Rules:**
 
-- Long run anchored on weekend (90–105 min, Z2).
+- Long run anchored on {long_run_day} ({weekend_min}–{weekend_max} min, Z2).
 - Easy run ≤60 min, Z2, recovery emphasis.
 - Threshold/interval runs must reference both **pace zones (T1, T2)** and **HR zones** as dials.
 - Where distance and time could be used, provide both (e.g., "6x1km at T1, ~{t1_pace}/km pace, HR Z3–4, 3 min jog rest").
 
 **Output convention:**
 
-- Present as a **list of 4 running sessions** (not the whole week).
+- Present as a **list of {runs} running sessions** (not the whole week).
 - Label them clearly by session type: *Run Quality 1 (Threshold Intervals)*, *Run Quality 2 (Progression Run)*, *Endurance Run (Long Z2)*, *Endurance Run (Easy Z2)*."""
 
 
@@ -255,6 +266,8 @@ def get_layer_6_prompt():
 def get_layer_7_prompt(block_objectives, athlete_profile):
     """Layer 7 - Assemble Full Week 1"""
     sessions = athlete_profile.week_structure.main_sessions_per_week
+    training_days = athlete_profile.week_structure.get_training_days_range()
+
     return f"""Using Layers 0–6, assemble the complete Week 1 training program.
 
 **CRITICAL: Token Budget Constraint**
@@ -268,7 +281,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential acti
 
 **Structure required in output:**
 
-- Present as a **chronological plan (Tuesday → Sunday)**.
+- Present as a **chronological plan ({training_days})**.
 - For each day:
     - List **Main AM** and **Main PM (if double day)**.
     - Under each session, include:
@@ -319,6 +332,8 @@ def get_week_progression_prompt(week_number, previous_week_content, block_object
     """Generic prompt for Week 2, 3, or 4 progression"""
     week_km = block_objectives.running_mileage_week1 * (1 + (block_objectives.weekly_progression_percent / 100)) ** (week_number - 1)
     sessions = athlete_profile.week_structure.main_sessions_per_week
+    training_days = athlete_profile.week_structure.get_training_days_range()
+    runs = athlete_profile.week_structure.runs_per_week
 
     phase_description = {
         2: "modest progression",
@@ -357,8 +372,8 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
 
 **Output Requirements:**
 
-- Provide a **full Week {week_number} schedule (Tue → Sun)** - all 7 days MUST be included.
-- Include all **{sessions} main sessions** with explicit structure (sets, reps, paces, HR zones, rests).
+- Provide a **full Week {week_number} schedule ({training_days})** - all 7 days MUST be included.
+- Include all **{sessions} main sessions** ({runs} runs + other sessions) with explicit structure (sets, reps, paces, HR zones, rests).
 - Indicate expected **km per run session** so weekly total = ~{week_km:.0f} km.
 - Tag each session as **Easy / Moderate / Hard**.
 - Provide a short **note on progression rationale** for each session (e.g., "increased intervals from 4x6min → 5x6min").
@@ -377,6 +392,8 @@ def get_deload_prompt(week_number, peak_week_content, block_objectives, athlete_
     peak_km = block_objectives.running_mileage_week1 * (1 + (block_objectives.weekly_progression_percent / 100)) ** (block_objectives.block_duration_weeks - 1)
     deload_km = peak_km * 0.65  # 30-40% reduction
     sessions = athlete_profile.week_structure.main_sessions_per_week
+    training_days = athlete_profile.week_structure.get_training_days_range()
+    runs = athlete_profile.week_structure.runs_per_week
 
     return f"""Using the Week {block_objectives.block_duration_weeks} Peak / Overload week as the foundation, design a Deload Week (Week {week_number}) that reduces training stress to promote recovery and adaptation, while maintaining movement quality and rhythm.
 
@@ -390,7 +407,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
 
 1. **Running Volume**
     - Reduce **weekly mileage by ~30–40%** compared to Week {block_objectives.block_duration_weeks} (target ≈ {deload_km:.0f} km).
-    - Keep **all 4 runs**, but shorten distances and/or reduce interval reps.
+    - Keep **all {runs} runs**, but shorten distances and/or reduce interval reps.
 
 2. **Intensity Distribution**
     - Global target:
@@ -410,7 +427,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
 
 **Output Requirements:**
 
-- Provide a **full Week {week_number} schedule (Tue → Sun)** with all {sessions} main sessions - all 7 days MUST be included.
+- Provide a **full Week {week_number} schedule ({training_days})** with all {sessions} main sessions - all 7 days MUST be included.
 - Give **explicit detail**: sets, reps, distances, paces, HR zones, and rests.
 - Mark each session as **Easy / Moderate / Hard**.
 - Specify **expected km per run session** so weekly total ≈ {deload_km:.0f} km.

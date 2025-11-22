@@ -92,7 +92,9 @@ def load_simple_config(file_path: str) -> TrainingBlockInput:
     week_structure = TrainingWeekStructure(
         rest_day=config.get('rest_day', 'Monday'),
         main_sessions_per_week=int(config.get('main_sessions_per_week', 8)),
-        double_days=config.get('double_days', 'Wednesday, Saturday')
+        double_days=config.get('double_days', 'Wednesday, Saturday'),
+        runs_per_week=int(config.get('runs_per_week', 4)),
+        long_run_day=config.get('long_run_day', 'Sunday')
     )
 
     # Build athlete profile
@@ -194,6 +196,13 @@ main_sessions_per_week=8
 # Comma-separated list
 # Examples: Wednesday, Saturday OR Tuesday, Thursday, Saturday
 double_days=Wednesday, Saturday
+
+# Number of running sessions per week
+runs_per_week=4
+
+# Which day should have the long run?
+# Examples: Sunday, Saturday
+long_run_day=Sunday
 
 # ============================================================
 # BLOCK OBJECTIVES
