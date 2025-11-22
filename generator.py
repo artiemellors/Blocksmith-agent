@@ -93,8 +93,8 @@ class TrainingBlockGenerator:
                     f.write(output)
                 print(f"✓ Saved to {output_file}")
 
-            # Small delay to respect rate limits
-            time.sleep(1)
+            # Delay to respect rate limits (3 seconds for lower-tier API accounts)
+            time.sleep(3)
 
             return output
 
