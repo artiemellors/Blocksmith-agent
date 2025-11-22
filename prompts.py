@@ -52,7 +52,7 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
 
 **Design Rules (apply to every session):**
 
-- Each session must include: Purpose, Warm-up, 2–3 Main Blocks, Cooldown, Substitutions, Transfer Explanation, Progression Dials.
+- Each session must include: Purpose, Warm-up, 2–3 Main Blocks, Cooldown, Transfer Explanation, Progression Dials.
 - Occasional overload allowed only in Week {block_objectives.block_duration_weeks}.
 - Strength Endurance sessions must **always include cardio modalities (run, SkiErg, RowErg, Echo bike, or bike)** within the session.
 - Maintain strict alternation of hard/easy days to avoid burnout.
@@ -115,7 +115,6 @@ For each running session, include:
 - Easy run ≤60 min, Z2, recovery emphasis.
 - Threshold/interval runs must reference both **pace zones (T1, T2)** and **HR zones** as dials.
 - Where distance and time could be used, provide both (e.g., "6x1km at T1, ~{t1_pace}/km pace, HR Z3–4, 3 min jog rest").
-- Include substitutions if quad pain flares (swap run → bike with matching HR zone & duration).
 
 **Output convention:**
 
@@ -151,7 +150,6 @@ For each strength session, include:
 - Accessories may include unilateral lifts (lunges, RDLs), core, or posterior chain balance.
 - No more than 4 total main compound lifts per session.
 - Keep rest long (2–3 min for heavy compounds, 60–90s for accessories).
-- Substitute option if quad pain returns: reduce squat/deadlift intensity, swap to single-leg stability + posterior chain work.
 
 **Output convention:**
 
@@ -284,7 +282,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential acti
 - **Warm-ups:** Structure and duration only (not step-by-step coaching cues).
 - **Main Work:** Full prescription (this is non-negotiable) but remove redundant explanations.
 - **Cooldowns:** Structure only (movements + duration).
-- **Remove:** Verbose coaching narratives, philosophical explanations, redundant examples.
+- **Remove:** Verbose coaching narratives, philosophical explanations, redundant examples, pain protocol adjustment sections.
 - **Keep:** All numbers (sets, reps, paces, distances, HR zones, rest periods, progressions).
 
 **Rules:**
@@ -365,7 +363,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
 
 **Efficiency Guidelines:**
 - **Keep it concise:** Brief purpose statements (1-2 sentences), workout prescriptions with all numbers, short cooldowns.
-- **Remove:** Lengthy coaching narratives, philosophical explanations, redundant examples.
+- **Remove:** Lengthy coaching narratives, philosophical explanations, redundant examples, pain protocol adjustment sections.
 - **Preserve:** All workout numbers, progression notes, key technical cues.
 
 **Remember: You MUST complete the full week (all 7 days) within your response. Prioritize workout prescriptions over explanatory text.**"""
@@ -417,7 +415,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
 
 **Efficiency Guidelines:**
 - **Keep it concise:** Brief purpose statements (1-2 sentences), workout prescriptions with all numbers, short cooldowns.
-- **Remove:** Lengthy coaching narratives, philosophical explanations, redundant examples.
+- **Remove:** Lengthy coaching narratives, philosophical explanations, redundant examples, pain protocol adjustment sections.
 - **Preserve:** All workout numbers, deload reductions, key technical cues.
 
 **Remember: You MUST complete the full week (all 7 days) within your response. Prioritize workout prescriptions over explanatory text.**"""
