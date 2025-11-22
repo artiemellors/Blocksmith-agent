@@ -19,10 +19,44 @@ from models import (
     GenerationConfig,
 )
 from generator import TrainingBlockGenerator
+from simple_config import load_simple_config, create_simple_config_template
 
 
 # Load environment variables
 load_dotenv()
+
+
+def load_config(config_file: str) -> TrainingBlockInput:
+    """
+    Load configuration from either YAML or simple text format.
+
+    Detects format based on file extension:
+    - .yaml or .yml -> YAML format
+    - .txt or .conf -> Simple text format
+
+    Args:
+        config_file: Path to the configuration file
+
+    Returns:
+        TrainingBlockInput object
+    """
+    file_path = Path(config_file)
+
+    if not file_path.exists():
+        raise FileNotFoundError(f"Configuration file not found: {config_file}")
+
+    # Detect format by extension
+    ext = file_path.suffix.lower()
+
+    if ext in ['.txt', '.conf']:
+        return load_simple_config(config_file)
+    elif ext in ['.yaml', '.yml']:
+        return load_config_from_yaml(config_file)
+    else:
+        raise ValueError(
+            f"Unknown configuration file format: {ext}\n"
+            "Supported formats: .txt, .conf (simple text) or .yaml, .yml (YAML)"
+        )
 
 
 def load_config_from_yaml(config_file: str) -> TrainingBlockInput:
@@ -86,7 +120,7 @@ def cli():
     '-c',
     type=click.Path(exists=True),
     required=True,
-    help='Path to YAML configuration file'
+    help='Path to configuration file (.txt, .yaml, or .yml)'
 )
 @click.option(
     '--output-dir',
@@ -123,10 +157,10 @@ def generate(config, output_dir, api_key, model, save_layers):
     click.echo("Blocksmith - Training Block Generator")
     click.echo(f"{'='*60}\n")
 
-    # Load configuration
+    # Load configuration (auto-detects format)
     click.echo(f"Loading configuration from: {config}")
     try:
-        input_data = load_config_from_yaml(config)
+        input_data = load_config(config)
     except Exception as e:
         click.echo(f"Error loading configuration: {str(e)}", err=True)
         sys.exit(1)
@@ -174,7 +208,10 @@ def generate(config, output_dir, api_key, model, save_layers):
 @cli.command()
 @click.argument('output_file', type=click.Path())
 def create_config(output_file):
-    """Create a sample configuration file."""
+    """Create a sample YAML configuration file.
+
+    For a simpler format, use: create-config-simple
+    """
 
     sample_config = """# Blocksmith Training Block Configuration
 
@@ -218,6 +255,25 @@ additional_context: null
     click.echo(f"✓ Sample configuration created: {output_file}")
     click.echo(f"\nEdit this file with your details, then run:")
     click.echo(f"  python main.py generate --config {output_file}")
+
+
+@cli.command()
+@click.argument('output_file', type=click.Path())
+def create_config_simple(output_file):
+    """Create a simple text configuration file (RECOMMENDED).
+
+    This format is much easier to edit than YAML!
+    Just key=value pairs, no indentation needed.
+    """
+    try:
+        create_simple_config_template(output_file)
+        click.echo(f"✓ Simple text configuration created: {output_file}")
+        click.echo(f"\nThis format is easier to edit - just change the values!")
+        click.echo(f"\nEdit this file with your details, then run:")
+        click.echo(f"  python main.py generate --config {output_file}")
+    except Exception as e:
+        click.echo(f"✗ Error creating configuration: {str(e)}", err=True)
+        sys.exit(1)
 
 
 @cli.command()
