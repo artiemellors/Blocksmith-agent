@@ -16,10 +16,11 @@ from models import (
     PhysiologicalParameters,
     BlockObjectives,
     InjuryInformation,
+    TrainingWeekStructure,
     GenerationConfig,
 )
 from generator import TrainingBlockGenerator
-from simple_config import load_simple_config, create_simple_config_template
+from simple_config import load_simple_config, create_simple_config_template, validate_week_structure
 
 
 # Load environment variables
@@ -79,10 +80,28 @@ def load_config_from_yaml(config_file: str) -> TrainingBlockInput:
     if 'injury_information' in data:
         injury_info = InjuryInformation(**data['injury_information'])
 
+    # Build week structure with validation
+    week_structure = TrainingWeekStructure()
+    if 'training_week_structure' in data:
+        # Support both old and new field names
+        tws_data = data['training_week_structure'].copy()
+
+        # Handle backward compatibility for field names
+        if 'rest_day' in tws_data and 'rest_days' not in tws_data:
+            tws_data['rest_days'] = tws_data.pop('rest_day')
+        if 'total_sessions_per_week' in tws_data:
+            tws_data['main_sessions_per_week'] = tws_data.pop('total_sessions_per_week')
+        elif 'main_sessions_per_week' not in tws_data:
+            tws_data['main_sessions_per_week'] = 8
+
+        week_structure = TrainingWeekStructure(**tws_data)
+        validate_week_structure(week_structure)
+
     athlete = AthleteProfile(
         name=data['athlete']['name'],
         age=data['athlete']['age'],
         physiological_params=phys_params,
+        week_structure=week_structure,
         injury_info=injury_info
     )
 

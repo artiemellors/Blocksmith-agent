@@ -27,8 +27,8 @@ class PhysiologicalParameters(BaseModel):
 class TrainingWeekStructure(BaseModel):
     """Structure and constraints for the training week."""
     training_days: str = "Tuesday → Sunday"
-    rest_day: str = "Monday"
-    main_sessions_per_week: int = 8
+    rest_days: str = "Monday"  # Comma-separated list of rest days
+    main_sessions_per_week: int = 8  # Total number of sessions per week
     double_days: str = "Wednesday, Saturday"  # Which days have AM + PM sessions
     runs_per_week: int = 4  # Number of running sessions per week
     long_run_day: str = "Sunday"  # Which day should have the long run
@@ -37,6 +37,20 @@ class TrainingWeekStructure(BaseModel):
     weekend_session_time_min: int = 90
     weekend_session_time_max: int = 105
 
+    def get_rest_days_list(self) -> list[str]:
+        """Get list of rest days from the comma-separated string."""
+        if not self.rest_days:
+            return []
+        return [d.strip() for d in self.rest_days.split(',') if d.strip()]
+
+    def get_num_rest_days(self) -> int:
+        """Calculate number of rest days."""
+        return len(self.get_rest_days_list())
+
+    def get_num_training_days(self) -> int:
+        """Calculate number of training days (7 - rest days)."""
+        return 7 - self.get_num_rest_days()
+
     def get_num_double_days(self) -> int:
         """Calculate number of double-days from the double_days string."""
         if not self.double_days:
@@ -44,19 +58,34 @@ class TrainingWeekStructure(BaseModel):
         return len([d.strip() for d in self.double_days.split(',') if d.strip()])
 
     def get_training_days_range(self) -> str:
-        """Calculate training days range based on rest day."""
+        """Calculate training days range based on rest days."""
         days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-        try:
-            rest_idx = days.index(self.rest_day)
-        except ValueError:
-            return "Tuesday → Sunday"  # fallback
+        rest_list = self.get_rest_days_list()
 
-        # Training starts day after rest
-        start_idx = (rest_idx + 1) % 7
-        # Training ends day before rest
-        end_idx = (rest_idx - 1) % 7
+        if not rest_list:
+            return "Monday → Sunday"
 
-        return f"{days[start_idx]} → {days[end_idx]}"
+        # If only one rest day, return range
+        if len(rest_list) == 1:
+            try:
+                rest_idx = days.index(rest_list[0])
+            except ValueError:
+                return "Tuesday → Sunday"  # fallback
+
+            # Training starts day after rest
+            start_idx = (rest_idx + 1) % 7
+            # Training ends day before rest
+            end_idx = (rest_idx - 1) % 7
+
+            return f"{days[start_idx]} → {days[end_idx]}"
+
+        # Multiple rest days - just list training days
+        rest_set = set(rest_list)
+        training_days_list = [d for d in days if d not in rest_set]
+        if len(training_days_list) <= 3:
+            return ", ".join(training_days_list)
+        else:
+            return f"{training_days_list[0]} → {training_days_list[-1]} (with rest on {', '.join(rest_list)})"
 
 
 class Equipment(BaseModel):
