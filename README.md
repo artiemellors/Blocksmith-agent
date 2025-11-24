@@ -72,30 +72,40 @@ ANTHROPIC_API_KEY=your_actual_api_key_here
 
 ### 1. Create a configuration file
 
+**Option A: Simple Text Format (Recommended - Easier to Edit)**
+
+```bash
+python main.py create-config-simple my_block_config.txt
+```
+
+**Option B: YAML Format**
+
 ```bash
 python main.py create-config my_block_config.yaml
 ```
 
-This creates a sample configuration file with all the necessary fields.
+Both create a sample configuration file with all necessary fields. The text format uses simple `key=value` pairs and is less error-prone than YAML.
 
 ### 2. Edit the configuration
 
-Open `my_block_config.yaml` and customize:
+Open your config file and customize:
 
 - **Athlete information**: Name, age
 - **Physiological parameters**: HR max, threshold paces
 - **Injury information**: Active injuries, pain thresholds
+- **Training week structure**: Rest days, sessions per week, double days, runs per week
 - **Block objectives**: Goal (BUILD/PEAK/Base building), mileage, duration
 - **Previous block** (optional): Path to your last training block markdown file
 
 ### 3. Generate your training block
 
 ```bash
-python main.py generate --config my_block_config.yaml
+python main.py generate --config my_block_config.txt
 ```
+(or `.yaml` if you chose YAML format)
 
 The tool will:
-1. Load your configuration
+1. Load and validate your configuration
 2. Display a summary and ask for confirmation
 3. Generate each layer sequentially (Layer 0 → Layer 11)
 4. Save intermediate outputs and the final complete block
@@ -108,6 +118,47 @@ Your complete training block will be at:
 - `output/generation_summary.md` - Summary of generation
 
 ## Configuration File Structure
+
+### Simple Text Format (.txt)
+
+```text
+# Athlete Information
+name=Arthur Mellors
+age=42
+
+# Physiological Parameters
+hr_max=188
+threshold_t1_pace=4:37  # mm:ss per km
+threshold_t2_pace=4:17
+
+# Injury Information
+active_injuries=  # Leave empty or list: quad pain, shoulder soreness
+pain_threshold_during=2
+pain_threshold_next_day=3
+soreness_cutoff_hours=36
+volume_reduction_percent=25
+
+# Training Week Structure
+rest_days=Monday  # Can be multiple: Monday, Wednesday
+total_sessions_per_week=8
+double_days=Wednesday, Saturday  # Days with AM + PM sessions
+runs_per_week=4  # How many sessions are runs
+long_run_day=Sunday  # Which day has the long run
+
+# Block Objectives
+primary_goal=BUILD  # Examples: BUILD, PEAK, Base building
+running_mileage_week1=40  # km
+weekly_progression_percent=10
+block_duration_weeks=4
+deload_week=yes
+specific_focus_areas=threshold running, sled work, wall balls
+
+# Optional
+previous_training_block_file=  # Path to previous block
+additional_context=  # Special instructions
+```
+
+### YAML Format (.yaml)
 
 ```yaml
 athlete:
@@ -126,6 +177,13 @@ injury_information:
   soreness_cutoff_hours: 36
   volume_reduction_percent: 25
 
+training_week_structure:
+  rest_days: "Monday"  # Can be multiple: "Monday, Wednesday"
+  total_sessions_per_week: 8
+  double_days: "Wednesday, Saturday"  # Days with AM + PM sessions
+  runs_per_week: 4  # How many sessions are runs
+  long_run_day: "Sunday"  # Which day has the long run
+
 block_objectives:
   primary_goal: "BUILD"  # Examples: BUILD, PEAK, Base building
   running_mileage_week1: 40  # km
@@ -143,6 +201,18 @@ previous_training_block_file: "previous_block.md"
 additional_context: "Focus on shoulder health this block"
 ```
 
+### Configuration Validation
+
+Blocksmith validates your configuration before generation and provides helpful error messages:
+
+**Example validation:**
+- ✅ Sessions fit within training days (can't have 12 sessions in 5 training days)
+- ✅ Double days math is correct (8 sessions - 6 training days = 2 double days needed)
+- ✅ Runs don't exceed total sessions
+- ✅ Long run day is a training day (not a rest day)
+
+If validation fails, you'll see a clear error message with suggestions for fixing the issue.
+
 ## Command Reference
 
 ### Generate a training block
@@ -152,7 +222,7 @@ python main.py generate --config CONFIG_FILE [OPTIONS]
 ```
 
 **Options:**
-- `--config, -c`: Path to YAML configuration file (required)
+- `--config, -c`: Path to configuration file (.txt or .yaml) (required)
 - `--output-dir, -o`: Output directory (default: `output`)
 - `--api-key, -k`: Anthropic API key (or use ANTHROPIC_API_KEY env var)
 - `--model, -m`: Claude model to use (default: claude-sonnet-4-5-20250929)
@@ -160,8 +230,14 @@ python main.py generate --config CONFIG_FILE [OPTIONS]
 
 ### Create a sample configuration
 
+**Simple text format (recommended):**
 ```bash
-python main.py create-config OUTPUT_FILE
+python main.py create-config-simple OUTPUT_FILE.txt
+```
+
+**YAML format:**
+```bash
+python main.py create-config OUTPUT_FILE.yaml
 ```
 
 ### Show version
@@ -236,7 +312,19 @@ Error: API key not provided
 ```
 Error loading configuration: ...
 ```
-**Solution**: Check YAML syntax, ensure all required fields are present
+**Solution**:
+- For `.txt` files: Check `key=value` format, ensure no extra spaces before `=`
+- For `.yaml` files: Check YAML syntax (indentation matters!), ensure all required fields are present
+
+### Configuration Validation Error
+```
+❌ Invalid training week structure
+```
+**Solution**: Read the error message carefully - it explains exactly what's wrong and suggests a fix. Common issues:
+- Double days don't match math (e.g., 8 sessions with 6 training days needs 2 double days)
+- Too many sessions for available training days
+- Long run scheduled on a rest day
+- More runs than total sessions
 
 ### Rate Limit Error
 **Solution**: The generator includes 1-second delays between API calls. If still rate-limited, wait a few minutes and retry.
