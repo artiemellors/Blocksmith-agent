@@ -281,9 +281,10 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential acti
 
 **Structure required in output:**
 
-- Present as a **chronological plan ({training_days})**.
-- For each day:
-    - List **Main AM** and **Main PM (if double day)**.
+- **IMPORTANT: Always start weeks on Monday** (even if Monday is a rest day). Present the week as Monday → Sunday.
+- For each day (Monday through Sunday):
+    - If it's a rest day, simply state: "**Monday: Rest Day**"
+    - If it's a training day, list **Main AM** and **Main PM (if double day)**.
     - Under each session, include:
         - **Purpose** (1-2 sentences: how it supports HYROX + {block_objectives.primary_goal} phase).
         - **Warm-up** (brief structure: duration, key movements).
@@ -372,7 +373,9 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
 
 **Output Requirements:**
 
-- Provide a **full Week {week_number} schedule ({training_days})** - all 7 days MUST be included.
+- **IMPORTANT: Always start weeks on Monday** (even if Monday is a rest day). Present the week as Monday → Sunday.
+- Provide a **full Week {week_number} schedule** - all 7 days (Monday through Sunday) MUST be included.
+- For rest days, simply state: "**Monday: Rest Day**" (or whichever day is the rest day).
 - Include all **{sessions} main sessions** ({runs} runs + other sessions) with explicit structure (sets, reps, paces, HR zones, rests).
 - Indicate expected **km per run session** so weekly total = ~{week_km:.0f} km.
 - Tag each session as **Easy / Moderate / Hard**.
@@ -427,7 +430,9 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
 
 **Output Requirements:**
 
-- Provide a **full Week {week_number} schedule ({training_days})** with all {sessions} main sessions - all 7 days MUST be included.
+- **IMPORTANT: Always start weeks on Monday** (even if Monday is a rest day). Present the week as Monday → Sunday.
+- Provide a **full Week {week_number} schedule** with all {sessions} main sessions - all 7 days (Monday through Sunday) MUST be included.
+- For rest days, simply state: "**Monday: Rest Day**" (or whichever day is the rest day).
 - Give **explicit detail**: sets, reps, distances, paces, HR zones, and rests.
 - Mark each session as **Easy / Moderate / Hard**.
 - Specify **expected km per run session** so weekly total ≈ {deload_km:.0f} km.
