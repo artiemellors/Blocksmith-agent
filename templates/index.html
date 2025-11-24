@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blocksmith - Training Block Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏋️ Blocksmith</h1>
+            <p class="subtitle">Automated HYROX Training Block Generator</p>
+        </header>
+
+        <div id="form-container" class="form-section">
+            <form id="config-form">
+                <!-- Athlete Information -->
+                <section class="form-section">
+                    <h2>Athlete Information</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Name *</label>
+                            <input type="text" id="name" name="name" required placeholder="Your Name">
+                        </div>
+                        <div class="form-group">
+                            <label for="age">Age *</label>
+                            <input type="number" id="age" name="age" required min="18" max="100" placeholder="35">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Physiological Parameters -->
+                <section class="form-section">
+                    <h2>Physiological Parameters</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hr_max">Max Heart Rate (HR Max) *</label>
+                            <input type="number" id="hr_max" name="hr_max" required min="120" max="220" placeholder="188">
+                            <small>Your maximum heart rate in beats per minute</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="threshold_t1_pace">T1 Threshold Pace (mm:ss per km) *</label>
+                            <input type="text" id="threshold_t1_pace" name="threshold_t1_pace" required
+                                   pattern="\d{1,2}:\d{2}" placeholder="4:37">
+                            <small>Pace you can hold for 45-60 minutes (e.g., 4:37)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="threshold_t2_pace">T2 Threshold Pace (mm:ss per km) *</label>
+                            <input type="text" id="threshold_t2_pace" name="threshold_t2_pace" required
+                                   pattern="\d{1,2}:\d{2}" placeholder="4:17">
+                            <small>Pace you can hold for 20-30 minutes (e.g., 4:17)</small>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Injury Information -->
+                <section class="form-section">
+                    <h2>Injury Information (Optional)</h2>
+                    <div class="form-group">
+                        <label for="active_injuries">Active Injuries</label>
+                        <input type="text" id="active_injuries" name="active_injuries"
+                               placeholder="e.g., knee pain, shoulder soreness (comma-separated)">
+                        <small>List any current injuries or niggles</small>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pain_threshold_during">Pain Threshold During (0-10)</label>
+                            <input type="number" id="pain_threshold_during" name="pain_threshold_during"
+                                   value="2" min="0" max="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="pain_threshold_next_day">Pain Threshold Next Day (0-10)</label>
+                            <input type="number" id="pain_threshold_next_day" name="pain_threshold_next_day"
+                                   value="3" min="0" max="10">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="soreness_cutoff_hours">Soreness Cutoff (hours)</label>
+                            <input type="number" id="soreness_cutoff_hours" name="soreness_cutoff_hours"
+                                   value="36" min="12" max="72">
+                        </div>
+                        <div class="form-group">
+                            <label for="volume_reduction_percent">Volume Reduction (%)</label>
+                            <input type="number" id="volume_reduction_percent" name="volume_reduction_percent"
+                                   value="25" min="10" max="50">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Training Week Structure -->
+                <section class="form-section">
+                    <h2>Training Week Structure</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="rest_days">Rest Days *</label>
+                            <input type="text" id="rest_days" name="rest_days" required value="Monday"
+                                   placeholder="Monday, Wednesday">
+                            <small>Which day(s) to rest (comma-separated)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="total_sessions_per_week">Total Sessions Per Week *</label>
+                            <input type="number" id="total_sessions_per_week" name="total_sessions_per_week"
+                                   required value="8" min="3" max="14">
+                            <small>Total training sessions per week</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="double_days">Double Days</label>
+                            <input type="text" id="double_days" name="double_days"
+                                   value="Wednesday, Saturday" placeholder="Wednesday, Saturday">
+                            <small>Days with AM + PM sessions (comma-separated)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="runs_per_week">Runs Per Week *</label>
+                            <input type="number" id="runs_per_week" name="runs_per_week"
+                                   required value="4" min="1" max="7">
+                            <small>How many sessions are runs</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="long_run_day">Long Run Day *</label>
+                            <input type="text" id="long_run_day" name="long_run_day"
+                                   required value="Sunday" placeholder="Sunday">
+                            <small>Which day has your long run</small>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Block Objectives -->
+                <section class="form-section">
+                    <h2>Block Objectives</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="primary_goal">Primary Goal *</label>
+                            <input type="text" id="primary_goal" name="primary_goal" required value="BUILD"
+                                   placeholder="BUILD, PEAK, Base building">
+                            <small>What's your goal? (BUILD, PEAK, Base building, etc.)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="running_mileage_week1">Starting Weekly Mileage (km) *</label>
+                            <input type="number" id="running_mileage_week1" name="running_mileage_week1"
+                                   required value="40" min="10" max="150" step="5">
+                            <small>Starting weekly running kilometers</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="weekly_progression_percent">Weekly Progression (%)</label>
+                            <input type="number" id="weekly_progression_percent" name="weekly_progression_percent"
+                                   value="10" min="5" max="20">
+                            <small>Percentage increase each week</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="block_duration_weeks">Block Duration (weeks)</label>
+                            <input type="number" id="block_duration_weeks" name="block_duration_weeks"
+                                   value="4" min="2" max="8">
+                            <small>How many weeks before deload?</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="deload_week">Include Deload Week?</label>
+                            <select id="deload_week" name="deload_week">
+                                <option value="yes" selected>Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="specific_focus_areas">Specific Focus Areas</label>
+                            <input type="text" id="specific_focus_areas" name="specific_focus_areas"
+                                   placeholder="e.g., threshold running, sled work, wall balls">
+                            <small>2-4 areas to emphasize (comma-separated)</small>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Additional Context -->
+                <section class="form-section">
+                    <h2>Additional Context (Optional)</h2>
+                    <div class="form-group">
+                        <label for="additional_context">Special Instructions</label>
+                        <textarea id="additional_context" name="additional_context" rows="4"
+                                  placeholder="Any special instructions or context for this training block..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="previous_block">Previous Training Block (Optional)</label>
+                        <textarea id="previous_block" name="previous_block_content" rows="6"
+                                  placeholder="Paste your previous training block here to maintain continuity..."></textarea>
+                        <small>Including your previous block helps maintain progression</small>
+                    </div>
+                </section>
+
+                <!-- Submit Button -->
+                <div class="form-actions">
+                    <button type="submit" id="generate-btn" class="btn-primary">
+                        Generate Training Block
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Progress Section (hidden initially) -->
+        <div id="progress-container" class="progress-section" style="display: none;">
+            <h2>Generating Your Training Block</h2>
+            <div class="progress-bar-container">
+                <div id="progress-bar" class="progress-bar" style="width: 0%;">
+                    <span id="progress-text">0%</span>
+                </div>
+            </div>
+            <p id="progress-message" class="progress-message">Initializing...</p>
+            <div id="error-message" class="error-message" style="display: none;"></div>
+        </div>
+
+        <!-- Success Section (hidden initially) -->
+        <div id="success-container" class="success-section" style="display: none;">
+            <h2>✅ Training Block Generated Successfully!</h2>
+            <p>Your training block is ready to download.</p>
+            <div class="form-actions">
+                <button id="download-btn" class="btn-primary">
+                    Download Training Block
+                </button>
+                <button id="new-block-btn" class="btn-secondary">
+                    Generate Another Block
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

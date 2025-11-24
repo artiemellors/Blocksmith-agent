@@ -23,10 +23,31 @@ Then run a single command to generate a complete, detailed training block that i
 - Intensity audits and mileage tracking
 - HYROX race-specific training with proper fatigue management
 
+## Two Ways to Use Blocksmith
+
+### 🌐 Web Interface (Easy - No Command Line!)
+
+Point-and-click interface with visual form and progress tracking:
+
+```bash
+python3 app.py  # or python app.py on Windows
+```
+
+Then open `http://127.0.0.1:5000` in your browser.
+
+**See [WEB_INTERFACE.md](WEB_INTERFACE.md) for the complete web interface guide.**
+
+### 💻 Command Line Interface (Advanced)
+
+Powerful CLI for automation and scripting. See [Quick Start](#quick-start) below.
+
+---
+
 ## Features
 
+- **Web Interface**: User-friendly form with real-time progress tracking and validation
 - **Layered Generation**: Uses 11+ interconnected prompts to build progressively detailed training plans
-- **Configurable**: Simple YAML configuration for athlete profile, objectives, and constraints
+- **Configurable**: Simple text or YAML configuration for athlete profile, objectives, and constraints
 - **Previous Block Context**: Builds on your last training block for continuity
 - **Injury Management**: Respects pain thresholds and provides substitutions
 - **Full Traceability**: Saves intermediate layer outputs for review

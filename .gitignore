@@ -41,6 +41,7 @@ output/
 !README.md
 !USAGE.md
 !SETUP_GUIDE.md
+!WEB_INTERFACE.md
 
 # User config files
 *.txt
