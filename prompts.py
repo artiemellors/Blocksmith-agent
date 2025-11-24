@@ -22,7 +22,7 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
 
 **Training Week Structure:**
 
-- Training days: {athlete_profile.week_structure.get_training_days_range()} ({athlete_profile.week_structure.rest_day} = rest)
+- Training days: {athlete_profile.week_structure.get_training_days_range()} ({athlete_profile.week_structure.rest_days} = rest)
 - Main sessions: {athlete_profile.week_structure.main_sessions_per_week} total per week (includes {athlete_profile.week_structure.get_num_double_days()} double-days)
 - Running sessions: {athlete_profile.week_structure.runs_per_week} runs per week
 - Session time budgets: {athlete_profile.week_structure.weekday_session_time_min}–{athlete_profile.week_structure.weekday_session_time_max} min weekdays; {athlete_profile.week_structure.weekend_session_time_min}–{athlete_profile.week_structure.weekend_session_time_max} min weekends
