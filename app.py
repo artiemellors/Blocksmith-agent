@@ -88,7 +88,7 @@ def generate_block_async(session_id: str, input_data: TrainingBlockInput, api_ke
             'status': 'complete',
             'progress': 100,
             'message': 'Training block generated successfully!',
-            'output_file': f'{output_dir}/complete_training_block.md',
+            'output_file': f'{output_dir}/BLOCK_SUMMARY.md',
             'timestamp': datetime.now().isoformat()
         })
 
@@ -273,7 +273,7 @@ def download_file(session_id):
     return send_file(
         output_file,
         as_attachment=True,
-        download_name='training_block.md',
+        download_name='BLOCK_SUMMARY.md',
         mimetype='text/markdown'
     )
 
