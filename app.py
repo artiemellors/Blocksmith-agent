@@ -8,6 +8,7 @@ import json
 import time
 import zipfile
 import io
+import re
 from pathlib import Path
 from datetime import datetime
 from threading import Thread
@@ -35,6 +36,54 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', 'blocksmith-dev-key-change-in-pro
 
 # Store generation progress in memory (use Redis in production)
 generation_status = {}
+
+
+def parse_block_summary(summary_path):
+    """Parse BLOCK_SUMMARY.md and extract structured data"""
+    with open(summary_path, 'r') as f:
+        content = f.read()
+
+    data = {}
+
+    # Extract phase from title (e.g., "BUILD Phase", "PEAK Phase")
+    phase_match = re.search(r'Training Block - (\w+) Phase', content)
+    data['phase'] = phase_match.group(1) if phase_match else 'BUILD'
+
+    # Extract duration
+    duration_match = re.search(r'\*\*Duration:\*\* (.+)', content)
+    data['duration'] = duration_match.group(1) if duration_match else '4 weeks'
+
+    # Extract starting mileage
+    mileage_match = re.search(r'\*\*Starting Mileage:\*\* (\d+)', content)
+    data['starting_mileage'] = int(mileage_match.group(1)) if mileage_match else 30
+
+    # Extract focus areas
+    focus_match = re.search(r'\*\*Focus Areas:\*\* (.+)', content)
+    data['focus_areas'] = focus_match.group(1) if focus_match else 'General fitness'
+
+    # Extract weeks
+    weeks = []
+    week_pattern = r'### Week (\d+) \((\w+)\).*?\*\*Target Mileage:\*\* ~([\d.]+) km.*?\*\*Sessions:\*\* (\d+)'
+
+    for match in re.finditer(week_pattern, content, re.DOTALL):
+        weeks.append({
+            'num': int(match.group(1)),
+            'type': match.group(2),
+            'mileage': round(float(match.group(3))),
+            'sessions': int(match.group(4))
+        })
+
+    data['weeks'] = weeks
+
+    # Calculate mileage range for display
+    if weeks:
+        min_mileage = min(w['mileage'] for w in weeks)
+        max_mileage = max(w['mileage'] for w in weeks)
+        data['mileage_range'] = f"{min_mileage}-{max_mileage}" if min_mileage != max_mileage else str(min_mileage)
+    else:
+        data['mileage_range'] = "30-36"
+
+    return data
 
 
 def generate_block_async(session_id: str, input_data: TrainingBlockInput, api_key: str, output_dir: str):
@@ -310,10 +359,89 @@ def get_status(session_id):
         }), 500
 
 
+@app.route('/success/<generation_id>')
+def success(generation_id):
+    """Render the success page with parsed block data."""
+    try:
+        # Parse the block summary
+        summary_path = f'output/web_generations/{generation_id}/BLOCK_SUMMARY.md'
+
+        if not os.path.exists(summary_path):
+            return "Training block not found", 404
+
+        block_data = parse_block_summary(summary_path)
+
+        return render_template('success.html',
+                             generation_id=generation_id,
+                             block=block_data)
+    except Exception as e:
+        return f"Error loading training block: {str(e)}", 500
+
+
+@app.route('/download/<generation_id>')
+def download_by_id(generation_id):
+    """
+    Download the generated training block as a ZIP file by generation ID.
+    """
+    try:
+        output_dir = f'output/web_generations/{generation_id}'
+        output_path = Path(output_dir)
+
+        if not output_path.exists():
+            return jsonify({
+                'success': False,
+                'error': 'Training block not found'
+            }), 404
+
+        # Collect files to zip
+        files_to_zip = []
+
+        # Add BLOCK_SUMMARY.md
+        if output_path.joinpath('BLOCK_SUMMARY.md').exists():
+            files_to_zip.append(('BLOCK_SUMMARY.md', str(output_path / 'BLOCK_SUMMARY.md')))
+
+        # Add all complete week files (layer_7 onwards)
+        for layer_file in sorted(output_path.glob('layer_[7-9]*.md')):
+            files_to_zip.append((layer_file.name, str(layer_file)))
+        for layer_file in sorted(output_path.glob('layer_1[0-9]*.md')):
+            files_to_zip.append((layer_file.name, str(layer_file)))
+
+        if not files_to_zip:
+            return jsonify({
+                'success': False,
+                'error': 'No files found to download'
+            }), 404
+
+        # Create ZIP file in memory
+        memory_file = io.BytesIO()
+        with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for filename, filepath in files_to_zip:
+                if os.path.exists(filepath):
+                    zf.write(filepath, filename)
+
+        memory_file.seek(0)
+
+        # Generate download filename with date
+        download_name = f'training_block_{datetime.now().strftime("%Y%m%d")}.zip'
+
+        return send_file(
+            memory_file,
+            as_attachment=True,
+            download_name=download_name,
+            mimetype='application/zip'
+        )
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
 @app.route('/api/download/<session_id>')
 def download_file(session_id):
     """
     Download the generated training block as a ZIP file with all relevant files.
+    (Legacy API endpoint for backward compatibility)
     """
     if session_id not in generation_status:
         return jsonify({

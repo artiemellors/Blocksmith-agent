@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Block Ready - Blocksmith</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 36px;
+            color: #2563eb;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .logo-icon {
+            font-size: 40px;
+            margin-right: 8px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .success-hero {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 32px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .success-title {
+            font-size: 32px;
+            color: #10b981;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .success-subtitle {
+            color: #6b7280;
+            font-size: 18px;
+        }
+
+        .block-card {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 32px;
+            margin: 32px auto;
+            max-width: 600px;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+        }
+
+        .block-card h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .block-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        .focus-area {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        .section {
+            margin: 48px 0;
+        }
+
+        .section-header {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .weeks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .week-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .week-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+            border-color: #2563eb;
+        }
+
+        .week-card.deload {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-color: #10b981;
+        }
+
+        .week-number {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .week-type {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 8px 0 16px 0;
+        }
+
+        .week-card.deload .week-type {
+            color: #10b981;
+        }
+
+        .week-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 16px;
+        }
+
+        .included-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .included-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: start;
+            gap: 12px;
+        }
+
+        .included-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .included-text {
+            color: #4b5563;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .download-section {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #2563eb;
+            border: 2px solid #2563eb;
+        }
+
+        .btn-secondary:hover {
+            background: #eff6ff;
+        }
+
+        .download-note {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .block-stats {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .weeks-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <span class="logo-icon">🏋️</span>Blocksmith
+            </div>
+            <div class="subtitle">Automated HYROX Training Block Generator</div>
+        </div>
+
+        <div class="success-hero">
+            <div class="success-icon">✅</div>
+            <h1 class="success-title">Training Block Generated Successfully!</h1>
+            <p class="success-subtitle">Your personalized training plan is ready to download</p>
+
+            <div class="block-card">
+                <h2>🏋️ {{ block.phase }} Phase</h2>
+                <div class="block-stats">
+                    <div class="stat">
+                        <span class="stat-value">{{ block.weeks|length }}</span>
+                        <span class="stat-label">Weeks</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">{{ block.mileage_range }}</span>
+                        <span class="stat-label">km/week</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">{{ block.weeks[0].sessions if block.weeks else 6 }}</span>
+                        <span class="stat-label">Sessions/week</span>
+                    </div>
+                </div>
+                <div class="focus-area">
+                    <strong>Focus Areas:</strong> {{ block.focus_areas }}
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-header">
+                📅 Your Training Weeks
+            </h2>
+            <div class="weeks-grid">
+                {% for week in block.weeks %}
+                <div class="week-card {% if week.type == 'Deload' %}deload{% endif %}">
+                    <div class="week-number">Week {{ week.num }}</div>
+                    <div class="week-type">{{ week.type }}</div>
+                    <div class="week-metrics">
+                        <div class="metric-row">
+                            <span class="metric-label">Mileage</span>
+                            <span class="metric-value">{{ week.mileage }} km</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Sessions</span>
+                            <span class="metric-value">{{ week.sessions }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-header">
+                📦 What's Included
+            </h2>
+            <div class="included-grid">
+                <div class="included-item">
+                    <span class="included-icon">✓</span>
+                    <span class="included-text">{{ block.weeks|length }} complete weekly plans with daily workouts</span>
+                </div>
+                <div class="included-item">
+                    <span class="included-icon">✓</span>
+                    <span class="included-text">Progressive running sessions ({{ block.mileage_range }}km/week)</span>
+                </div>
+                <div class="included-item">
+                    <span class="included-icon">✓</span>
+                    <span class="included-text">Strength & conditioning programs</span>
+                </div>
+                <div class="included-item">
+                    <span class="included-icon">✓</span>
+                    <span class="included-text">HYROX-specific station work</span>
+                </div>
+                <div class="included-item">
+                    <span class="included-icon">✓</span>
+                    <span class="included-text">Recovery protocols & injury management</span>
+                </div>
+                <div class="included-item">
+                    <span class="included-icon">✓</span>
+                    <span class="included-text">Intensity monitoring guidelines</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="download-section">
+            <h2 style="font-size: 28px; margin-bottom: 16px;">Ready to Start Training?</h2>
+            <p style="color: #6b7280; margin-bottom: 24px;">Download your complete training block and begin your journey</p>
+
+            <div class="button-group">
+                <a href="/download/{{ generation_id }}" class="btn btn-primary">
+                    📥 Download Training Block (ZIP)
+                </a>
+                <a href="/" class="btn btn-secondary">
+                    🔄 Generate Another Block
+                </a>
+            </div>
+
+            <p class="download-note">
+                The ZIP file contains your BLOCK_SUMMARY.md and all individual week files
+            </p>
+        </div>
+    </div>
+</body>
+</html>
