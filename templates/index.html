@@ -221,14 +221,26 @@
         <div id="success-container" class="success-section" style="display: none;">
             <h2>✅ Training Block Generated Successfully!</h2>
             <p>Your training block is ready to download.</p>
+
+            <!-- Block Summary Preview -->
+            <div id="summary-preview" class="summary-preview">
+                <h3>📋 Block Summary Preview</h3>
+                <div id="summary-content" class="summary-content">
+                    <!-- Summary content will be inserted here by JavaScript -->
+                </div>
+            </div>
+
             <div class="form-actions">
                 <button id="download-btn" class="btn-primary">
-                    Download Training Block
+                    📦 Download Training Block (ZIP)
                 </button>
                 <button id="new-block-btn" class="btn-secondary">
                     Generate Another Block
                 </button>
             </div>
+            <p class="download-info">
+                <small>The ZIP file contains your BLOCK_SUMMARY.md and all individual week files.</small>
+            </p>
         </div>
     </div>
 

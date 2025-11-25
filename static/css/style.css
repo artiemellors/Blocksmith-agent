@@ -236,6 +236,53 @@ textarea {
     margin-bottom: 15px;
 }
 
+/* Summary Preview */
+.summary-preview {
+    background: var(--background);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 25px 0;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.summary-preview h3 {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.summary-content {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    overflow-x: auto;
+}
+
+.summary-content pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: inherit;
+}
+
+.download-info {
+    text-align: center;
+    margin-top: 15px;
+    color: var(--text-secondary);
+}
+
+.download-info small {
+    font-size: 0.9rem;
+}
+
 /* Loading animation */
 @keyframes pulse {
     0%, 100% {

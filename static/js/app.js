@@ -2,6 +2,7 @@
 
 let currentSessionId = null;
 let progressInterval = null;
+let currentStatus = null; // Store the full status for access in download
 
 // DOM Elements
 const formContainer = document.getElementById('form-container');
@@ -15,6 +16,7 @@ const progressMessage = document.getElementById('progress-message');
 const errorMessage = document.getElementById('error-message');
 const downloadBtn = document.getElementById('download-btn');
 const newBlockBtn = document.getElementById('new-block-btn');
+const summaryContent = document.getElementById('summary-content');
 
 // Form submission handler
 configForm.addEventListener('submit', async (e) => {
@@ -83,7 +85,8 @@ function startProgressPolling() {
             // Check if complete
             if (result.status === 'complete') {
                 clearInterval(progressInterval);
-                showSuccess();
+                currentStatus = result; // Store the full status
+                showSuccess(result);
             } else if (result.status === 'error') {
                 clearInterval(progressInterval);
                 showError(result.error || 'Generation failed');
@@ -105,9 +108,22 @@ function updateProgress(percent, message) {
 }
 
 // Show success screen
-function showSuccess() {
+function showSuccess(result) {
     progressContainer.style.display = 'none';
     successContainer.style.display = 'block';
+
+    // Display the block summary if available
+    if (result && result.summary_content) {
+        // Convert markdown to HTML (simple version - just preserve formatting)
+        const formattedContent = result.summary_content
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\n/g, '<br>');
+
+        summaryContent.innerHTML = `<pre>${formattedContent}</pre>`;
+    } else {
+        summaryContent.innerHTML = '<p>Summary not available.</p>';
+    }
 }
 
 // Show error message
@@ -121,7 +137,7 @@ function showError(message) {
 downloadBtn.addEventListener('click', async () => {
     try {
         downloadBtn.disabled = true;
-        downloadBtn.textContent = 'Downloading...';
+        downloadBtn.textContent = '📦 Downloading...';
 
         // Download the file
         const response = await fetch(`/api/download/${currentSessionId}`);
@@ -136,20 +152,20 @@ downloadBtn.addEventListener('click', async () => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `training_block_${new Date().toISOString().split('T')[0]}.md`;
+        a.download = `training_block_${new Date().toISOString().split('T')[0]}.zip`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
         downloadBtn.disabled = false;
-        downloadBtn.textContent = 'Download Training Block';
+        downloadBtn.textContent = '📦 Download Training Block (ZIP)';
 
     } catch (error) {
         console.error('Download error:', error);
         alert(`Download failed: ${error.message}`);
         downloadBtn.disabled = false;
-        downloadBtn.textContent = 'Download Training Block';
+        downloadBtn.textContent = '📦 Download Training Block (ZIP)';
     }
 });
 
@@ -157,6 +173,7 @@ downloadBtn.addEventListener('click', async () => {
 newBlockBtn.addEventListener('click', () => {
     // Reset everything
     currentSessionId = null;
+    currentStatus = null;
     if (progressInterval) {
         clearInterval(progressInterval);
         progressInterval = null;
@@ -172,6 +189,9 @@ newBlockBtn.addEventListener('click', () => {
     progressText.textContent = '0%';
     progressMessage.textContent = 'Initializing...';
     errorMessage.style.display = 'none';
+
+    // Clear summary
+    summaryContent.innerHTML = '';
 
     // Re-enable button
     generateBtn.disabled = false;

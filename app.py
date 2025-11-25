@@ -6,6 +6,8 @@ Flask application for generating training blocks via web form.
 import os
 import json
 import time
+import zipfile
+import io
 from pathlib import Path
 from datetime import datetime
 from threading import Thread
@@ -83,12 +85,36 @@ def generate_block_async(session_id: str, input_data: TrainingBlockInput, api_ke
         final_block = generator.generate_complete_block(input_data)
         generator.save_summary()
 
+        # Read the block summary content for preview
+        summary_file = f'{output_dir}/BLOCK_SUMMARY.md'
+        summary_content = ""
+        if os.path.exists(summary_file):
+            with open(summary_file, 'r') as f:
+                summary_content = f.read()
+
+        # Collect all relevant files for ZIP download
+        output_path = Path(output_dir)
+        files_to_zip = []
+
+        # Add BLOCK_SUMMARY.md
+        if output_path.joinpath('BLOCK_SUMMARY.md').exists():
+            files_to_zip.append(('BLOCK_SUMMARY.md', output_path / 'BLOCK_SUMMARY.md'))
+
+        # Add all complete week files (layer_7 onwards)
+        for layer_file in sorted(output_path.glob('layer_[7-9]*.md')):
+            files_to_zip.append((layer_file.name, layer_file))
+        for layer_file in sorted(output_path.glob('layer_1[0-9]*.md')):
+            files_to_zip.append((layer_file.name, layer_file))
+
         # Mark as complete
         generation_status[session_id].update({
             'status': 'complete',
             'progress': 100,
             'message': 'Training block generated successfully!',
-            'output_file': f'{output_dir}/BLOCK_SUMMARY.md',
+            'output_file': summary_file,
+            'output_dir': output_dir,
+            'summary_content': summary_content,
+            'files_to_zip': files_to_zip,
             'timestamp': datetime.now().isoformat()
         })
 
@@ -248,7 +274,7 @@ def get_status(session_id):
 @app.route('/api/download/<session_id>')
 def download_file(session_id):
     """
-    Download the generated training block markdown file.
+    Download the generated training block as a ZIP file with all relevant files.
     """
     if session_id not in generation_status:
         return jsonify({
@@ -263,18 +289,30 @@ def download_file(session_id):
             'error': 'Generation not complete'
         }), 400
 
-    output_file = status.get('output_file')
-    if not output_file or not os.path.exists(output_file):
+    files_to_zip = status.get('files_to_zip', [])
+    if not files_to_zip:
         return jsonify({
             'success': False,
-            'error': 'Output file not found'
+            'error': 'No files found to download'
         }), 404
 
+    # Create ZIP file in memory
+    memory_file = io.BytesIO()
+    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for filename, filepath in files_to_zip:
+            if os.path.exists(filepath):
+                zf.write(filepath, filename)
+
+    memory_file.seek(0)
+
+    # Generate download filename with date
+    download_name = f'training_block_{datetime.now().strftime("%Y%m%d")}.zip'
+
     return send_file(
-        output_file,
+        memory_file,
         as_attachment=True,
-        download_name='BLOCK_SUMMARY.md',
-        mimetype='text/markdown'
+        download_name=download_name,
+        mimetype='application/zip'
     )
 
 

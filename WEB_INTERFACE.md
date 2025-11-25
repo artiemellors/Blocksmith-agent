@@ -99,10 +99,26 @@ The web interface provides an easy-to-use form with the following sections:
 
 4. **Download your block**
    - When complete, a success message appears
-   - Click "Download Training Block" to get your markdown file
+   - **Preview your block summary** directly in the browser
+   - Click "📦 Download Training Block (ZIP)" to get all files
+   - The ZIP contains:
+     - `BLOCK_SUMMARY.md` - Overview of your training block
+     - `layer_7_-_week_1.md` - Complete Week 1
+     - `layer_8_-_week_2.md` - Complete Week 2
+     - And all subsequent week files
    - Click "Generate Another Block" to create a new one
 
 ## Features
+
+### Block Summary Preview
+
+After generation completes, you can:
+- **Preview the full BLOCK_SUMMARY** directly in your browser
+- Read through the overview before downloading
+- See all weeks and their target mileages
+- Review the training structure
+
+No need to download first - see what you're getting!
 
 ### Real-Time Progress Tracking
 
@@ -110,6 +126,13 @@ The interface polls the server every second to show:
 - Progress percentage (0-100%)
 - Current layer being generated
 - Estimated completion status
+
+### ZIP Download with All Files
+
+Downloads include:
+- **BLOCK_SUMMARY.md** - Complete overview of the training block
+- **Individual week files** - One markdown file per week with full session details
+- All files organized and ready to use
 
 ### Automatic Validation
 
