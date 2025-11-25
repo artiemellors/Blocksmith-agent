@@ -199,11 +199,64 @@ function startProgressPolling() {
     }, 1000); // Poll every second
 }
 
+// Map technical layer names to user-friendly messages
+function getUserFriendlyMessage(layerName) {
+    const messageMap = {
+        'Layer 0': '📋 Setting up your training framework...',
+        'Layer 1': '🏗️ Building Week 1 structure...',
+        'Layer 2': '🏃 Designing your running sessions...',
+        'Layer 3': '💪 Programming max strength work...',
+        'Layer 4': '🔥 Crafting strength endurance sessions...',
+        'Layer 5': '⚡ Creating HYROX combo workouts...',
+        'Layer 6': '🌊 Planning recovery and aerobic work...',
+        'Layer 7': '✨ Completing Week 1: Building your base...',
+        'Layer 8': '📈 Building Week 2: Adding volume...',
+        'Layer 9': '🎯 Building Week 3: Increasing intensity...',
+        'Layer 10': '🚀 Building Week 4: Peak volume...',
+        'Layer 11': '😌 Planning your deload week...',
+        'Layer 12': '🏆 Finalizing your training block...',
+    };
+
+    // Check for exact match first
+    if (messageMap[layerName]) {
+        return messageMap[layerName];
+    }
+
+    // Handle week-specific layers (e.g., "Layer 8 - Week 2")
+    const weekMatch = layerName.match(/Layer (\d+)/);
+    if (weekMatch) {
+        const layerNum = parseInt(weekMatch[1]);
+        if (layerNum >= 7 && layerNum <= 10) {
+            const weekNum = layerNum - 6;
+            const weekMessages = {
+                1: '✨ Completing Week 1: Building your base...',
+                2: '📈 Building Week 2: Adding volume...',
+                3: '🎯 Building Week 3: Increasing intensity...',
+                4: '🚀 Building Week 4: Peak volume...'
+            };
+            return weekMessages[weekNum] || `Building Week ${weekNum}...`;
+        } else if (layerNum === 11) {
+            return '😌 Planning your deload week...';
+        }
+    }
+
+    // Check if it contains "deload" (case insensitive)
+    if (layerName.toLowerCase().includes('deload')) {
+        return '😌 Planning your deload week...';
+    }
+
+    // Default fallback
+    return layerName;
+}
+
 // Update progress bar
 function updateProgress(percent, message) {
     progressBar.style.width = `${percent}%`;
     progressText.textContent = `${percent}%`;
-    progressMessage.textContent = message || 'Processing...';
+
+    // Convert technical message to user-friendly
+    const friendlyMessage = getUserFriendlyMessage(message || 'Processing...');
+    progressMessage.textContent = friendlyMessage;
 }
 
 // Show success screen
