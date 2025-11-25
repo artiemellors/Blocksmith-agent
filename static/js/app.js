@@ -73,6 +73,13 @@ function startProgressPolling() {
     progressInterval = setInterval(async () => {
         try {
             const response = await fetch(`/api/status/${currentSessionId}`);
+
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Server returned an error. Check the console for details.');
+            }
+
             const result = await response.json();
 
             if (!result.success) {

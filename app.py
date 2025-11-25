@@ -98,15 +98,15 @@ def generate_block_async(session_id: str, input_data: TrainingBlockInput, api_ke
 
         # Add BLOCK_SUMMARY.md
         if output_path.joinpath('BLOCK_SUMMARY.md').exists():
-            files_to_zip.append(('BLOCK_SUMMARY.md', output_path / 'BLOCK_SUMMARY.md'))
+            files_to_zip.append(('BLOCK_SUMMARY.md', str(output_path / 'BLOCK_SUMMARY.md')))
 
         # Add all complete week files (layer_7 onwards)
         for layer_file in sorted(output_path.glob('layer_[7-9]*.md')):
-            files_to_zip.append((layer_file.name, layer_file))
+            files_to_zip.append((layer_file.name, str(layer_file)))
         for layer_file in sorted(output_path.glob('layer_1[0-9]*.md')):
-            files_to_zip.append((layer_file.name, layer_file))
+            files_to_zip.append((layer_file.name, str(layer_file)))
 
-        # Mark as complete
+        # Mark as complete (don't include files_to_zip in status - not JSON serializable)
         generation_status[session_id].update({
             'status': 'complete',
             'progress': 100,
@@ -114,17 +114,46 @@ def generate_block_async(session_id: str, input_data: TrainingBlockInput, api_ke
             'output_file': summary_file,
             'output_dir': output_dir,
             'summary_content': summary_content,
-            'files_to_zip': files_to_zip,
+            '_files_to_zip': files_to_zip,  # Store separately, not returned in JSON
             'timestamp': datetime.now().isoformat()
         })
 
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"ERROR in generation thread: {error_details}")
+
         generation_status[session_id].update({
             'status': 'error',
             'progress': 0,
             'message': 'Generation failed',
             'error': str(e)
         })
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    """Handle internal server errors for API routes."""
+    if request.path.startswith('/api/'):
+        return jsonify({
+            'success': False,
+            'error': 'Internal server error'
+        }), 500
+    return error
+
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """Handle all unhandled exceptions."""
+    import traceback
+    print(f"Unhandled exception: {traceback.format_exc()}")
+
+    if request.path.startswith('/api/'):
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+    raise e
 
 
 @app.route('/')
@@ -259,16 +288,26 @@ def get_status(session_id):
 
     Returns progress, status, and any error messages.
     """
-    if session_id not in generation_status:
+    try:
+        if session_id not in generation_status:
+            return jsonify({
+                'success': False,
+                'error': 'Session not found'
+            }), 404
+
+        # Return status but exclude internal fields that aren't JSON serializable
+        status = generation_status[session_id].copy()
+        status.pop('_files_to_zip', None)  # Remove internal field
+
+        return jsonify({
+            'success': True,
+            **status
+        })
+    except Exception as e:
         return jsonify({
             'success': False,
-            'error': 'Session not found'
-        }), 404
-
-    return jsonify({
-        'success': True,
-        **generation_status[session_id]
-    })
+            'error': f'Error getting status: {str(e)}'
+        }), 500
 
 
 @app.route('/api/download/<session_id>')
@@ -289,7 +328,7 @@ def download_file(session_id):
             'error': 'Generation not complete'
         }), 400
 
-    files_to_zip = status.get('files_to_zip', [])
+    files_to_zip = status.get('_files_to_zip', [])
     if not files_to_zip:
         return jsonify({
             'success': False,
