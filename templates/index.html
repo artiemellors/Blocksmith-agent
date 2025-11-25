@@ -207,13 +207,17 @@
 
         <!-- Progress Section (hidden initially) -->
         <div id="progress-container" class="progress-section" style="display: none;">
-            <h2>Generating Your Training Block</h2>
+            <h2 id="progress-heading">Generating Your Training Block</h2>
             <div class="progress-bar-container">
                 <div id="progress-bar" class="progress-bar" style="width: 0%;">
                     <span id="progress-text">0%</span>
                 </div>
             </div>
             <p id="progress-message" class="progress-message">Initializing...</p>
+
+            <!-- Humorous rotating message -->
+            <p id="humor-message" class="humor-message"></p>
+
             <div id="error-message" class="error-message" style="display: none;"></div>
         </div>
 

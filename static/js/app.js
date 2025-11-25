@@ -3,6 +3,8 @@
 let currentSessionId = null;
 let progressInterval = null;
 let currentStatus = null; // Store the full status for access in download
+let humorInterval = null;
+let currentHumorIndex = 0;
 
 // DOM Elements
 const formContainer = document.getElementById('form-container');
@@ -17,6 +19,90 @@ const errorMessage = document.getElementById('error-message');
 const downloadBtn = document.getElementById('download-btn');
 const newBlockBtn = document.getElementById('new-block-btn');
 const summaryContent = document.getElementById('summary-content');
+const humorMessage = document.getElementById('humor-message');
+
+// HYROX-themed humorous messages
+const humorMessages = [
+    "🏃 Calculating how much you'll hate the burpee broad jumps...",
+    "💪 Programming the perfect amount of suffering...",
+    "🛷 Teaching the sled to respect you (it won't)...",
+    "📊 Calculating roxzone shame levels...",
+    "⏱️ Adding just enough running to question your life choices...",
+    "💯 Programming the deload week you'll definitely skip...",
+    "🎭 Choreographing your roxzone theatre performance...",
+    "🏆 Preparing you for farmers carry humility...",
+    "🔥 Optimizing your love-hate relationship with wall balls...",
+    "⚡ Ensuring the sled push breaks your spirit (but not your legs)...",
+    "🎯 Calibrating burpee misery to acceptable levels...",
+    "🌟 Adding more running because you clearly haven't suffered enough...",
+    "💀 Programming SkiErg sessions that'll haunt your dreams...",
+    "🎪 Planning your roxzone walk of shame timing...",
+    "🏋️ Calculating exactly when you'll regret this training block...",
+    "⚠️ Warning: May cause spontaneous hatred of burpees...",
+    "🚀 Launching your fitness to places you didn't ask to go...",
+    "😅 Adding transitions so smooth you'll actually miss them (you won't)...",
+    "🎨 Painting a masterpiece of metabolic distress...",
+    "🏃‍♀️ Strategically placing running to maximize existential dread...",
+    "💪 Ensuring lunges are just the right amount of terrible...",
+    "🎲 Rolling the dice on your recovery capacity...",
+    "⏰ Timing wall balls to coincide with your will to live leaving...",
+    "🔨 Hammering out a plan that'll hammer you...",
+    "🎯 Targeting your weaknesses (spoiler: it's everything)...",
+    "🌈 Finding the silver lining in the farmers carry (there isn't one)...",
+    "📈 Graphing your suffering trajectory (it's exponential)...",
+    "🏆 Preparing motivational content for when you're crying in the roxzone...",
+    "⚡ Electrifying your training with just enough pain...",
+    "🎪 Orchestrating the greatest show on earth: you vs. the sled...",
+    "💥 Explosive power training (you'll feel the explosion tomorrow)...",
+    "🌟 Manifesting PR energy (and by PR we mean 'personal regret')...",
+    "🎭 Dramaturging your breakdown at station 5...",
+    "🏃 Planning running intervals that make you reconsider your hobby...",
+    "💪 Configuring wall ball hell in 5... 4... 3...",
+    "🛷 Calculating optimal sled drag soul-crushing coefficient...",
+    "⏱️ Synchronizing your watch with your impending doom...",
+    "🔥 Forging a training plan in the fires of Mount Doom...",
+    "📊 Generating enough volume to make CrossFitters jealous...",
+    "🎯 Precision-engineering your suffering for maximum gains...",
+];
+
+// Rotate humor messages
+function rotateHumorMessage() {
+    if (!humorMessage) return;
+
+    // Fade out
+    humorMessage.style.opacity = '0';
+
+    setTimeout(() => {
+        // Change message
+        currentHumorIndex = (currentHumorIndex + 1) % humorMessages.length;
+        humorMessage.textContent = humorMessages[currentHumorIndex];
+
+        // Fade in
+        humorMessage.style.opacity = '1';
+    }, 300); // Match CSS transition time
+}
+
+// Start humor rotation
+function startHumorRotation() {
+    // Show first message immediately
+    currentHumorIndex = Math.floor(Math.random() * humorMessages.length);
+    humorMessage.textContent = humorMessages[currentHumorIndex];
+    humorMessage.style.opacity = '1';
+
+    // Rotate every 3 seconds
+    humorInterval = setInterval(rotateHumorMessage, 3000);
+}
+
+// Stop humor rotation
+function stopHumorRotation() {
+    if (humorInterval) {
+        clearInterval(humorInterval);
+        humorInterval = null;
+    }
+    if (humorMessage) {
+        humorMessage.style.opacity = '0';
+    }
+}
 
 // Form submission handler
 configForm.addEventListener('submit', async (e) => {
@@ -56,6 +142,9 @@ configForm.addEventListener('submit', async (e) => {
         // Start polling for progress
         startProgressPolling();
 
+        // Start humor rotation
+        startHumorRotation();
+
     } catch (error) {
         console.error('Error:', error);
         alert(`Error: ${error.message}`);
@@ -92,16 +181,19 @@ function startProgressPolling() {
             // Check if complete
             if (result.status === 'complete') {
                 clearInterval(progressInterval);
+                stopHumorRotation();
                 currentStatus = result; // Store the full status
                 showSuccess(result);
             } else if (result.status === 'error') {
                 clearInterval(progressInterval);
+                stopHumorRotation();
                 showError(result.error || 'Generation failed');
             }
 
         } catch (error) {
             console.error('Error polling status:', error);
             clearInterval(progressInterval);
+            stopHumorRotation();
             showError(error.message);
         }
     }, 1000); // Poll every second
@@ -185,6 +277,7 @@ newBlockBtn.addEventListener('click', () => {
         clearInterval(progressInterval);
         progressInterval = null;
     }
+    stopHumorRotation();
 
     // Reset UI
     successContainer.style.display = 'none';
@@ -197,8 +290,9 @@ newBlockBtn.addEventListener('click', () => {
     progressMessage.textContent = 'Initializing...';
     errorMessage.style.display = 'none';
 
-    // Clear summary
+    // Clear summary and humor
     summaryContent.innerHTML = '';
+    humorMessage.textContent = '';
 
     // Re-enable button
     generateBtn.disabled = false;
