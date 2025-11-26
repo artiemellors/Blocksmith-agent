@@ -88,7 +88,7 @@ def get_layer_1_prompt(block_objectives, athlete_profile):
 **Important constraints:**
 
 - Avoid consecutive high-intensity days.
-- Long run should anchor {long_run_day} ({weekend_min}–{weekend_max} min, Zone 2).
+- **CRITICAL: The long run MUST be scheduled on {long_run_day}** ({weekend_min}–{weekend_max} min, Zone 2). This is a hard requirement.
 - HYROX Combo (Zone 4–5) occurs once this week.
 
 **Output convention:** Just provide the **skeleton schedule** — no full session details yet. Full designs come in later layers."""
@@ -123,7 +123,7 @@ For each running session, include:
 
 **Rules:**
 
-- Long run anchored on {long_run_day} ({weekend_min}–{weekend_max} min, Z2).
+- **CRITICAL: Long run MUST be on {long_run_day}** ({weekend_min}–{weekend_max} min, Z2). This is non-negotiable.
 - Easy run ≤60 min, Z2, recovery emphasis.
 - Threshold/interval runs must reference both **pace zones (T1, T2)** and **HR zones** as dials.
 - Where distance and time could be used, provide both (e.g., "6x1km at T1, ~{t1_pace}/km pace, HR Z3–4, 3 min jog rest").
@@ -278,6 +278,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential acti
 - Produce a **day-by-day Week 1 program** with **all essential session detail**.
 - Maintain **consistency with the skeleton plan from Layer 1**.
 - Ensure **weekly running volume totals ~{block_objectives.running_mileage_week1} km**.
+- **CRITICAL: The long run MUST be scheduled on {athlete_profile.week_structure.long_run_day}**. Verify this in your output.
 
 **Structure required in output:**
 
@@ -370,6 +371,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
     - Pain ≤2/10 during and ≤3/10 next day → if exceeded, cut or swap.
     - No back-to-back **hard (Z4–Z5)** sessions.
     - Running surfaces = flat/soft or track where possible.
+    - **CRITICAL: Long run MUST remain on {athlete_profile.week_structure.long_run_day}**. Do not move it to a different day.
 
 **Output Requirements:**
 
@@ -427,6 +429,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
     - No back-to-back intensity days.
     - Keep pain ≤1–2/10 during, ≤2–3/10 next day.
     - Prioritize **sleep, nutrition, and recovery habits**.
+    - **CRITICAL: Long run MUST remain on {athlete_profile.week_structure.long_run_day}** (just make it shorter/easier).
 
 **Output Requirements:**
 
