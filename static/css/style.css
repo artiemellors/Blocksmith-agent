@@ -235,8 +235,10 @@ textarea {
 
 .humor-message {
     color: #6b7280;
-    font-size: 1.15rem;
-    margin-top: 25px;
+    font-size: 18px;
+    text-align: center;
+    margin: 20px auto 0;
+    max-width: 600px;
     min-height: 30px;
     transition: opacity 0.3s ease-in-out;
     font-style: italic;

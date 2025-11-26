@@ -87,6 +87,7 @@ function startHumorRotation() {
     // Show first message immediately
     currentHumorIndex = Math.floor(Math.random() * humorMessages.length);
     humorMessage.textContent = humorMessages[currentHumorIndex];
+    humorMessage.style.display = 'block';
     humorMessage.style.opacity = '1';
 
     // Rotate every 3 seconds
@@ -101,6 +102,9 @@ function stopHumorRotation() {
     }
     if (humorMessage) {
         humorMessage.style.opacity = '0';
+        setTimeout(() => {
+            humorMessage.style.display = 'none';
+        }, 300); // Wait for fade out
     }
 }
 
