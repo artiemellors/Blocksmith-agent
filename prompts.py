@@ -66,6 +66,7 @@ def get_layer_1_prompt(block_objectives, athlete_profile):
     sessions = athlete_profile.week_structure.main_sessions_per_week
     training_days = athlete_profile.week_structure.get_training_days_range()
     long_run_day = athlete_profile.week_structure.long_run_day
+    double_days = athlete_profile.week_structure.double_days
     weekend_min = athlete_profile.week_structure.weekend_session_time_min
     weekend_max = athlete_profile.week_structure.weekend_session_time_max
 
@@ -89,6 +90,7 @@ def get_layer_1_prompt(block_objectives, athlete_profile):
 
 - Avoid consecutive high-intensity days.
 - **CRITICAL: The long run MUST be scheduled on {long_run_day}** ({weekend_min}–{weekend_max} min, Zone 2). This is a hard requirement.
+- **CRITICAL: Double days (AM + PM sessions) MUST be on {double_days}**. These are the only days that should have both Main AM and Main PM sessions. This is non-negotiable.
 - HYROX Combo (Zone 4–5) occurs once this week.
 
 **Output convention:** Just provide the **skeleton schedule** — no full session details yet. Full designs come in later layers."""
@@ -279,6 +281,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential acti
 - Maintain **consistency with the skeleton plan from Layer 1**.
 - Ensure **weekly running volume totals ~{block_objectives.running_mileage_week1} km**.
 - **CRITICAL: The long run MUST be scheduled on {athlete_profile.week_structure.long_run_day}**. Verify this in your output.
+- **CRITICAL: Double days (AM + PM) MUST be on {athlete_profile.week_structure.double_days}**. No other days should have double sessions. Verify this in your output.
 
 **Structure required in output:**
 
@@ -372,6 +375,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
     - No back-to-back **hard (Z4–Z5)** sessions.
     - Running surfaces = flat/soft or track where possible.
     - **CRITICAL: Long run MUST remain on {athlete_profile.week_structure.long_run_day}**. Do not move it to a different day.
+    - **CRITICAL: Double days (AM + PM) MUST remain on {athlete_profile.week_structure.double_days}**. Do not move them or add double days on other days.
 
 **Output Requirements:**
 
@@ -430,6 +434,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
     - Keep pain ≤1–2/10 during, ≤2–3/10 next day.
     - Prioritize **sleep, nutrition, and recovery habits**.
     - **CRITICAL: Long run MUST remain on {athlete_profile.week_structure.long_run_day}** (just make it shorter/easier).
+    - **CRITICAL: Double days (AM + PM) MUST remain on {athlete_profile.week_structure.double_days}** (just make sessions lighter/shorter).
 
 **Output Requirements:**
 
