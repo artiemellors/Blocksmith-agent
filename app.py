@@ -124,7 +124,7 @@ def generate_block_async(session_id: str, input_data: TrainingBlockInput, api_ke
             progress_pct = min(95, int((layer_count[0] / total_layers) * 100))  # Cap at 95% until complete
             generation_status[session_id].update({
                 'progress': progress_pct,
-                'message': f'Generating {layer_name}...'
+                'message': layer_name  # Send just the layer name, JS will convert to friendly message
             })
             return original_generate_layer(layer_name, prompt, context, save_output)
 
