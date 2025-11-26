@@ -261,21 +261,8 @@ function updateProgress(percent, message) {
 
 // Show success screen
 function showSuccess(result) {
-    progressContainer.style.display = 'none';
-    successContainer.style.display = 'block';
-
-    // Display the block summary if available
-    if (result && result.summary_content) {
-        // Convert markdown to HTML (simple version - just preserve formatting)
-        const formattedContent = result.summary_content
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/\n/g, '<br>');
-
-        summaryContent.innerHTML = `<pre>${formattedContent}</pre>`;
-    } else {
-        summaryContent.innerHTML = '<p>Summary not available.</p>';
-    }
+    // Redirect to the beautiful success page instead of showing inline
+    window.location.href = `/success/${currentSessionId}`;
 }
 
 // Show error message
