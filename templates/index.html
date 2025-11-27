@@ -146,77 +146,71 @@
                 </section>
 
                 <!-- Injury & Recovery Management (Optional - Collapsible) -->
-                <div class="collapsible-toggle">
-                    <div class="toggle-header" onclick="toggleSection('injury-section', 'injury-icon')">
-                        <div class="toggle-left">
-                            <span class="toggle-icon" id="injury-icon">▶</span>
-                            <div>
-                                <div class="toggle-title">Injury & Recovery Management (Optional)</div>
-                                <div class="toggle-subtitle">Customize training based on injuries and recovery needs</div>
+                <div class="section-container">
+                    <div class="collapsible-header" onclick="toggleSection('injury-content', 'injury-icon')">
+                        <div class="header-left">
+                            <span id="injury-icon" class="arrow-icon">▶</span>
+                            <span class="header-title">Injury & Recovery Management (Optional)</span>
+                        </div>
+                        <span class="header-subtitle">Customize training based on injuries and recovery needs</span>
+                    </div>
+
+                    <div id="injury-content" class="collapsible-content" style="display: none;">
+                        <div class="form-group">
+                            <label for="active_injuries">Active Injuries</label>
+                            <input type="text" id="active_injuries" name="active_injuries"
+                                   placeholder="e.g., knee pain, shoulder soreness (comma-separated)">
+                            <small>List any current injuries or niggles</small>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pain_threshold_during">Pain Threshold During (0-10)</label>
+                                <input type="number" id="pain_threshold_during" name="pain_threshold_during"
+                                       value="2" min="0" max="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="pain_threshold_next_day">Pain Threshold Next Day (0-10)</label>
+                                <input type="number" id="pain_threshold_next_day" name="pain_threshold_next_day"
+                                       value="3" min="0" max="10">
                             </div>
                         </div>
-                    </div>
-                    <div class="collapsible-content" id="injury-section" style="display: none;">
-                        <section class="form-section">
+                        <div class="form-row">
                             <div class="form-group">
-                                <label for="active_injuries">Active Injuries</label>
-                                <input type="text" id="active_injuries" name="active_injuries"
-                                       placeholder="e.g., knee pain, shoulder soreness (comma-separated)">
-                                <small>List any current injuries or niggles</small>
+                                <label for="soreness_cutoff_hours">Soreness Cutoff (hours)</label>
+                                <input type="number" id="soreness_cutoff_hours" name="soreness_cutoff_hours"
+                                       value="36" min="12" max="72">
                             </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="pain_threshold_during">Pain Threshold During (0-10)</label>
-                                    <input type="number" id="pain_threshold_during" name="pain_threshold_during"
-                                           value="2" min="0" max="10">
-                                </div>
-                                <div class="form-group">
-                                    <label for="pain_threshold_next_day">Pain Threshold Next Day (0-10)</label>
-                                    <input type="number" id="pain_threshold_next_day" name="pain_threshold_next_day"
-                                           value="3" min="0" max="10">
-                                </div>
+                            <div class="form-group">
+                                <label for="volume_reduction_percent">Volume Reduction (%)</label>
+                                <input type="number" id="volume_reduction_percent" name="volume_reduction_percent"
+                                       value="25" min="10" max="50">
                             </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="soreness_cutoff_hours">Soreness Cutoff (hours)</label>
-                                    <input type="number" id="soreness_cutoff_hours" name="soreness_cutoff_hours"
-                                           value="36" min="12" max="72">
-                                </div>
-                                <div class="form-group">
-                                    <label for="volume_reduction_percent">Volume Reduction (%)</label>
-                                    <input type="number" id="volume_reduction_percent" name="volume_reduction_percent"
-                                           value="25" min="10" max="50">
-                                </div>
-                            </div>
-                        </section>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Additional Context & History (Optional - Collapsible) -->
-                <div class="collapsible-toggle">
-                    <div class="toggle-header" onclick="toggleSection('context-section', 'context-icon')">
-                        <div class="toggle-left">
-                            <span class="toggle-icon" id="context-icon">▶</span>
-                            <div>
-                                <div class="toggle-title">Additional Context & History (Optional)</div>
-                                <div class="toggle-subtitle">Provide extra context or previous training blocks for better continuity</div>
-                            </div>
+                <div class="section-container">
+                    <div class="collapsible-header" onclick="toggleSection('context-content', 'context-icon')">
+                        <div class="header-left">
+                            <span id="context-icon" class="arrow-icon">▶</span>
+                            <span class="header-title">Additional Context & History (Optional)</span>
                         </div>
+                        <span class="header-subtitle">Provide extra context or previous training blocks for better continuity</span>
                     </div>
-                    <div class="collapsible-content" id="context-section" style="display: none;">
-                        <section class="form-section">
-                            <div class="form-group">
-                                <label for="additional_context">Special Instructions</label>
-                                <textarea id="additional_context" name="additional_context" rows="4"
-                                          placeholder="Any special instructions or context for this training block..."></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="previous_block">Previous Training Block (Optional)</label>
-                                <textarea id="previous_block" name="previous_block_content" rows="6"
-                                          placeholder="Paste your previous training block here to maintain continuity..."></textarea>
-                                <small>Including your previous block helps maintain progression</small>
-                            </div>
-                        </section>
+
+                    <div id="context-content" class="collapsible-content" style="display: none;">
+                        <div class="form-group">
+                            <label for="additional_context">Special Instructions</label>
+                            <textarea id="additional_context" name="additional_context" rows="4"
+                                      placeholder="Any special instructions or context for this training block..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="previous_block">Previous Training Block (Optional)</label>
+                            <textarea id="previous_block" name="previous_block_content" rows="6"
+                                      placeholder="Paste your previous training block here to maintain continuity..."></textarea>
+                            <small>Including your previous block helps maintain progression</small>
+                        </div>
                     </div>
                 </div>
 

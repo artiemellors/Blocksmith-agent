@@ -354,67 +354,60 @@ input:valid:not(:placeholder-shown) {
     border-color: var(--success-color);
 }
 
-/* Collapsible Toggle Styles */
-.collapsible-toggle {
-    margin-bottom: 30px;
-}
-
-.toggle-header {
-    background: var(--card-background);
-    border: 2px solid var(--border-color);
+/* Collapsible Section Styles */
+.section-container {
+    background: white;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
-    padding: 20px 24px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.collapsible-header {
     cursor: pointer;
-    transition: all 0.2s;
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 8px;
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
 }
 
-.toggle-header:hover {
-    border-color: var(--primary-color);
-    background: #f8fafc;
-    transform: translateY(-1px);
-    box-shadow: var(--shadow);
+.collapsible-header:hover {
+    background: #f3f4f6;
 }
 
-.toggle-left {
+.header-left {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
 }
 
-.toggle-icon {
+.arrow-icon {
     font-size: 14px;
-    color: var(--primary-color);
     transition: transform 0.3s;
+    color: #2563eb;
     font-weight: bold;
-    width: 16px;
-    display: inline-block;
 }
 
-.toggle-icon.expanded {
+.arrow-icon.rotated {
     transform: rotate(90deg);
 }
 
-.toggle-title {
-    font-size: 1.1rem;
+.header-title {
     font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 4px;
+    font-size: 18px;
+    color: #1f2937;
 }
 
-.toggle-subtitle {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
+.header-subtitle {
+    color: #6b7280;
+    font-size: 14px;
 }
 
 .collapsible-content {
-    overflow: hidden;
-    transition: all 0.3s ease-in-out;
-    margin-top: 16px;
-}
-
-.collapsible-content .form-section {
-    margin-bottom: 0;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
 }

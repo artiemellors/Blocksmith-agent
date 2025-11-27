@@ -445,12 +445,12 @@ function toggleSection(contentId, iconId) {
         // Expand
         content.style.display = 'block';
         icon.textContent = '▼';
-        icon.classList.add('expanded');
+        icon.classList.add('rotated');
     } else {
         // Collapse
         content.style.display = 'none';
         icon.textContent = '▶';
-        icon.classList.remove('expanded');
+        icon.classList.remove('rotated');
     }
 }
 
