@@ -353,3 +353,68 @@ input:invalid:not(:placeholder-shown) {
 input:valid:not(:placeholder-shown) {
     border-color: var(--success-color);
 }
+
+/* Collapsible Toggle Styles */
+.collapsible-toggle {
+    margin-bottom: 30px;
+}
+
+.toggle-header {
+    background: var(--card-background);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.toggle-header:hover {
+    border-color: var(--primary-color);
+    background: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.toggle-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.toggle-icon {
+    font-size: 14px;
+    color: var(--primary-color);
+    transition: transform 0.3s;
+    font-weight: bold;
+    width: 16px;
+    display: inline-block;
+}
+
+.toggle-icon.expanded {
+    transform: rotate(90deg);
+}
+
+.toggle-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.toggle-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.collapsible-content {
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
+    margin-top: 16px;
+}
+
+.collapsible-content .form-section {
+    margin-bottom: 0;
+}

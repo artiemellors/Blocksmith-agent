@@ -436,4 +436,22 @@ totalSessionsInput.addEventListener('change', () => {
     }
 });
 
+// Toggle collapsible sections
+function toggleSection(contentId, iconId) {
+    const content = document.getElementById(contentId);
+    const icon = document.getElementById(iconId);
+
+    if (content.style.display === 'none') {
+        // Expand
+        content.style.display = 'block';
+        icon.textContent = '▼';
+        icon.classList.add('expanded');
+    } else {
+        // Collapse
+        content.style.display = 'none';
+        icon.textContent = '▶';
+        icon.classList.remove('expanded');
+    }
+}
+
 console.log('Blocksmith web interface loaded');
