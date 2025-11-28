@@ -1,6 +1,7 @@
 """
 Data models for training block generation.
 """
+from dataclasses import dataclass
 from typing import Optional, Dict, List
 from pydantic import BaseModel, Field
 
@@ -114,6 +115,28 @@ class Equipment(BaseModel):
     )
 
 
+@dataclass
+class HyroxWeights:
+    """Official HYROX competition weights by category"""
+    sled_push_kg: int
+    sled_pull_kg: int
+    wall_ball_kg: int
+    wall_ball_target_m: float
+    sandbag_kg: int
+    farmers_carry_kg: tuple  # (per hand)
+
+    @staticmethod
+    def get_weights(category: str) -> 'HyroxWeights':
+        """Get official race weights for a competition category"""
+        weights_map = {
+            'men_open': HyroxWeights(152, 103, 6, 3.0, 20, (24, 24)),
+            'men_pro': HyroxWeights(202, 153, 9, 3.0, 30, (32, 32)),
+            'women_open': HyroxWeights(102, 78, 4, 2.7, 10, (16, 16)),
+            'women_pro': HyroxWeights(152, 103, 6, 2.7, 20, (24, 24)),
+        }
+        return weights_map.get(category, weights_map['men_open'])
+
+
 class InjuryInformation(BaseModel):
     """Current injury status and constraints."""
     active_injuries: List[str] = Field(default=[], description="List of active injuries")
@@ -135,7 +158,7 @@ class BlockObjectives(BaseModel):
         description="Specific areas to focus on (e.g., 'threshold running', 'sled work', 'wall balls')"
     )
     target_race_date: Optional[str] = Field(None, description="Target race date")
-    race_type: Optional[str] = Field(None, description="Race type (Open/Pro/Doubles/Doubles Pro/Mixed Relay)")
+    race_type: Optional[str] = Field(None, description="Race category (men_open, men_pro, women_open, women_pro)")
     weeks_to_race: Optional[int] = Field(None, description="Number of weeks until race")
 
 
