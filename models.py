@@ -10,6 +10,7 @@ class PhysiologicalParameters(BaseModel):
     hr_max: int = Field(..., description="Maximum heart rate in bpm")
     threshold_t1_pace: str = Field(..., description="T1 threshold pace (mm:ss/km format)")
     threshold_t2_pace: str = Field(..., description="T2 threshold pace (mm:ss/km format)")
+    vo2_max: Optional[int] = Field(None, description="VO2 max in ml/kg/min")
 
     # Heart rate zones (as percentages of HRmax)
     zone1_min: int = 60
@@ -88,15 +89,28 @@ class TrainingWeekStructure(BaseModel):
             return f"{training_days_list[0]} → {training_days_list[-1]} (with rest on {', '.join(rest_list)})"
 
 
+class PerformanceBenchmarks(BaseModel):
+    """Performance benchmarks and HYROX-specific data."""
+    last_hyrox_date: Optional[str] = Field(None, description="Date of last HYROX race")
+    last_hyrox_time: Optional[str] = Field(None, description="Last HYROX time (HH:MM:SS format)")
+    goal_hyrox_time: Optional[str] = Field(None, description="Goal HYROX time (HH:MM:SS format)")
+    races_completed: int = Field(default=0, description="Number of HYROX races completed")
+    strong_stations: List[str] = Field(default=[], description="Stations where athlete excels")
+    weak_stations: List[str] = Field(default=[], description="Stations needing improvement")
+
+
 class Equipment(BaseModel):
     """Available equipment for training."""
-    gym_equipment: List[str] = Field(
-        default=["Full HYROX setup"],
-        description="Equipment available at gym"
+    primary_location: str = Field(
+        default="Full HYROX Gym",
+        description="Primary training location"
     )
-    home_equipment: List[str] = Field(
-        default=["exercise bike", "6kg wall ball", "10kg wall ball", "20kg kettlebell", "barbell", "sandbag"],
-        description="Equipment available at home"
+    available_equipment: List[str] = Field(
+        default=[
+            "SkiErg", "Sled", "Sled Track", "Burpee Broad Jump space", "Rowing Machine",
+            "Farmers Carry handles", "Sandbag lunges space", "Wall Balls", "Full barbell setup"
+        ],
+        description="Equipment available for training"
     )
 
 
@@ -120,6 +134,9 @@ class BlockObjectives(BaseModel):
         default=[],
         description="Specific areas to focus on (e.g., 'threshold running', 'sled work', 'wall balls')"
     )
+    target_race_date: Optional[str] = Field(None, description="Target race date")
+    race_type: Optional[str] = Field(None, description="Race type (Open/Pro/Doubles/Doubles Pro/Mixed Relay)")
+    weeks_to_race: Optional[int] = Field(None, description="Number of weeks until race")
 
 
 class AthleteProfile(BaseModel):
@@ -130,6 +147,7 @@ class AthleteProfile(BaseModel):
     week_structure: TrainingWeekStructure = Field(default_factory=TrainingWeekStructure)
     equipment: Equipment = Field(default_factory=Equipment)
     injury_info: InjuryInformation = Field(default_factory=InjuryInformation)
+    performance_benchmarks: PerformanceBenchmarks = Field(default_factory=PerformanceBenchmarks)
 
 
 class TrainingBlockInput(BaseModel):
