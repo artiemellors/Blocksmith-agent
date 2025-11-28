@@ -281,6 +281,7 @@ def generate():
             weekly_progression_percent=float(data.get('weekly_progression_percent', 10)),
             block_duration_weeks=int(data.get('block_duration_weeks', 4)),
             deload_week=data.get('deload_week', 'yes').lower() in ['yes', 'true', '1'],
+            race_type=data.get('race_type'),  # Add race category
             specific_focus_areas=specific_focus_areas
         )
 
