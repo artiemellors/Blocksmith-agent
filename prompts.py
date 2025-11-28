@@ -286,9 +286,24 @@ For each strength session, include:
 - Label them clearly: *Strength Session 1 (Lower Body Max)*, *Strength Session 2 (Upper/Full Body Max)*."""
 
 
-def get_layer_4_prompt():
+def get_layer_4_prompt(hyrox_weights):
     """Layer 4 - Strength Endurance Sessions Expansion"""
-    return """Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand only the Strength Endurance sessions into full detail.
+    return f"""Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand only the Strength Endurance sessions into full detail.
+
+**Official HYROX Station Weights (Use These Exactly):**
+
+- Sled Push: {hyrox_weights.sled_push_kg}kg
+- Sled Pull: {hyrox_weights.sled_pull_kg}kg
+- Wall Balls: {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m
+- Sandbag: {hyrox_weights.sandbag_kg}kg
+- Farmers Carry: 2×{hyrox_weights.farmers_carry_kg[0]}kg
+
+**Strength Endurance Philosophy:**
+
+- ALL stations at race weight
+- Build work capacity through volume and density
+- Focus on movement efficiency and fatigue management
+- Progress by adding rounds, reducing rest, or extending work time
 
 **Objectives:**
 
@@ -304,6 +319,16 @@ For each strength endurance session, include:
 - **Purpose** (clear link to HYROX transfer).
 - **Warm-up** (mobility, activation, light machine work).
 - **Main Blocks** (2–3 blocks using EMOMs, AMRAPs, circuits, or interval pairings of cardio + functional strength). Must include at least one machine (run, ski, row, echo/bike) per block. Explicit reps/sets/duration, intensity targets (HR zone, RPE, or pace).
+
+  For EVERY station exercise, specify:
+  - Exact weight in kg (race weight)
+  - Target height for wall balls
+  - Distance or reps
+  - Rest periods
+
+  Example: "Sled Push: {hyrox_weights.sled_push_kg}kg, 40m, 90s rest"
+  Example: "Wall Balls: {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m, 20 reps"
+
 - **Cooldown** (walk, flush, mobility, breathing).
 - **Progression knob** (volume, density, load, or machine interval length).
 
@@ -321,9 +346,24 @@ For each strength endurance session, include:
 - Label clearly: *Strength Endurance Session 1 (Erg + Functional Strength)*, *Strength Endurance Session 2 (Run + HYROX Circuit)*."""
 
 
-def get_layer_5_prompt():
+def get_layer_5_prompt(hyrox_weights):
     """Layer 5 - HYROX Combo / Brick Session Expansion"""
-    return """Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand the HYROX Combo / Brick session into full detail.
+    return f"""Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand the HYROX Combo / Brick session into full detail.
+
+**Official HYROX Race Specifications:**
+
+- Sled Push: {hyrox_weights.sled_push_kg}kg, 50m in race
+- Sled Pull: {hyrox_weights.sled_pull_kg}kg, 50m in race
+- Wall Balls: {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m, 100 reps in race
+- Sandbag: {hyrox_weights.sandbag_kg}kg, 100m in race
+- Farmers Carry: 2×{hyrox_weights.farmers_carry_kg[0]}kg, 200m in race
+
+**HYROX Combo Session Philosophy:**
+
+- Race simulations at race weight
+- Train pacing, transitions, mental game
+- ALL loads at race weight
+- Build race-specific fitness and confidence
 
 **Objectives:**
 
@@ -338,6 +378,15 @@ For the HYROX Combo / Brick session, include:
 - **Purpose** (link to specific HYROX race demands).
 - **Warm-up** (run prep, machine primer, dynamic mobility).
 - **Main Blocks** (2–3 blocks combining running intervals with HYROX stations; examples: Run → Sled Push/Pull, Run → Burpee Broad Jumps, Run → Wall Balls). Explicit distances, reps, paces, heart rate targets (Zone 4–5), RPE guidance, and rest.
+
+  For EVERY station exercise, specify:
+  - Exact race weight in kg
+  - Exact race distance or reps
+  - Target height for wall balls
+
+  Example: "Run 800m → Sled Push {hyrox_weights.sled_push_kg}kg for 2×25m → 2 min rest"
+  Example: "Run 1km → Wall Balls {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m, 50 reps"
+
 - **Cooldown** (HR drop, mobility, walking, breathing drills).
 - **Progression knob** (increase run distance per station, reduce rest, add rounds, or increase station volume).
 
