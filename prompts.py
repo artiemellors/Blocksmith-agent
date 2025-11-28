@@ -499,16 +499,40 @@ Mark the intensity balance as ✅ (on target), ⚠️ (slightly off), or ❌ (ne
 
 def get_week_progression_prompt(week_number, previous_week_content, block_objectives, athlete_profile):
     """Generic prompt for Week 2, 3, or 4 progression"""
+    from models import HyroxWeights
+
     week_km = block_objectives.running_mileage_week1 * (1 + (block_objectives.weekly_progression_percent / 100)) ** (week_number - 1)
     sessions = athlete_profile.week_structure.main_sessions_per_week
     training_days = athlete_profile.week_structure.get_training_days_range()
     runs = athlete_profile.week_structure.runs_per_week
+    hyrox_weights = HyroxWeights.get_weights(block_objectives.race_type) if block_objectives.race_type else None
 
     phase_description = {
         2: "modest progression",
         3: "peak / overload (hardest week before deload)",
         4: "peak / overload (final hard week)"
     }.get(week_number, "progression")
+
+    # Build HYROX weights section if race category is provided
+    hyrox_section = ""
+    if hyrox_weights:
+        hyrox_section = f"""
+**Week {week_number} Station Weights (Race Weight - No Changes):**
+
+- Sled Push: {hyrox_weights.sled_push_kg}kg
+- Sled Pull: {hyrox_weights.sled_pull_kg}kg
+- Wall Balls: {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m
+- Sandbag: {hyrox_weights.sandbag_kg}kg
+- Farmers Carry: 2×{hyrox_weights.farmers_carry_kg[0]}kg
+
+**Progression Strategy:**
+
+- Keep all station weights at race weight
+- Progress via VOLUME (more rounds, more reps, longer distances)
+- Progress via DENSITY (less rest, longer work periods, more rounds per EMOM)
+- Do NOT reduce loads or use percentages
+
+"""
 
     return f"""Using the completed Week {week_number - 1} program as the foundation, design a Week {week_number} {phase_description} that builds load in a structured and safe way.
 
@@ -517,7 +541,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
 
 **Previous Week Content:**
 {previous_week_content[:2000]}... (see full context above)
-
+{hyrox_section}
 **Progression Rules:**
 
 1. **Running Volume**
@@ -562,11 +586,28 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
 
 def get_deload_prompt(week_number, peak_week_content, block_objectives, athlete_profile):
     """Layer 10 - Deload Week"""
+    from models import HyroxWeights
+
     peak_km = block_objectives.running_mileage_week1 * (1 + (block_objectives.weekly_progression_percent / 100)) ** (block_objectives.block_duration_weeks - 1)
     deload_km = peak_km * 0.65  # 30-40% reduction
     sessions = athlete_profile.week_structure.main_sessions_per_week
     training_days = athlete_profile.week_structure.get_training_days_range()
     runs = athlete_profile.week_structure.runs_per_week
+    hyrox_weights = HyroxWeights.get_weights(block_objectives.race_type) if block_objectives.race_type else None
+
+    # Build HYROX deload section if race category is provided
+    hyrox_deload_section = ""
+    if hyrox_weights:
+        hyrox_deload_section = f"""
+**Deload Week Station Loads:**
+
+- Keep race weight: Sled Push {hyrox_weights.sled_push_kg}kg, Sled Pull {hyrox_weights.sled_pull_kg}kg, Wall Balls {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m, Sandbag {hyrox_weights.sandbag_kg}kg, Farmers Carry 2×{hyrox_weights.farmers_carry_kg[0]}kg
+- Reduce VOLUME by ~40-50% (fewer rounds, fewer reps, shorter distances)
+- Increase REST periods significantly (double or triple rest from peak week)
+- Focus on quality movement and race weight familiarity, not maximal effort
+- Example: If peak week had "4 rounds: Sled Push {hyrox_weights.sled_push_kg}kg 50m", deload might be "2 rounds: Sled Push {hyrox_weights.sled_push_kg}kg 25m, 3 min rest"
+
+"""
 
     return f"""Using the Week {block_objectives.block_duration_weeks} Peak / Overload week as the foundation, design a Deload Week (Week {week_number}) that reduces training stress to promote recovery and adaptation, while maintaining movement quality and rhythm.
 
@@ -575,7 +616,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
 
 **Peak Week Content:**
 {peak_week_content[:2000]}... (see full context above)
-
+{hyrox_deload_section}
 **Deload Rules:**
 
 1. **Running Volume**
