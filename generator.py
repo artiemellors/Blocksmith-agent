@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from anthropic import Anthropic
 
-from models import TrainingBlockInput, GenerationConfig
+from models import TrainingBlockInput, GenerationConfig, HyroxWeights
 from prompts import (
     get_layer_0_prompt,
     get_layer_1_prompt,
@@ -115,6 +115,9 @@ class TrainingBlockGenerator:
         athlete = input_data.athlete_profile
         objectives = input_data.block_objectives
 
+        # Get race-specific HYROX weights
+        hyrox_weights = HyroxWeights.get_weights(objectives.race_type)
+
         # Prepare injury context
         injury_context = ""
         if athlete.injury_info.active_injuries:
@@ -163,14 +166,14 @@ class TrainingBlockGenerator:
         # Layer 4: Strength Endurance Sessions
         layer_4 = self.generate_layer(
             "Layer 4",
-            get_layer_4_prompt(),
+            get_layer_4_prompt(hyrox_weights),
             context=f"{layer_0}\n\n{layer_1}"
         )
 
         # Layer 5: HYROX Combo / Brick Session
         layer_5 = self.generate_layer(
             "Layer 5",
-            get_layer_5_prompt(),
+            get_layer_5_prompt(hyrox_weights),
             context=f"{layer_0}\n\n{layer_1}"
         )
 
