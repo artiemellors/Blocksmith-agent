@@ -7,18 +7,81 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
     hr_max = athlete_profile.physiological_params.hr_max
     t1_pace = athlete_profile.physiological_params.threshold_t1_pace
     t2_pace = athlete_profile.physiological_params.threshold_t2_pace
+    vo2_max = athlete_profile.physiological_params.vo2_max
 
     injury_section = ""
     if injury_context:
         injury_section = f"\n**Current Injury Context:**\n{injury_context}\n"
 
+    # Build VO2 max line if present
+    vo2_line = f"\n- VO2 max: {vo2_max} ml/kg/min" if vo2_max else ""
+
+    # Build race context section if any race data is provided
+    race_section = ""
+    perf = athlete_profile.performance_benchmarks
+    has_race_data = (block_objectives.target_race_date or block_objectives.race_type or
+                     perf.last_hyrox_date or perf.last_hyrox_time or
+                     perf.goal_hyrox_time or perf.races_completed > 0)
+
+    if has_race_data:
+        race_lines = []
+        if block_objectives.target_race_date:
+            race_lines.append(f"- Target race: {block_objectives.target_race_date}")
+            if block_objectives.weeks_to_race:
+                race_lines.append(f"- Weeks to race: {block_objectives.weeks_to_race}")
+        if block_objectives.race_type:
+            race_lines.append(f"- Race type: {block_objectives.race_type}")
+        if perf.last_hyrox_date and perf.last_hyrox_time:
+            race_lines.append(f"- Recent best: {perf.last_hyrox_time} ({perf.last_hyrox_date})")
+        elif perf.last_hyrox_time:
+            race_lines.append(f"- Recent best: {perf.last_hyrox_time}")
+        if perf.goal_hyrox_time:
+            race_lines.append(f"- Goal time: {perf.goal_hyrox_time}")
+        if perf.races_completed > 0:
+            race_lines.append(f"- Races completed: {perf.races_completed}")
+
+        race_section = "\n**Race Context:**\n\n" + "\n".join(race_lines) + "\n"
+
+    # Build performance profile section if stations are provided
+    performance_profile = ""
+    if perf.strong_stations or perf.weak_stations:
+        profile_lines = []
+        if perf.strong_stations:
+            stations_str = ", ".join(perf.strong_stations)
+            profile_lines.append(f"- Strong stations: {stations_str}")
+        if perf.weak_stations:
+            stations_str = ", ".join(perf.weak_stations)
+            profile_lines.append(f"- Limiter stations: {stations_str}")
+
+        performance_profile = "\n**Performance Profile:**\n\n" + "\n".join(profile_lines) + "\n"
+
+    # Build equipment section with available equipment
+    equipment_list = ", ".join(athlete_profile.equipment.available_equipment)
+
+    # Build equipment substitution rules based on what's missing
+    substitution_rules = []
+    available = set(athlete_profile.equipment.available_equipment)
+
+    if "Sled" not in available and "Sleds (push & pull)" not in available:
+        substitution_rules.append("- No sleds → use heavy farmers carries, weighted step-ups, or resistance band pushes")
+    if "SkiErg" not in available:
+        substitution_rules.append("- No SkiErg → substitute RowErg or Echo/Assault Bike")
+    if "Echo Bike" not in available and "Echo/Assault Bike" not in available:
+        substitution_rules.append("- No Echo Bike → use RowErg or exercise bike at higher resistance")
+    if "Wall Balls" not in available:
+        substitution_rules.append("- No wall balls → use thrusters or goblet squat to press")
+
+    substitution_section = ""
+    if substitution_rules:
+        substitution_section = "\n\n**Equipment Substitutions:**\n\n" + "\n".join(substitution_rules)
+
     return f"""You are an elite HYROX coach and strict scheduler. You are designing training for {athlete_profile.name}, a {athlete_profile.age}-year-old hybrid athlete in a {block_objectives.primary_goal} phase.
-{injury_section}
+{injury_section}{race_section}{performance_profile}
 **Physiological Parameters:**
 
 - HRmax: {hr_max} bpm
 - Zones: Z1 = 60–70%, Z2 = 70–80%, Z3 = 80–88%, Z4 = 88–94%, Z5 = 94–100%
-- Threshold paces: T1 = {t1_pace}/km, T2 = {t2_pace}/km
+- Threshold paces: T1 = {t1_pace}/km, T2 = {t2_pace}/km{vo2_line}
 
 **Training Week Structure:**
 
@@ -26,7 +89,11 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
 - Main sessions: {athlete_profile.week_structure.main_sessions_per_week} total per week (includes {athlete_profile.week_structure.get_num_double_days()} double-days)
 - Running sessions: {athlete_profile.week_structure.runs_per_week} runs per week
 - Session time budgets: {athlete_profile.week_structure.weekday_session_time_min}–{athlete_profile.week_structure.weekday_session_time_max} min weekdays; {athlete_profile.week_structure.weekend_session_time_min}–{athlete_profile.week_structure.weekend_session_time_max} min weekends
-- Equipment: Gym ({', '.join(athlete_profile.equipment.gym_equipment)}); Home ({', '.join(athlete_profile.equipment.home_equipment)})
+
+**Equipment:**
+
+- Primary location: {athlete_profile.equipment.primary_location}
+- Available: {equipment_list}{substitution_section}
 
 **Run Mileage Rule:**
 
