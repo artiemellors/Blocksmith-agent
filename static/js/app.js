@@ -454,4 +454,35 @@ function toggleSection(contentId, iconId) {
     }
 }
 
+// Auto-check equipment based on gym setup selection
+const gymSetupDropdown = document.getElementById('gym_setup');
+if (gymSetupDropdown) {
+    gymSetupDropdown.addEventListener('change', function() {
+        const selectedSetup = this.value;
+        const allCheckboxes = document.querySelectorAll('input[name="equipment"]');
+
+        // Define equipment sets for each gym type
+        const fullHyroxGym = [
+            'Sled', 'SkiErg', 'Wall Balls', 'Sandbag', 'Farmers Carry handles', 'Sled Track',
+            'Rowing Machine', 'Echo Bike', 'Exercise Bike', 'Treadmill',
+            'Full barbell setup', 'Dumbbells', 'Kettlebells', 'Pull-up Bar'
+        ];
+
+        const standardGym = [
+            'Rowing Machine', 'Exercise Bike', 'Treadmill',
+            'Full barbell setup', 'Dumbbells', 'Kettlebells', 'Pull-up Bar'
+        ];
+
+        allCheckboxes.forEach(checkbox => {
+            if (selectedSetup === 'Full HYROX Gym') {
+                checkbox.checked = fullHyroxGym.includes(checkbox.value);
+            } else if (selectedSetup === 'Standard Gym') {
+                checkbox.checked = standardGym.includes(checkbox.value);
+            } else if (selectedSetup === 'Limited Equipment') {
+                checkbox.checked = false;
+            }
+        });
+    });
+}
+
 console.log('Blocksmith web interface loaded');

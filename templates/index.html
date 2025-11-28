@@ -39,6 +39,11 @@
                             <input type="number" id="hr_max" name="hr_max" required min="120" max="220" placeholder="188">
                             <small>Your maximum heart rate in beats per minute</small>
                         </div>
+                        <div class="form-group">
+                            <label for="vo2_max">VO2 Max (ml/kg/min)</label>
+                            <input type="number" id="vo2_max" name="vo2_max" min="30" max="90" placeholder="55">
+                            <small>Optional - helps calibrate interval intensities</small>
+                        </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
@@ -100,35 +105,39 @@
                 <!-- Block Objectives -->
                 <section class="form-section">
                     <h2>Block Objectives</h2>
+                    <div class="form-group">
+                        <label for="primary_goal">Primary Goal *</label>
+                        <input type="text" id="primary_goal" name="primary_goal" required value="BUILD"
+                               placeholder="e.g., build, peak, base building">
+                        <small>What's your main focus? (e.g., build, peak, base building)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="specific_focus_areas">Specific Focus Areas</label>
+                        <input type="text" id="specific_focus_areas" name="specific_focus_areas"
+                               placeholder="e.g., threshold running, sled work, wall balls">
+                        <small>2-4 areas to emphasize (comma-separated)</small>
+                    </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label for="primary_goal">Primary Goal *</label>
-                            <input type="text" id="primary_goal" name="primary_goal" required value="BUILD"
-                                   placeholder="BUILD, PEAK, Base building">
-                            <small>What's your goal? (BUILD, PEAK, Base building, etc.)</small>
-                        </div>
                         <div class="form-group">
                             <label for="running_mileage_week1">Starting Weekly Mileage (km) *</label>
                             <input type="number" id="running_mileage_week1" name="running_mileage_week1"
                                    required value="40" min="10" max="150" step="5">
                             <small>Starting weekly running kilometers</small>
                         </div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group">
                             <label for="weekly_progression_percent">Weekly Progression (%)</label>
                             <input type="number" id="weekly_progression_percent" name="weekly_progression_percent"
                                    value="10" min="5" max="20">
                             <small>Percentage increase each week</small>
                         </div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group">
                             <label for="block_duration_weeks">Block Duration (weeks)</label>
                             <input type="number" id="block_duration_weeks" name="block_duration_weeks"
                                    value="4" min="2" max="8">
                             <small>How many weeks before deload?</small>
                         </div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group">
                             <label for="deload_week">Include Deload Week?</label>
                             <select id="deload_week" name="deload_week">
@@ -136,14 +145,173 @@
                                 <option value="no">No</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="specific_focus_areas">Specific Focus Areas</label>
-                            <input type="text" id="specific_focus_areas" name="specific_focus_areas"
-                                   placeholder="e.g., threshold running, sled work, wall balls">
-                            <small>2-4 areas to emphasize (comma-separated)</small>
-                        </div>
                     </div>
                 </section>
+
+                <!-- Race & Performance Context (Optional - Collapsible) -->
+                <div class="section-container">
+                    <div class="collapsible-header" onclick="toggleSection('race-content', 'race-icon')">
+                        <div class="header-left">
+                            <span id="race-icon" class="arrow-icon">▶</span>
+                            <span class="header-title">Race & Performance Context (Optional)</span>
+                        </div>
+                        <span class="header-subtitle">Provide race goals and station strengths/limiters</span>
+                    </div>
+
+                    <div id="race-content" class="collapsible-content" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="target_race_date">Target Race Date</label>
+                                <input type="date" id="target_race_date" name="target_race_date">
+                            </div>
+                            <div class="form-group">
+                                <label for="race_type">Race Type</label>
+                                <select id="race_type" name="race_type">
+                                    <option value="">Select type...</option>
+                                    <option value="Open">Open</option>
+                                    <option value="Pro">Pro</option>
+                                    <option value="Doubles">Doubles</option>
+                                    <option value="Doubles Pro">Doubles Pro</option>
+                                    <option value="Mixed Relay">Mixed Relay</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="last_hyrox_date">Last HYROX Race Date</label>
+                                <input type="date" id="last_hyrox_date" name="last_hyrox_date">
+                            </div>
+                            <div class="form-group">
+                                <label for="last_hyrox_time">Last HYROX Time</label>
+                                <input type="text" id="last_hyrox_time" name="last_hyrox_time"
+                                       pattern="\d{1,2}:\d{2}:\d{2}" placeholder="1:23:45">
+                                <small>Format: HH:MM:SS</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="goal_hyrox_time">Goal HYROX Time</label>
+                                <input type="text" id="goal_hyrox_time" name="goal_hyrox_time"
+                                       pattern="\d{1,2}:\d{2}:\d{2}" placeholder="1:15:00">
+                                <small>Format: HH:MM:SS</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="races_completed">Total Races Completed</label>
+                                <input type="number" id="races_completed" name="races_completed"
+                                       value="0" min="0" max="100">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="strong_stations">Strong Stations</label>
+                            <input type="text" id="strong_stations" name="strong_stations"
+                                   placeholder="e.g., SkiErg, Sled Push, Rowing">
+                            <small>Stations where you excel (comma-separated)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="weak_stations">Stations to Improve</label>
+                            <input type="text" id="weak_stations" name="weak_stations"
+                                   placeholder="e.g., Wall Balls, Sandbag Lunges">
+                            <small>Stations needing work (comma-separated)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gym Equipment (Optional - Collapsible) -->
+                <div class="section-container">
+                    <div class="collapsible-header" onclick="toggleSection('equipment-content', 'equipment-icon')">
+                        <div class="header-left">
+                            <span id="equipment-icon" class="arrow-icon">▶</span>
+                            <span class="header-title">Gym Equipment (Optional)</span>
+                        </div>
+                        <span class="header-subtitle">Select your available training equipment</span>
+                    </div>
+
+                    <div id="equipment-content" class="collapsible-content" style="display: none;">
+                        <div class="form-group">
+                            <label for="gym_setup">Gym Setup</label>
+                            <select id="gym_setup" name="primary_location">
+                                <option value="Full HYROX Gym" selected>Full HYROX Gym</option>
+                                <option value="Standard Gym">Standard Gym</option>
+                                <option value="Limited Equipment">Limited Equipment</option>
+                            </select>
+                            <small>Selecting a preset will auto-check equipment below</small>
+                        </div>
+
+                        <div class="equipment-section">
+                            <h3>HYROX Stations</h3>
+                            <div class="checkbox-grid">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="equipment" value="Sled" checked>
+                                    <span>Sleds (push & pull)</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="equipment" value="SkiErg" checked>
+                                    <span>SkiErg</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="equipment" value="Wall Balls" checked>
+                                    <span>Wall Balls</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="equipment" value="Sandbag" checked>
+                                    <span>Sandbag</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="equipment" value="Farmers Carry handles" checked>
+                                    <span>Kettlebells (farmers carry)</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="equipment" value="Sled Track" checked>
+                                    <span>Sled Track</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="equipment-section">
+                            <h3>Cardio Machines</h3>
+                            <div class="checkbox-grid">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="equipment" value="Rowing Machine" checked>
+                                    <span>RowErg</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="equipment" value="Echo Bike" checked>
+                                    <span>Echo/Assault Bike</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="equipment" value="Exercise Bike" checked>
+                                    <span>Exercise Bike</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="equipment" value="Treadmill" checked>
+                                    <span>Treadmill</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="equipment-section">
+                            <h3>Strength Equipment</h3>
+                            <div class="checkbox-grid">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="equipment" value="Full barbell setup" checked>
+                                    <span>Barbell & Plates</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="equipment" value="Dumbbells" checked>
+                                    <span>Dumbbells</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="equipment" value="Kettlebells" checked>
+                                    <span>Kettlebells</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="equipment" value="Pull-up Bar" checked>
+                                    <span>Pull-up Bar</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Injury & Recovery Management (Optional - Collapsible) -->
                 <div class="section-container">
