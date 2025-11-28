@@ -4,10 +4,15 @@ Prompt templates for each layer of training block generation.
 
 def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
     """Layer 0 - Context & Global Rules"""
+    from models import HyroxWeights
+
     hr_max = athlete_profile.physiological_params.hr_max
     t1_pace = athlete_profile.physiological_params.threshold_t1_pace
     t2_pace = athlete_profile.physiological_params.threshold_t2_pace
     vo2_max = athlete_profile.physiological_params.vo2_max
+
+    # Get official HYROX weights for the race category
+    hyrox_weights = HyroxWeights.get_weights(block_objectives.race_type) if block_objectives.race_type else None
 
     injury_section = ""
     if injury_context:
@@ -75,8 +80,51 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
     if substitution_rules:
         substitution_section = "\n\n**Equipment Substitutions:**\n\n" + "\n".join(substitution_rules)
 
+    # Build HYROX race specifications section if race category is provided
+    hyrox_spec_section = ""
+    if hyrox_weights:
+        hyrox_spec_section = f"""
+**Competition Category:**
+
+- Category: {block_objectives.race_type.replace('_', ' ').title()}
+
+**Official HYROX Race Specifications:**
+
+All station loads below are OFFICIAL RACE SPECIFICATIONS and must be prescribed EXACTLY as listed:
+
+1. **SkiErg**: 1000m
+2. **Sled Push**: {hyrox_weights.sled_push_kg}kg over 50m
+3. **Sled Pull**: {hyrox_weights.sled_pull_kg}kg over 50m
+4. **Burpee Broad Jumps**: 80m total
+5. **RowErg**: 1000m
+6. **Farmers Carry**: {hyrox_weights.farmers_carry_kg[0]}kg per hand over 200m (2x{hyrox_weights.farmers_carry_kg[0]}kg total)
+7. **Sandbag Lunges**: {hyrox_weights.sandbag_kg}kg over 100m
+8. **Wall Balls**: {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m target, 100 reps
+
+**Station Load Prescription Rules:**
+
+- **ALWAYS use race weight** ({block_objectives.race_type}) for station training.
+- Do NOT calculate percentages (e.g., "70% of race weight"). Use the exact race loads.
+- If athlete cannot complete full volume at race weight, reduce REPS or DISTANCE, not load.
+- Example: Sled push = {hyrox_weights.sled_push_kg}kg for 4x25m (reduced distance), NOT 100kg for 4x50m (reduced weight).
+
+**Progression Methods (in order of preference):**
+
+1. **Volume**: Increase reps or distance at race weight (e.g., 4x25m → 6x25m → 4x50m).
+2. **Density**: Reduce rest between sets while maintaining race weight and volume.
+3. **Strength**: Only in max strength sessions, use >race weight for lower volume (e.g., {hyrox_weights.sled_push_kg + 50}kg sled push 3x25m for overload).
+
+**Critical Prescription Format:**
+
+- Sled push/pull: ALWAYS specify "{hyrox_weights.sled_push_kg}kg" or "{hyrox_weights.sled_pull_kg}kg" explicitly
+- Farmers carry: ALWAYS specify "{hyrox_weights.farmers_carry_kg[0]}kg per hand" or "2x{hyrox_weights.farmers_carry_kg[0]}kg"
+- Sandbag: ALWAYS specify "{hyrox_weights.sandbag_kg}kg"
+- Wall balls: ALWAYS specify "{hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m target"
+
+"""
+
     return f"""You are an elite HYROX coach and strict scheduler. You are designing training for {athlete_profile.name}, a {athlete_profile.age}-year-old hybrid athlete in a {block_objectives.primary_goal} phase.
-{injury_section}{race_section}{performance_profile}
+{injury_section}{race_section}{performance_profile}{hyrox_spec_section}
 **Physiological Parameters:**
 
 - HRmax: {hr_max} bpm
