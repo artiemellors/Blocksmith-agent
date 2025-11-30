@@ -1,5 +1,6 @@
 """
 Prompt templates for each layer of training block generation.
+Version 2: Philosophy-guided with realistic work capacity constraints.
 """
 
 def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
@@ -21,7 +22,7 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
     # Build VO2 max line if present
     vo2_line = f"\n- VO2 max: {vo2_max} ml/kg/min" if vo2_max else ""
 
-    # Build race context section if any race data is provided
+    # Build race context section
     race_section = ""
     perf = athlete_profile.performance_benchmarks
     has_race_data = (block_objectives.target_race_date or block_objectives.race_type or
@@ -47,7 +48,7 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
 
         race_section = "\n**Race Context:**\n\n" + "\n".join(race_lines) + "\n"
 
-    # Build performance profile section if stations are provided
+    # Build performance profile section
     performance_profile = ""
     if perf.strong_stations or perf.weak_stations:
         profile_lines = []
@@ -60,10 +61,9 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
 
         performance_profile = "\n**Performance Profile:**\n\n" + "\n".join(profile_lines) + "\n"
 
-    # Build equipment section with available equipment
+    # Build equipment section
     equipment_list = ", ".join(athlete_profile.equipment.available_equipment)
 
-    # Build equipment substitution rules based on what's missing
     substitution_rules = []
     available = set(athlete_profile.equipment.available_equipment)
 
@@ -80,7 +80,7 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
     if substitution_rules:
         substitution_section = "\n\n**Equipment Substitutions:**\n\n" + "\n".join(substitution_rules)
 
-    # Build HYROX race specifications section if race category is provided
+    # Build HYROX race specifications section
     hyrox_spec_section = ""
     if hyrox_weights:
         hyrox_spec_section = f"""
@@ -90,7 +90,7 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
 
 **Official HYROX Race Specifications:**
 
-All station loads below are OFFICIAL RACE SPECIFICATIONS and must be prescribed EXACTLY as listed:
+All station loads are OFFICIAL RACE SPECIFICATIONS and must be prescribed EXACTLY:
 
 1. **SkiErg**: 1000m
 2. **Sled Push**: {hyrox_weights.sled_push_kg}kg over 50m
@@ -103,16 +103,31 @@ All station loads below are OFFICIAL RACE SPECIFICATIONS and must be prescribed 
 
 **Station Load Prescription Rules:**
 
-- **ALWAYS use race weight** ({block_objectives.race_type}) for station training.
-- Do NOT calculate percentages (e.g., "70% of race weight"). Use the exact race loads.
-- If athlete cannot complete full volume at race weight, reduce REPS or DISTANCE, not load.
-- Example: Sled push = {hyrox_weights.sled_push_kg}kg for 4x25m (reduced distance), NOT 100kg for 4x50m (reduced weight).
+- **ALWAYS use race weight** for station training
+- Do NOT calculate percentages (e.g., "70% of race weight")
+- If athlete cannot complete full volume, reduce REPS or DISTANCE, not load
+- Example: Sled push = {hyrox_weights.sled_push_kg}kg for 4x25m (reduced distance), NOT 100kg for 4x50m (reduced weight)
 
 **Progression Methods (in order of preference):**
 
-1. **Volume**: Increase reps or distance at race weight (e.g., 4x25m → 6x25m → 4x50m).
-2. **Density**: Reduce rest between sets while maintaining race weight and volume.
-3. **Strength**: Only in max strength sessions, use >race weight for lower volume (e.g., {hyrox_weights.sled_push_kg + 50}kg sled push 3x25m for overload).
+1. **Volume**: Increase reps or distance at race weight (e.g., 4x25m → 6x25m → 4x50m)
+2. **Density**: Reduce rest between sets while maintaining race weight and volume
+3. **Strength**: Only in max strength sessions, use >race weight for lower volume (e.g., {hyrox_weights.sled_push_kg + 50}kg sled push 3x25m for overload)
+
+**Movement Duration Estimates (for realistic programming):**
+
+At race weight, typical durations for intermediate HYROX athlete:
+- Sled Push {hyrox_weights.sled_push_kg}kg, 50m: 60-120 seconds
+- Sled Pull {hyrox_weights.sled_pull_kg}kg, 50m: 45-90 seconds
+- Wall Balls {hyrox_weights.wall_ball_kg}kg: ~2-3 reps/second (100 reps = 30-50s)
+- RowErg 200m max effort: 40-50 seconds
+- RowErg 1000m: 3:15-4:00
+- Run 800m (post-station): 3:30-4:30
+- Run 1km (post-station): 4:30-5:30
+
+**Week 1 Calibration Principle:**
+
+Week 1 is a BASELINE week - sessions should be challenging but clearly achievable. Better to undershoot and add volume in Week 2 than overshoot and force deload.
 
 **Critical Prescription Format:**
 
@@ -145,7 +160,7 @@ All station loads below are OFFICIAL RACE SPECIFICATIONS and must be prescribed 
 
 **Run Mileage Rule:**
 
-- Weekly run mileage = {block_objectives.running_mileage_week1}km in Week 1, then +{block_objectives.weekly_progression_percent}% per week through Week {block_objectives.block_duration_weeks}.
+- Weekly run mileage = {block_objectives.running_mileage_week1}km in Week 1, then +{block_objectives.weekly_progression_percent}% per week through Week {block_objectives.block_duration_weeks}
 
 **Guardrails:**
 
@@ -166,12 +181,34 @@ All station loads below are OFFICIAL RACE SPECIFICATIONS and must be prescribed 
 - **HYROX Combo/Brick** (run + station, compromised running, Zone 4–5)
 - **Aerobic Engine/Recovery** (bike/erg steady Z2, technique, mobility)
 
+**CRITICAL TRAINING PRINCIPLES:**
+
+**1. SPECIFICITY ≠ SIMULATION**
+- Training for HYROX means developing the adaptations needed to excel at HYROX
+- Not every session replicates race demands
+- Progressive exposure to race-specific stress across the block
+- Build the engine first, then apply it to race-specific contexts
+
+**2. BRICK SESSIONS ≠ THRESHOLD DEVELOPMENT**
+- Brick sessions use threshold paces (T1/T2) but are NOT the same as dedicated threshold running
+- HR is spiking from stations, running form is compromised, can't sustain pure threshold physiological stimulus
+- Purpose: Learn to run on tired legs, practice race-specific skills
+- Dedicated threshold sessions (Layer 2) provide actual physiological development
+
+**3. EXERCISE SELECTION PRIORITY**
+For strength endurance and brick sessions:
+1. Target muscle groups effectively
+2. Use HYROX stations when they're the best tool for the job
+3. Freely substitute superior alternatives when appropriate
+4. Quality of training stimulus > literal race simulation
+Example: A trap bar deadlift might build sled-pulling strength better than doing sleds twice a week
+
 **Design Rules (apply to every session):**
 
-- Each session must include: Purpose, Warm-up, 2–3 Main Blocks, Cooldown, Transfer Explanation, Progression Dials.
-- Occasional overload allowed only in Week {block_objectives.block_duration_weeks}.
-- Strength Endurance sessions must **always include cardio modalities (run, SkiErg, RowErg, Echo bike, or bike)** within the session.
-- Maintain strict alternation of hard/easy days to avoid burnout.
+- Each session must include: Purpose, Warm-up, 2–3 Main Blocks, Cooldown, Transfer Explanation, Progression Dials
+- Occasional overload allowed only in Week {block_objectives.block_duration_weeks}
+- Strength Endurance sessions must **always include cardio modalities (run, SkiErg, RowErg, Echo bike, or bike)** within the session
+- Maintain strict alternation of hard/easy days to avoid burnout
 
 **Output Convention:** Follow subsequent layer prompts. Do not jump ahead."""
 
@@ -189,24 +226,24 @@ def get_layer_1_prompt(block_objectives, athlete_profile):
 
 **Objectives:**
 
-- Establish baseline weekly running volume ({block_objectives.running_mileage_week1}km total mileage).
-- Balance intensity: alternate hard/easy days, prevent overload.
-- Cover all session archetypes (Running Quality, Running Endurance, Max Strength, Strength Endurance, HYROX Combo, Aerobic Engine/Recovery).
-- Ensure the week includes a total of {sessions} main sessions across the training days.
+- Establish baseline weekly running volume ({block_objectives.running_mileage_week1}km total mileage)
+- Balance intensity: alternate hard/easy days, prevent overload
+- Cover all session archetypes (Running Quality, Running Endurance, Max Strength, Strength Endurance, HYROX Combo, Aerobic Engine/Recovery)
+- Ensure the week includes a total of {sessions} main sessions across the training days
 
 **Structure required in output:**
 
-- Show **{training_days}** schedule as a table with columns: *Day | Main AM | Main PM*.
-- Indicate run mileage distribution to total {block_objectives.running_mileage_week1}km.
-- Label each session by **archetype** only (e.g., "Run Quality – Threshold Intervals," "Strength Endurance – EMOM w/ SkiErg").
-- Flag which sessions are high intensity (Z4–5) and which are low/moderate (Z1–3).
+- Show **{training_days}** schedule as a table with columns: *Day | Main AM | Main PM*
+- Indicate run mileage distribution to total {block_objectives.running_mileage_week1}km
+- Label each session by **archetype** only (e.g., "Run Quality – Threshold Intervals," "Strength Endurance – EMOM w/ SkiErg")
+- Flag which sessions are high intensity (Z4–5) and which are low/moderate (Z1–3)
 
 **Important constraints:**
 
-- Avoid consecutive high-intensity days.
+- Avoid consecutive high-intensity days
 - **CRITICAL: The long run MUST be scheduled on {long_run_day}** ({weekend_min}–{weekend_max} min, Zone 2). This is a hard requirement.
 - **CRITICAL: Double days (AM + PM sessions) MUST be on {double_days}**. These are the only days that should have both Main AM and Main PM sessions. This is non-negotiable.
-- HYROX Combo (Zone 4–5) occurs once this week.
+- HYROX Combo (Zone 4–5) occurs once this week
 
 **Output convention:** Just provide the **skeleton schedule** — no full session details yet. Full designs come in later layers."""
 
@@ -220,13 +257,41 @@ def get_layer_2_prompt(block_objectives, t1_pace, t2_pace, athlete_profile):
 
     return f"""Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand only the running sessions into full detail.
 
+**CRITICAL CONTEXT:**
+
+Brick sessions (Layer 5) provide race-specific running practice but do NOT replace dedicated threshold development. Design true running quality sessions here - these are CLEAN running sessions with proper warm-up, focused effort at target zones, and adequate recovery. Not compromised running. Not fatigued running. Pure physiological development.
+
 **Objectives:**
 
-- Total weekly volume: **{block_objectives.running_mileage_week1}km** (Week 1), distributed across {runs} runs.
-- Gradual build: +{block_objectives.weekly_progression_percent}% mileage per week in following weeks.
-- Cover 2x Quality sessions (threshold / intervals), 1x Long Z2 run, 1x Easy Z2 run.
-- Alternate hard and easy days; avoid stacking high intensity.
-- Assign each run clear **purpose** (e.g., Threshold Intervals for clearance, Long Run for base).
+- Total weekly volume: **{block_objectives.running_mileage_week1}km** (Week 1), distributed across {runs} runs
+- Gradual build: +{block_objectives.weekly_progression_percent}% mileage per week in following weeks
+- Cover 2x Quality sessions (threshold / intervals), 1x Long Z2 run, 1x Easy Z2 run
+- Alternate hard and easy days; avoid stacking high intensity
+- Assign each run clear **purpose** (e.g., Threshold Intervals for clearance, Long Run for base)
+
+**Threshold Development (Primary Focus):**
+
+**Duration:** 8-36 minutes of quality threshold work per session
+
+**Available Formats:**
+- Continuous Tempo: 20-28 min @ T1 pace (builds aerobic foundation)
+- Cruise Intervals: 2-4 × 8-15 min @ T1, 2-4 min recovery (high volume with brief breaks)
+- Threshold Intervals: 4-8 × 3-6 min @ T2, 90-120s recovery (practice race pace)
+- Progressive Tempo: Start @ T1, progress toward T2 (simulate fatigue)
+
+**VO2max Development (Complementary):**
+
+**Pace:** Faster than T2 pace (typically 10-20 seconds per km faster)
+**Duration:** 2-5 minute intervals (600m-1200m)
+**Formats:** 6-12 × 600m-1200m with 60-120s recovery
+**Purpose:** Raise aerobic ceiling, make T2 pace feel more sustainable
+**When:** Mid-block or as variation from threshold work
+
+**Design Guidance:**
+- Prioritize threshold development - it's the foundation for HYROX
+- Choose session duration/format based on athlete fitness, block position, objectives
+- Avoid defaulting to 1km repeats just because HYROX uses 1km segments
+- Choose the session type that best serves the adaptation goal
 
 **Structure required in output:**
 
@@ -241,14 +306,14 @@ For each running session, include:
 **Rules:**
 
 - **CRITICAL: Long run MUST be on {long_run_day}** ({weekend_min}–{weekend_max} min, Z2). This is non-negotiable.
-- Easy run ≤60 min, Z2, recovery emphasis.
-- Threshold/interval runs must reference both **pace zones (T1, T2)** and **HR zones** as dials.
-- Where distance and time could be used, provide both (e.g., "6x1km at T1, ~{t1_pace}/km pace, HR Z3–4, 3 min jog rest").
+- Easy run ≤60 min, Z2, recovery emphasis
+- Threshold/interval runs must reference both **pace zones (T1, T2)** and **HR zones** as dials
+- Where distance and time could be used, provide both (e.g., "6x1km at T1, ~{t1_pace}/km pace, HR Z3–4, 3 min jog rest")
 
 **Output convention:**
 
-- Present as a **list of {runs} running sessions** (not the whole week).
-- Label them clearly by session type: *Run Quality 1 (Threshold Intervals)*, *Run Quality 2 (Progression Run)*, *Endurance Run (Long Z2)*, *Endurance Run (Easy Z2)*."""
+- Present as a **list of {runs} running sessions** (not the whole week)
+- Label them clearly by session type: *Run Quality 1 (Threshold Intervals)*, *Run Quality 2 (Progression Run)*, *Endurance Run (Long Z2)*, *Endurance Run (Easy Z2)*"""
 
 
 def get_layer_3_prompt():
@@ -257,10 +322,10 @@ def get_layer_3_prompt():
 
 **Objectives:**
 
-- Build absolute strength in compound lifts → improved economy, resilience, and transfer into HYROX strength endurance.
-- Focus on low rep, high quality lifts.
-- Keep sessions ≤75 min.
-- No overlapping same-day fatigue with hard run sessions.
+- Build absolute strength in compound lifts → improved economy, resilience, and transfer into HYROX strength endurance
+- Focus on low rep, high quality lifts
+- Keep sessions ≤75 min
+- No overlapping same-day fatigue with hard run sessions
 
 **Structure required in output:**
 
@@ -268,22 +333,22 @@ For each strength session, include:
 
 - **Purpose** (why it's in the program)
 - **Warm-up** (mobility, activation, ramp-up sets)
-- **Main lifts** (2–3 compound lifts: squat, deadlift, bench/press, pull-up variants). Explicit sets × reps × %1RM or RPE.
-- **Accessory work** (1–2 short blocks targeting weak links or HYROX transfer — e.g., core stability, unilateral strength, grip).
-- **Cooldown** (mobility, breathing reset, stretch priority areas).
-- **Progression knob** (e.g., increase load by 2.5–5%, add 1 set, tighten rest).
+- **Main lifts** (2–3 compound lifts: squat, deadlift, bench/press, pull-up variants). Explicit sets × reps × %1RM or RPE
+- **Accessory work** (1–2 short blocks targeting weak links or HYROX transfer — e.g., core stability, unilateral strength, grip)
+- **Cooldown** (mobility, breathing reset, stretch priority areas)
+- **Progression knob** (e.g., increase load by 2.5–5%, add 1 set, tighten rest)
 
 **Rules:**
 
-- Use rep schemes in the **3–6 rep** range for compounds.
-- Accessories may include unilateral lifts (lunges, RDLs), core, or posterior chain balance.
-- No more than 4 total main compound lifts per session.
-- Keep rest long (2–3 min for heavy compounds, 60–90s for accessories).
+- Use rep schemes in the **3–6 rep** range for compounds
+- Accessories may include unilateral lifts (lunges, RDLs), core, or posterior chain balance
+- No more than 4 total main compound lifts per session
+- Keep rest long (2–3 min for heavy compounds, 60–90s for accessories)
 
 **Output convention:**
 
-- Present as a **list of 1–2 Max Strength sessions** (as per Week 1 skeleton).
-- Label them clearly: *Strength Session 1 (Lower Body Max)*, *Strength Session 2 (Upper/Full Body Max)*."""
+- Present as a **list of 1–2 Max Strength sessions** (as per Week 1 skeleton)
+- Label them clearly: *Strength Session 1 (Lower Body Max)*, *Strength Session 2 (Upper/Full Body Max)*"""
 
 
 def get_layer_4_prompt(hyrox_weights):
@@ -298,30 +363,66 @@ def get_layer_4_prompt(hyrox_weights):
 - Sandbag: {hyrox_weights.sandbag_kg}kg
 - Farmers Carry: 2×{hyrox_weights.farmers_carry_kg[0]}kg
 
-**Strength Endurance Philosophy:**
+**Exercise Selection Philosophy:**
 
-- ALL stations at race weight
-- Build work capacity through volume and density
-- Focus on movement efficiency and fatigue management
-- Progress by adding rounds, reducing rest, or extending work time
+**Priority Order:**
+1. Target muscle groups effectively
+2. Use HYROX stations when they're the best tool for the job
+3. Freely substitute superior alternatives when appropriate
+4. Quality of training stimulus > literal race simulation
+
+**Example:** A trap bar deadlift or KB swing might build sled-pulling capacity better than doing sleds twice a week. Bulgarian split squats might develop quad endurance more effectively than sandbag lunges in certain contexts.
+
+**Target muscle groups and movement patterns, not a predetermined exercise list.**
+
+**Realistic Work Capacity Prescription:**
+
+**EMOM Guidelines:**
+- Work windows: 45-90 seconds for realistic completion
+- Don't combine max-effort cardio + heavy strength in short windows
+
+✅ **REALISTIC:**
+- "Sled push {hyrox_weights.sled_push_kg}kg 25m, rest remainder of 90s"
+- "RowErg 250m moderate effort, rest remainder of 2 min"
+- "Wall balls {hyrox_weights.wall_ball_kg}kg, 20 reps, rest remainder of 90s"
+
+❌ **UNREALISTIC:**
+- "Sled push {hyrox_weights.sled_push_kg}kg 40m + RowErg 200m max effort in 2 min"
+- "Wall balls 50 reps + 400m run in 3 min"
+
+**EMOM Structure Options:**
+- Single movement, rotating loads/distances
+- Alternating movements every other minute
+- Density blocks (e.g., EMOM 12: odd minutes sled, even minutes row)
+
+**Circuit/Chipper Guidelines:**
+- Emphasize quality over speed
+- Mix complementary movement patterns
+- Use time caps to prevent grinding
+- Include strategic rest periods between rounds
+
+**Progression Vectors (choose 1-2, not all three):**
+1. **Density:** Reduce rest between efforts
+2. **Volume:** More rounds/reps at same intensity
+3. **Load:** Heavier resistance at same volume
 
 **Objectives:**
 
-- Build the ability to sustain submaximal strength under fatigue.
-- Improve work capacity and efficiency in HYROX-specific stations (sleds, carries, wall balls, lunges, burpees).
-- Force adaptation by pairing **strength movements with cardio intervals** to simulate race demands.
-- Time cap: 60–75 min.
+- Build the ability to sustain submaximal strength under fatigue
+- Improve work capacity and efficiency in HYROX-specific stations (sleds, carries, wall balls, lunges, burpees)
+- Force adaptation by pairing **strength movements with cardio intervals** to simulate race demands
+- Time cap: 60–75 min
 
 **Structure required in output:**
 
 For each strength endurance session, include:
 
-- **Purpose** (clear link to HYROX transfer).
-- **Warm-up** (mobility, activation, light machine work).
-- **Main Blocks** (2–3 blocks using EMOMs, AMRAPs, circuits, or interval pairings of cardio + functional strength). Must include at least one machine (run, ski, row, echo/bike) per block. Explicit reps/sets/duration, intensity targets (HR zone, RPE, or pace).
+- **Purpose** (clear link to HYROX transfer)
+- **Warm-up** (mobility, activation, light machine work)
+- **Main Blocks** (2–3 blocks using EMOMs, AMRAPs, circuits, or interval pairings of cardio + functional strength). Must include at least one machine (run, ski, row, echo/bike) per block. Explicit reps/sets/duration, intensity targets (HR zone, RPE, or pace)
 
   For EVERY station exercise, specify:
-  - Exact weight in kg (race weight)
+  - Exact weight in kg (race weight if using HYROX stations)
   - Target height for wall balls
   - Distance or reps
   - Rest periods
@@ -329,21 +430,24 @@ For each strength endurance session, include:
   Example: "Sled Push: {hyrox_weights.sled_push_kg}kg, 40m, 90s rest"
   Example: "Wall Balls: {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m, 20 reps"
 
-- **Cooldown** (walk, flush, mobility, breathing).
-- **Progression knob** (volume, density, load, or machine interval length).
+- **Cooldown** (walk, flush, mobility, breathing)
+- **Progression knob** (volume, density, load, or machine interval length)
 
 **Rules:**
 
-- Keep heart rate between **upper Zone 2 → mid Zone 4**, depending on block.
-- Alternate knee-dominant vs. hip-dominant strength movements to manage fatigue.
-- Each block should last **8–20 minutes**.
-- Sessions should balance load: one more *sled/carry/burpee focused*; one more *wall ball/lunge/erg focused*.
-- Explicit substitutions if running volume needs capping (swap to bike/erg).
+- Keep heart rate between **upper Zone 2 → mid Zone 4**, depending on block
+- Alternate knee-dominant vs. hip-dominant strength movements to manage fatigue
+- Each block should last **8–20 minutes**
+- Sessions should balance load: one more *sled/carry/burpee focused*; one more *wall ball/lunge/erg focused*
+- Explicit substitutions if running volume needs capping (swap to bike/erg)
+
+**Week 1 Context:**
+This is Week 1 - design sessions that build work capacity foundation, allow athlete to learn movement patterns, and don't overreach with volume or intensity.
 
 **Output convention:**
 
-- Present as a **list of 2 Strength Endurance sessions** (as per Week 1 skeleton).
-- Label clearly: *Strength Endurance Session 1 (Erg + Functional Strength)*, *Strength Endurance Session 2 (Run + HYROX Circuit)*."""
+- Present as a **list of 2 Strength Endurance sessions** (as per Week 1 skeleton)
+- Label clearly: *Strength Endurance Session 1 (Erg + Functional Strength)*, *Strength Endurance Session 2 (Run + HYROX Circuit)*"""
 
 
 def get_layer_5_prompt(hyrox_weights):
@@ -358,25 +462,83 @@ def get_layer_5_prompt(hyrox_weights):
 - Sandbag: {hyrox_weights.sandbag_kg}kg, 100m in race
 - Farmers Carry: 2×{hyrox_weights.farmers_carry_kg[0]}kg, 200m in race
 
-**HYROX Combo Session Philosophy:**
+**Purpose:**
 
-- Race simulations at race weight
-- Train pacing, transitions, mental game
-- ALL loads at race weight
-- Build race-specific fitness and confidence
+Build race-specific adaptations WITHOUT replicating full race stimulus every week.
+
+**Target Adaptations:**
+- Running on compromised/fatigued legs
+- Managing HR spikes from station work
+- Transition efficiency and mental resilience
+- Race-specific skill development
+
+**Key Principle:** Progressive exposure to race-like stress, not maximum stimulus weekly.
+
+**CRITICAL DISTINCTION:**
+
+Brick sessions ≠ Threshold development
+
+These sessions use threshold paces (T1/T2) but are NOT the same as dedicated threshold running:
+- HR is spiking from stations
+- Running form is compromised
+- Can't sustain pure threshold physiological stimulus
+- Purpose: Learn to run on tired legs, not develop lactate threshold
+
+Dedicated threshold sessions (Layer 2) provide the actual physiological development.
+
+**Variation Tools:**
+
+**Run Distances:**
+- 400-600m: Emphasizes station density, shorter runs allow more station volume
+- 800m: Balanced run/station split, moderate fatigue management
+- 1km: Race-specific distance, higher running emphasis
+
+**Station Volumes:**
+- 25-50% of race work: Technique focus, building movement patterns
+- 50-75% of race work: Quality with moderate volume
+- 75-100% of race work: Near race-level demands, high fatigue
+
+**Round Structure:**
+- Single station + run: Classic brick format, can repeat 4-6 rounds
+- Paired stations + run: Two stations back-to-back, then run (higher density)
+- Sequential station blocks: 3-4 stations, then longer run (very high density)
+
+**Rest/Transitions:**
+- Timed rest (90s-2min): Builds work capacity, allows HR recovery
+- Active rest (20-30s): Moderate density, some recovery
+- Minimal transitions (<10s): Race-specific, very high demand
+
+**Week 1 Guidance:**
+- Shorter runs (400-600m) OR moderate (800m)
+- 50-75% of race work allows quality focus without excessive fatigue
+- Timed rest (90-120s) appropriate for building foundation
+
+**Realistic Effort Distribution:**
+
+**Most rounds:** Z3-Z4 (controlled hard effort)
+- HR: 155-170 bpm
+- Sustainable pace on runs
+- Quality movement on stations
+
+**1-2 rounds (optional):** Z4-Z5 (race-pace intensity)
+- HR: 168-182 bpm
+- Near-maximal effort
+- Tests mental resilience
+
+**Week 1 Consideration:** Emphasize Z3-Z4 effort. Z5 work can be introduced later in block.
 
 **Objectives:**
 
-- Replicate HYROX race demands (compromised running, station transitions, Zone 4–5 intensity).
-- Train lactate tolerance and clearance while fatigued.
-- Practice pacing, breathing, and station efficiency under pressure.
+- Replicate HYROX race demands (compromised running, station transitions, Zone 4–5 intensity)
+- Train lactate tolerance and clearance while fatigued
+- Practice pacing, breathing, and station efficiency under pressure
 
 **Structure required in output:**
 
 For the HYROX Combo / Brick session, include:
 
-- **Purpose** (link to specific HYROX race demands).
-- **Warm-up** (run prep, machine primer, dynamic mobility).
+- **Purpose** (link to specific HYROX race demands)
+- **Warm-up** (run prep, machine primer, dynamic mobility)
 - **Main Blocks** (2–3 blocks combining running intervals with HYROX stations; examples: Run → Sled Push/Pull, Run → Burpee Broad Jumps, Run → Wall Balls). Explicit distances, reps, paces, heart rate targets (Zone 4–5), RPE guidance, and rest.
 
   For EVERY station exercise, specify:
@@ -387,21 +549,21 @@ For the HYROX Combo / Brick session, include:
   Example: "Run 800m → Sled Push {hyrox_weights.sled_push_kg}kg for 2×25m → 2 min rest"
   Example: "Run 1km → Wall Balls {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m, 50 reps"
 
-- **Cooldown** (HR drop, mobility, walking, breathing drills).
-- **Progression knob** (increase run distance per station, reduce rest, add rounds, or increase station volume).
+- **Cooldown** (HR drop, mobility, walking, breathing drills)
+- **Progression knob** (increase run distance per station, reduce rest, add rounds, or increase station volume)
 
 **Rules:**
 
-- Always include **running + at least 2 HYROX stations per block**.
-- Target total work time **45–60 minutes**.
-- Sessions should simulate cumulative fatigue: **shorter runs, higher station volume** in early blocks; **longer runs, reduced volume** in later blocks.
-- Keep intensity high (Zone 4–5) but with recoverable sets — do not "redline" early.
-- Provide substitutions if running load needs managing (swap to bike/erg).
+- Always include **running + at least 2 HYROX stations per block**
+- Target total work time **45–60 minutes**
+- Sessions should simulate cumulative fatigue: **shorter runs, higher station volume** in early blocks; **longer runs, reduced volume** in later blocks
+- Keep intensity high (Zone 4–5) but with recoverable sets — do not "redline" early
+- Provide substitutions if running load needs managing (swap to bike/erg)
 
 **Output convention:**
 
-- Deliver as a **single HYROX Combo / Brick session** (for Week 1).
-- Label clearly: *HYROX Combo / Brick Session – Week 1*."""
+- Deliver as a **single HYROX Combo / Brick session** (for Week 1)
+- Label clearly: *HYROX Combo / Brick Session – Week 1*"""
 
 
 def get_layer_6_prompt():
@@ -416,17 +578,17 @@ def get_layer_6_prompt():
 
 **Structure required in output:**
 
-- **Purpose** (why low-intensity bike/erg work supports HYROX training).
-- **Warm-up** (5–10 min ramp-up).
-- **Main work** (30–50 min steady Z2 on bike or erg; technique cues; HR targets).
-- **Cooldown** (mobility, stretch, breathwork).
-- **Substitutions** (alternative modalities if needed).
-- **HYROX Transfer** (how this supports race performance).
-- **Progression knob** (extend duration, add short tempo surges in later weeks).
+- **Purpose** (why low-intensity bike/erg work supports HYROX training)
+- **Warm-up** (5–10 min ramp-up)
+- **Main work** (30–50 min steady Z2 on bike or erg; technique cues; HR targets)
+- **Cooldown** (mobility, stretch, breathwork)
+- **Substitutions** (alternative modalities if needed)
+- **HYROX Transfer** (how this supports race performance)
+- **Progression knob** (extend duration, add short tempo surges in later weeks)
 
 **Output convention:**
 
-- Present as **1 complete Aerobic Engine/Recovery session** with full detail."""
+- Present as **1 complete Aerobic Engine/Recovery session** with full detail"""
 
 
 def get_layer_7_prompt(block_objectives, athlete_profile):
@@ -441,9 +603,9 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential acti
 
 **Objectives:**
 
-- Produce a **day-by-day Week 1 program** with **all essential session detail**.
-- Maintain **consistency with the skeleton plan from Layer 1**.
-- Ensure **weekly running volume totals ~{block_objectives.running_mileage_week1} km**.
+- Produce a **day-by-day Week 1 program** with **all essential session detail**
+- Maintain **consistency with the skeleton plan from Layer 1**
+- Ensure **weekly running volume totals ~{block_objectives.running_mileage_week1} km**
 - **CRITICAL: The long run MUST be scheduled on {athlete_profile.week_structure.long_run_day}**. Verify this in your output.
 - **CRITICAL: Double days (AM + PM) MUST be on {athlete_profile.week_structure.double_days}**. No other days should have double sessions. Verify this in your output.
 
@@ -452,36 +614,36 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential acti
 - **IMPORTANT: Always start weeks on Monday** (even if Monday is a rest day). Present the week as Monday → Sunday.
 - For each day (Monday through Sunday):
     - If it's a rest day, simply state: "**Monday: Rest Day**"
-    - If it's a training day, list **Main AM** and **Main PM (if double day)**.
+    - If it's a training day, list **Main AM** and **Main PM (if double day)**
     - Under each session, include:
-        - **Purpose** (1-2 sentences: how it supports HYROX + {block_objectives.primary_goal} phase).
-        - **Warm-up** (brief structure: duration, key movements).
-        - **Main Work** (all sets/reps/km/HR/paces/rest - this is the critical detail).
-        - **Cooldown** (brief structure).
-        - **Progression** (1-2 sentences on how to evolve in later weeks).
+        - **Purpose** (1-2 sentences: how it supports HYROX + {block_objectives.primary_goal} phase)
+        - **Warm-up** (brief structure: duration, key movements)
+        - **Main Work** (all sets/reps/km/HR/paces/rest - this is the critical detail)
+        - **Cooldown** (brief structure)
+        - **Progression** (1-2 sentences on how to evolve in later weeks)
 
 **Efficiency Guidelines to Stay Within Token Budget:**
 
-- **Purpose sections:** 1-2 concise sentences (not paragraphs).
-- **Warm-ups:** Structure and duration only (not step-by-step coaching cues).
-- **Main Work:** Full prescription (this is non-negotiable) but remove redundant explanations.
-- **Cooldowns:** Structure only (movements + duration).
-- **Remove:** Verbose coaching narratives, philosophical explanations, redundant examples, pain protocol adjustment sections.
-- **Keep:** All numbers (sets, reps, paces, distances, HR zones, rest periods, progressions).
+- **Purpose sections:** 1-2 concise sentences (not paragraphs)
+- **Warm-ups:** Structure and duration only (not step-by-step coaching cues)
+- **Main Work:** Full prescription (this is non-negotiable) but remove redundant explanations
+- **Cooldowns:** Structure only (movements + duration)
+- **Remove:** Verbose coaching narratives, philosophical explanations, redundant examples, pain protocol adjustment sections
+- **Keep:** All numbers (sets, reps, paces, distances, HR zones, rest periods, progressions)
 
 **Rules:**
 
-- **Essential detail preserved** → all workout prescriptions must be complete and actionable.
-- **Explicitly calculate and show total running mileage** at the end.
-- Highlight session intensity (Z1–Z5) clearly.
-- Use clean formatting (headings, tables where appropriate for efficiency).
+- **Essential detail preserved** → all workout prescriptions must be complete and actionable
+- **Explicitly calculate and show total running mileage** at the end
+- Highlight session intensity (Z1–Z5) clearly
+- Use clean formatting (headings, tables where appropriate for efficiency)
 
 **Output convention:**
 
-- Label clearly: *Week 1 – {block_objectives.primary_goal} Phase*.
+- Label clearly: *Week 1 – {block_objectives.primary_goal} Phase*
 - End with a summary:
     - "Total run mileage = XX km (target ~{block_objectives.running_mileage_week1} km)"
-    - "Total sessions = {sessions} main sessions."
+    - "Total sessions = {sessions} main sessions"
 
 **After the full week, provide an intensity audit:**
 
@@ -545,23 +707,23 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
 **Progression Rules:**
 
 1. **Running Volume**
-    - Increase **total weekly mileage by ~{block_objectives.weekly_progression_percent}%** (target ≈ {week_km:.0f} km).
-    - Distribute volume proportionally across sessions (do not overload a single run).
+    - Increase **total weekly mileage by ~{block_objectives.weekly_progression_percent}%** (target ≈ {week_km:.0f} km)
+    - Distribute volume proportionally across sessions (do not overload a single run)
 
 2. **Intensity Balance**
-    - Week 2: Maintain **Easy = 60–70%**, **Moderate = ~20%**, **Hard = ~10%** of total time.
-    - Week 3+: Allow **Easy = 55–65%**, **Moderate = 20–25%**, **Hard = 10–15%** (slightly more hard work).
-    - Preserve strict alternation: no back-to-back Z4–Z5 sessions.
+    - Week 2: Maintain **Easy = 60–70%**, **Moderate = ~20%**, **Hard = ~10%** of total time
+    - Week 3+: Allow **Easy = 55–65%**, **Moderate = 20–25%**, **Hard = 10–15%** (slightly more hard work)
+    - Preserve strict alternation: no back-to-back Z4–Z5 sessions
 
 3. **Progression Types**
     - **Running quality sessions**: Progress by slightly longer intervals, OR additional reps, OR slightly reduced rest. **Do not progress all three at once.**
-    - **Strength sessions**: Progress either load, volume, or movement complexity — **not all at once**.
-    - **Strength endurance**: Increase **time-under-tension or conditioning element** (e.g., longer EMOMs, extended bike/row/run blocks).
+    - **Strength sessions**: Progress either load, volume, or movement complexity — **not all at once**
+    - **Strength endurance**: Increase **time-under-tension or conditioning element** (e.g., longer EMOMs, extended bike/row/run blocks)
 
 4. **Guardrails**
-    - Pain ≤2/10 during and ≤3/10 next day → if exceeded, cut or swap.
-    - No back-to-back **hard (Z4–Z5)** sessions.
-    - Running surfaces = flat/soft or track where possible.
+    - Pain ≤2/10 during and ≤3/10 next day → if exceeded, cut or swap
+    - No back-to-back **hard (Z4–Z5)** sessions
+    - Running surfaces = flat/soft or track where possible
     - **CRITICAL: Long run MUST remain on {athlete_profile.week_structure.long_run_day}**. Do not move it to a different day.
     - **CRITICAL: Double days (AM + PM) MUST remain on {athlete_profile.week_structure.double_days}**. Do not move them or add double days on other days.
 
@@ -620,26 +782,26 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
 **Deload Rules:**
 
 1. **Running Volume**
-    - Reduce **weekly mileage by ~30–40%** compared to Week {block_objectives.block_duration_weeks} (target ≈ {deload_km:.0f} km).
-    - Keep **all {runs} runs**, but shorten distances and/or reduce interval reps.
+    - Reduce **weekly mileage by ~30–40%** compared to Week {block_objectives.block_duration_weeks} (target ≈ {deload_km:.0f} km)
+    - Keep **all {runs} runs**, but shorten distances and/or reduce interval reps
 
 2. **Intensity Distribution**
     - Global target:
         - **Easy = 70–80%**
         - **Moderate = 15–20%**
-        - **Hard = ≤5%** (keep touches of intensity sharp but very short).
+        - **Hard = ≤5%** (keep touches of intensity sharp but very short)
 
 3. **Strength & Strength Endurance**
-    - **Strength**: Reduce load to ~60–70% of Week {block_objectives.block_duration_weeks}; fewer sets; no grind.
-    - **Strength endurance**: Simplify to 1–2 lighter density circuits (≤12 mins); keep technique sharp.
-    - **No new overloads** — this week is **about recovery, not gains**.
+    - **Strength**: Reduce load to ~60–70% of Week {block_objectives.block_duration_weeks}; fewer sets; no grind
+    - **Strength endurance**: Simplify to 1–2 lighter density circuits (≤12 mins); keep technique sharp
+    - **No new overloads** — this week is **about recovery, not gains**
 
 4. **Guardrails**
-    - No back-to-back intensity days.
-    - Keep pain ≤1–2/10 during, ≤2–3/10 next day.
-    - Prioritize **sleep, nutrition, and recovery habits**.
-    - **CRITICAL: Long run MUST remain on {athlete_profile.week_structure.long_run_day}** (just make it shorter/easier).
-    - **CRITICAL: Double days (AM + PM) MUST remain on {athlete_profile.week_structure.double_days}** (just make sessions lighter/shorter).
+    - No back-to-back intensity days
+    - Keep pain ≤1–2/10 during, ≤2–3/10 next day
+    - Prioritize **sleep, nutrition, and recovery habits**
+    - **CRITICAL: Long run MUST remain on {athlete_profile.week_structure.long_run_day}** (just make it shorter/easier)
+    - **CRITICAL: Double days (AM + PM) MUST remain on {athlete_profile.week_structure.double_days}** (just make sessions lighter/shorter)
 
 **Output Requirements:**
 
@@ -658,5 +820,3 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
 - **Preserve:** All workout numbers, deload reductions, key technical cues.
 
 **Remember: You MUST complete the full week (all 7 days) within your response. Prioritize workout prescriptions over explanatory text.**"""
-
-
