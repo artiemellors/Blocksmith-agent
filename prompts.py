@@ -375,7 +375,7 @@ Strength endurance sessions build the ability to sustain power output under meta
 
 **FOUR VALID FORMATS:**
 
-Choose ONE format per session:
+Choose ONE to TWO formats per session. Total work time across all formats in the session must add up to 35-50 minutes.
 
 **Format 1: CIRCUIT**
 - 3-6 rounds with 1-3 min rest between rounds
@@ -384,7 +384,7 @@ Choose ONE format per session:
 - Structured, repeatable progression
 
 **Format 2: AMRAP (As Many Rounds As Possible)**
-- 15-30 minute time cap
+- 20-40 minute time cap
 - 5-7 exercises per round
 - MUST include cardio machine (Row/Ski/Bike)
 - No rest - continuous work
@@ -392,7 +392,7 @@ Choose ONE format per session:
 
 **Format 3: EMOM (Every Minute on the Minute)**
 - 15-30 minute duration
-- 3-4 exercises rotating
+- 5-6 exercises rotating
 - MUST include cardio machine (Row/Ski/Bike)
 - 10-20s built-in rest per minute
 
@@ -418,18 +418,19 @@ Choose ONE format per session:
 **A. HYROX-Specific (2-3 exercises):**
 - SkiErg: 250-500m
 - Rowing: 250-500m
-- Sled Push/Pull: 25-50m
-- Farmer's Carry: 80-200m
-- Wall Balls: 15-25 reps
-- Burpees: 10-20 reps or 40-80m
-- Lunges (weighted): 15-40 reps or 50-100m
+- Sled Push/Pull: 12.5-25m
+- Farmer's Carry: 40-100m
+- Wall Balls: 20-35 reps
+- Burpees: 10-20 reps or 20-60m
+- Lunges (weighted): 15-40 reps or 25-80m
 
 **B. Functional Movements (2-3 exercises):**
-- Thrusters: 15-25 reps
-- KB Swings/Deadlifts: 15-25 reps
+- DB Thrusters: 15-25 reps
+- KB Swings: 15-25 reps
 - Devil Press: 10-20 reps
 - Box Step-ups: 15-25 reps
-- Air Squats: 15-25 reps
+- Burpee box jumps: 10-20 reps
+- Air Squat jumps: 15-25 reps
 - Push-ups: 10-20 reps
 - DB Snatch (alternating): 15-25 reps
 
@@ -470,21 +471,25 @@ Example: A trap bar deadlift might build sled-pulling capacity better than doing
 **EMOM Format:**
 - Duration: 15-30 minutes
 - MANDATORY: Must include cardio machine in rotation
-- 3-4 exercises rotating (NOT just 2)
+- 5-6 exercises rotating (NOT just 2)
 - Work fills 40-50 seconds, 10-20s rest per minute
 
-**3-Exercise Rotation:**
+**5-Exercise Rotation:**
 Minute 1: Cardio Machine 1 (e.g., Row 15 cal)
-Minute 2: Movement 2 (e.g., Push-ups 15-20)
-Minute 3: Movement 3 (e.g., KB Cleans 12-15)
-Repeat 5-7 rounds
+Minute 2: Functional Movement (e.g., Push-ups 15-20)
+Minute 3: HYROX Movement (e.g., Wall Balls 20)
+Minute 4: Functional Movement (e.g., KB Swings 15)
+Minute 5: Cardio Machine 2 (e.g., Ski 15 cal)
+Repeat 3-6 rounds
 
-**4-Exercise Rotation:**
+**6-Exercise Rotation:**
 Minute 1: Cardio Machine 1 (e.g., Row 15 cal)
-Minute 2: Functional Movement (e.g., Thrusters 15)
-Minute 3: Cardio Machine 2 (e.g., Ski 15 cal)
-Minute 4: HYROX Movement (e.g., Wall Balls 20)
-Repeat 4-6 rounds
+Minute 2: Functional Movement (e.g., DB Thrusters 15)
+Minute 3: HYROX Movement (e.g., Sled Push 12.5m)
+Minute 4: Functional Movement (e.g., Box Step-ups 20)
+Minute 5: Cardio Machine 2 (e.g., Ski 15 cal)
+Minute 6: HYROX Movement (e.g., Burpees 12)
+Repeat 3-5 rounds
 
 **IWT Format:**
 - Structure: ALWAYS Cardio Machine → Strength Movement
@@ -564,7 +569,7 @@ For EACH strength endurance session, include:
 **Rules:**
 
 - ALL formats MUST include cardio machines - NOT optional
-- EMOM must use 3-4 exercises rotating, NOT just 2
+- EMOM must use 5-6 exercises rotating, NOT just 2
 - Keep heart rate between upper Zone 2 → mid Zone 4 depending on format
 - Each main block should last 12–25 minutes
 - Balance sessions across the week: one more sled/carry focused; one more erg/wall ball focused
@@ -574,7 +579,7 @@ For EACH strength endurance session, include:
 
 - Circuit: Structured practice, clear rounds, good for learning stations
 - AMRAP: Continuous work, teaches pacing, mental toughness
-- EMOM: Variety with time constraints, lactate tolerance, 3-4 movement rotation
+- EMOM: Variety with time constraints, lactate tolerance, 5-6 movement rotation
 - IWT: Maximum intensity intervals, explicit cardio-strength pairing
 
 Choose formats that match athlete experience level and training phase objectives.
