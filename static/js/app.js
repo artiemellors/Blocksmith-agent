@@ -507,7 +507,8 @@ const modelOptions = {
         { value: "claude-opus-4-20250514", name: "Claude Opus 4", info: "200K context, most capable" }
     ],
     openai: [
-        { value: "gpt-4o", name: "GPT-4o", info: "128K context, fast and capable (recommended)" },
+        { value: "gpt-5.1", name: "GPT-5.1", info: "Latest GPT-5 model (recommended)" },
+        { value: "gpt-4o", name: "GPT-4o", info: "128K context, fast and capable" },
         { value: "gpt-4-turbo", name: "GPT-4 Turbo", info: "128K context, strong reasoning" },
         { value: "o1-preview", name: "o1-preview (Reasoning)", info: "128K context, slower but thoughtful" }
     ],
