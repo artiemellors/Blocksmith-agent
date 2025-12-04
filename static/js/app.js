@@ -512,7 +512,8 @@ const modelOptions = {
         { value: "o1-preview", name: "o1-preview (Reasoning)", info: "128K context, slower but thoughtful" }
     ],
     gemini: [
-        { value: "gemini-1.5-pro", name: "Gemini 1.5 Pro", info: "2M context, excellent for long prompts (recommended)" },
+        { value: "gemini-3-pro-preview", name: "Gemini 3 Pro (Preview)", info: "Latest Gemini 3 model, preview release (recommended)" },
+        { value: "gemini-1.5-pro", name: "Gemini 1.5 Pro", info: "2M context, excellent for long prompts" },
         { value: "gemini-2.0-flash-exp", name: "Gemini 2.0 Flash (Experimental)", info: "1M context, very fast" },
         { value: "gemini-1.5-flash", name: "Gemini 1.5 Flash", info: "1M context, budget-friendly" }
     ]
