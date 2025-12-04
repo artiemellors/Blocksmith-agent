@@ -485,4 +485,73 @@ if (gymSetupDropdown) {
     });
 }
 
+// Toggle collapsible sections
+function toggleSection(contentId, iconId) {
+    const content = document.getElementById(contentId);
+    const icon = document.getElementById(iconId);
+
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.textContent = '▼';
+    } else {
+        content.style.display = 'none';
+        icon.textContent = '▶';
+    }
+}
+
+// Model options for each provider
+const modelOptions = {
+    anthropic: [
+        { value: "claude-sonnet-4-5-20250929", name: "Claude Sonnet 4.5", info: "200K context, balanced performance (recommended)" },
+        { value: "claude-3-5-sonnet-20241022", name: "Claude 3.5 Sonnet", info: "200K context, very capable" },
+        { value: "claude-opus-4-20250514", name: "Claude Opus 4", info: "200K context, most capable" }
+    ],
+    openai: [
+        { value: "gpt-4o", name: "GPT-4o", info: "128K context, fast and capable (recommended)" },
+        { value: "gpt-4-turbo", name: "GPT-4 Turbo", info: "128K context, strong reasoning" },
+        { value: "o1-preview", name: "o1-preview (Reasoning)", info: "128K context, slower but thoughtful" }
+    ],
+    gemini: [
+        { value: "gemini-1.5-pro", name: "Gemini 1.5 Pro", info: "2M context, excellent for long prompts (recommended)" },
+        { value: "gemini-2.0-flash-exp", name: "Gemini 2.0 Flash (Experimental)", info: "1M context, very fast" },
+        { value: "gemini-1.5-flash", name: "Gemini 1.5 Flash", info: "1M context, budget-friendly" }
+    ]
+};
+
+// Update model dropdown based on selected provider
+function updateModelOptions() {
+    const provider = document.getElementById('ai_provider').value;
+    const modelSelect = document.getElementById('model_name');
+    const modelInfo = document.getElementById('model_info');
+
+    // Clear existing options
+    modelSelect.innerHTML = '';
+
+    // Add new options
+    modelOptions[provider].forEach(model => {
+        const option = document.createElement('option');
+        option.value = model.value;
+        option.textContent = model.name;
+        option.dataset.info = model.info;
+        modelSelect.appendChild(option);
+    });
+
+    // Update info text
+    modelInfo.textContent = modelSelect.options[modelSelect.selectedIndex].dataset.info;
+}
+
+// Initialize model options on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateModelOptions();
+
+    // Update info when model changes
+    const modelSelect = document.getElementById('model_name');
+    if (modelSelect) {
+        modelSelect.addEventListener('change', function() {
+            const modelInfo = document.getElementById('model_info');
+            modelInfo.textContent = this.options[this.selectedIndex].dataset.info;
+        });
+    }
+});
+
 console.log('Blocksmith web interface loaded');

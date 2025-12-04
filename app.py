@@ -86,15 +86,17 @@ def parse_block_summary(summary_path):
     return data
 
 
-def generate_block_async(session_id: str, input_data: TrainingBlockInput, api_key: str, output_dir: str):
+def generate_block_async(session_id: str, input_data: TrainingBlockInput, api_key: str, output_dir: str, ai_provider: str = 'anthropic', model_name: str = 'claude-sonnet-4-5-20250929'):
     """
     Generate training block asynchronously and update progress.
 
     Args:
         session_id: Unique session identifier
         input_data: Training block input configuration
-        api_key: Anthropic API key
+        api_key: API key for the selected provider
         output_dir: Output directory for generated files
+        ai_provider: AI provider to use ('anthropic', 'openai', or 'gemini')
+        model_name: Model to use for generation
     """
     try:
         generation_status[session_id] = {
@@ -106,7 +108,8 @@ def generate_block_async(session_id: str, input_data: TrainingBlockInput, api_ke
 
         # Create generation config
         gen_config = GenerationConfig(
-            model_name='claude-sonnet-4-5-20250929',
+            provider=ai_provider,
+            model_name=model_name,
             save_intermediate_layers=True,
             output_directory=output_dir
         )
@@ -222,12 +225,30 @@ def generate():
     try:
         data = request.json
 
-        # Validate API key
-        api_key = os.getenv('ANTHROPIC_API_KEY')
+        # Get AI provider settings from form (default to Anthropic/Claude)
+        ai_provider = data.get('ai_provider', 'anthropic')
+        model_name = data.get('model_name', 'claude-sonnet-4-5-20250929')
+
+        # Get appropriate API key based on provider
+        if ai_provider == "anthropic":
+            api_key = os.getenv('ANTHROPIC_API_KEY')
+            key_name = 'ANTHROPIC_API_KEY'
+        elif ai_provider == "openai":
+            api_key = os.getenv('OPENAI_API_KEY')
+            key_name = 'OPENAI_API_KEY'
+        elif ai_provider == "gemini":
+            api_key = os.getenv('GOOGLE_API_KEY')
+            key_name = 'GOOGLE_API_KEY'
+        else:
+            return jsonify({
+                'success': False,
+                'error': f'Unknown AI provider: {ai_provider}'
+            }), 400
+
         if not api_key:
             return jsonify({
                 'success': False,
-                'error': 'API key not configured. Please set ANTHROPIC_API_KEY in .env file'
+                'error': f'API key not configured. Please set {key_name} in .env file'
             }), 500
 
         # Build athlete profile
@@ -309,14 +330,16 @@ def generate():
         os.makedirs(output_dir, exist_ok=True)
 
         # Start generation in background thread
-        thread = Thread(target=generate_block_async, args=(session_id, input_data, api_key, output_dir))
+        thread = Thread(target=generate_block_async, args=(session_id, input_data, api_key, output_dir, ai_provider, model_name))
         thread.daemon = True
         thread.start()
 
         return jsonify({
             'success': True,
             'session_id': session_id,
-            'message': 'Generation started'
+            'message': 'Generation started',
+            'provider': ai_provider,
+            'model': model_name
         })
 
     except ValueError as e:

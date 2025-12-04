@@ -6,9 +6,9 @@ import os
 import time
 from pathlib import Path
 from typing import Dict, List, Optional
-from anthropic import Anthropic
 
 from models import TrainingBlockInput, GenerationConfig, HyroxWeights
+from ai_providers import get_provider
 from prompts import (
     get_layer_0_prompt,
     get_layer_1_prompt,
@@ -26,16 +26,25 @@ from prompts import (
 class TrainingBlockGenerator:
     """Generates complete training blocks through layered prompting."""
 
-    def __init__(self, config: GenerationConfig, api_key: str):
+    def __init__(self, config: GenerationConfig, api_key: str = None):
         """
         Initialize the generator.
 
         Args:
             config: Generation configuration
-            api_key: Anthropic API key
+            api_key: API key (optional, will try environment variables)
         """
         self.config = config
-        self.client = Anthropic(api_key=api_key)
+
+        # Get the appropriate AI provider
+        self.provider = get_provider(
+            provider_name=config.provider,
+            model_name=config.model_name,
+            max_tokens=config.max_tokens,
+            temperature=config.temperature,
+            api_key=api_key
+        )
+
         self.layer_outputs: Dict[str, str] = {}
 
         # Create output directory
@@ -70,18 +79,9 @@ class TrainingBlockGenerator:
         if context:
             full_prompt = f"{context}\n\n---\n\n{prompt}"
 
-        # Call Claude API
+        # Call AI provider (abstracted)
         try:
-            message = self.client.messages.create(
-                model=self.config.model_name,
-                max_tokens=self.config.max_tokens,
-                temperature=self.config.temperature,
-                messages=[
-                    {"role": "user", "content": full_prompt}
-                ]
-            )
-
-            output = message.content[0].text
+            output = self.provider.generate(full_prompt)
 
             # Save output
             self.layer_outputs[layer_name] = output

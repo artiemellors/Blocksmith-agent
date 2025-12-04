@@ -15,6 +15,38 @@
 
         <div id="form-container" class="form-section">
             <form id="config-form">
+                <!-- Advanced Settings (Collapsible) -->
+                <div class="section-container">
+                    <div class="collapsible-header" onclick="toggleSection('advanced-content', 'advanced-icon')">
+                        <span id="advanced-icon" class="arrow-icon">▶</span>
+                        <div class="header-content">
+                            <div class="header-title">⚙️ Advanced Settings (Optional)</div>
+                            <div class="header-subtitle">Choose AI provider and model</div>
+                        </div>
+                    </div>
+
+                    <div id="advanced-content" class="collapsible-content" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ai_provider">AI Provider</label>
+                                <select id="ai_provider" name="ai_provider" onchange="updateModelOptions()">
+                                    <option value="anthropic" selected>Anthropic (Claude)</option>
+                                    <option value="openai">OpenAI (GPT)</option>
+                                    <option value="gemini">Google (Gemini)</option>
+                                </select>
+                                <small>Select which AI service to use for generation</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="model_name">Model</label>
+                                <select id="model_name" name="model_name">
+                                    <!-- Options will be populated by JavaScript -->
+                                </select>
+                                <small id="model_info" class="model-info"></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Athlete Information -->
                 <section class="form-section">
                     <h2>Athlete Information</h2>

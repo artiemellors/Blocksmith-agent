@@ -189,6 +189,7 @@ class TrainingBlockInput(BaseModel):
 
 class GenerationConfig(BaseModel):
     """Configuration for the generation process."""
+    provider: str = "anthropic"  # "anthropic", "openai", or "gemini"
     model_name: str = "claude-sonnet-4-5-20250929"
     max_tokens: int = 16000
     temperature: float = 1.0
