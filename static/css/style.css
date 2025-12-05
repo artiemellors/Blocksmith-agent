@@ -415,14 +415,14 @@ button:disabled, .btn-primary:disabled {
     background: var(--color-white);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    padding: var(--space-4xl);
+    padding: var(--space-2xl);
     margin-bottom: var(--space-2xl);
     text-align: center;
     box-shadow: var(--shadow-md);
 }
 
 .progress-header {
-    margin-bottom: var(--space-4xl);
+    margin-bottom: var(--space-2xl);
 }
 
 .progress-header h2 {
@@ -470,14 +470,14 @@ button:disabled, .btn-primary:disabled {
     background: var(--color-white);
     border: 1px solid var(--color-success);
     border-radius: var(--radius-lg);
-    padding: var(--space-4xl);
+    padding: var(--space-2xl);
     margin-bottom: var(--space-2xl);
     box-shadow: var(--shadow-md);
 }
 
 .success-header {
     text-align: center;
-    margin-bottom: var(--space-4xl);
+    margin-bottom: var(--space-2xl);
 }
 
 .success-header h2 {
