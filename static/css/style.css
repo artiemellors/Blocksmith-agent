@@ -7,6 +7,7 @@
     --color-white: #FFFFFF;
     --color-charcoal: #222222;
     --color-hyrox-yellow: #FFD700;
+    --color-hyrox-yellow-hover: #F5CC00;
 
     /* Secondary Colors */
     --color-background: #FAFAFA;
@@ -192,7 +193,7 @@ header {
     border-radius: var(--radius-lg);
     padding: var(--space-2xl);
     margin-bottom: var(--space-2xl);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-md);
 }
 
 /* Collapsible Sections */
@@ -342,7 +343,7 @@ button, .btn-primary, .btn-secondary, .btn-destructive {
 }
 
 .btn-primary:hover, button[type="submit"]:hover, #generate-btn:hover {
-    background: #F5CC00;
+    background: var(--color-hyrox-yellow-hover);
     transform: translateY(-1px);
     box-shadow: var(--shadow-yellow);
 }
