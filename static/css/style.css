@@ -28,18 +28,18 @@
     --font-mono: 'SF Mono', Monaco, 'Courier New', monospace;
 
     /* Headings */
-    --font-h1-size: 40px;
-    --font-h1-height: 48px;
+    --font-h1-size: 28px;
+    --font-h1-height: 36px;
     --font-h1-weight: 600;
     --font-h1-spacing: -0.5px;
 
-    --font-h2-size: 28px;
-    --font-h2-height: 36px;
+    --font-h2-size: 20px;
+    --font-h2-height: 28px;
     --font-h2-weight: 600;
     --font-h2-spacing: -0.3px;
 
-    --font-h3-size: 20px;
-    --font-h3-height: 28px;
+    --font-h3-size: 18px;
+    --font-h3-height: 26px;
     --font-h3-weight: 600;
     --font-h3-spacing: -0.2px;
 
@@ -67,9 +67,9 @@
     --space-sm: 8px;
     --space-md: 12px;
     --space-lg: 16px;
-    --space-xl: 24px;
-    --space-2xl: 32px;
-    --space-3xl: 40px;
+    --space-xl: 20px;
+    --space-2xl: 24px;
+    --space-3xl: 32px;
     --space-4xl: 48px;
     --space-5xl: 64px;
 
@@ -199,10 +199,10 @@ header {
 .collapsible-header {
     display: flex;
     align-items: center;
-    gap: var(--space-lg);
+    gap: var(--space-md);
     cursor: pointer;
-    padding: var(--space-lg);
-    margin: calc(-1 * var(--space-lg));
+    padding: var(--space-md);
+    margin: calc(-1 * var(--space-md));
     border-radius: var(--radius-md);
     transition: background-color 0.2s ease;
 }
@@ -212,10 +212,10 @@ header {
 }
 
 .arrow-icon {
-    font-size: var(--font-h3-size);
+    font-size: 16px;
     color: var(--color-charcoal);
     transition: transform 0.2s ease;
-    min-width: 24px;
+    min-width: 16px;
 }
 
 .header-content {
@@ -253,6 +253,11 @@ header {
     display: flex;
     flex-direction: column;
     gap: var(--space-sm);
+    margin-bottom: var(--space-xl);
+}
+
+.form-row .form-group {
+    margin-bottom: 0;
 }
 
 label {
@@ -271,7 +276,7 @@ textarea {
     background: var(--color-white);
     border: 1px solid var(--color-border-dark);
     border-radius: var(--radius-md);
-    padding: 14px 20px;
+    padding: 12px 16px;
     font-family: var(--font-primary);
     font-size: var(--font-body-size);
     color: var(--color-charcoal);
@@ -299,7 +304,8 @@ textarea::placeholder {
 
 small {
     display: block;
-    font-size: var(--font-caption-size);
+    font-size: 13px;
+    line-height: 18px;
     color: var(--color-text-secondary);
     margin-top: var(--space-xs);
 }
@@ -317,7 +323,7 @@ button, .btn-primary, .btn-secondary, .btn-destructive {
     font-size: var(--font-body-size);
     font-weight: 600;
     letter-spacing: -0.2px;
-    padding: 14px 32px;
+    padding: 12px 24px;
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -630,6 +636,22 @@ input[type="checkbox"] + label {
     letter-spacing: 1px;
 }
 
+/* Emoji Lists */
+.emoji-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+}
+
+.emoji-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--font-caption-size);
+    color: var(--color-text-secondary);
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     .container {
@@ -649,17 +671,17 @@ input[type="checkbox"] + label {
     }
 
     h1 {
-        font-size: 32px;
-        line-height: 40px;
-    }
-
-    h2 {
         font-size: 24px;
         line-height: 32px;
     }
 
+    h2 {
+        font-size: 18px;
+        line-height: 26px;
+    }
+
     .form-section, .section-container {
-        padding: var(--space-xl);
+        padding: var(--space-lg);
     }
 
     #progress-container, #success-container {
