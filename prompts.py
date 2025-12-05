@@ -24,10 +24,7 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
 
     # Build race context section
     race_section = ""
-    perf = athlete_profile.performance_benchmarks
-    has_race_data = (block_objectives.target_race_date or block_objectives.race_type or
-                     perf.last_hyrox_date or perf.last_hyrox_time or
-                     perf.goal_hyrox_time or perf.races_completed > 0)
+    has_race_data = (block_objectives.target_race_date or block_objectives.race_type)
 
     if has_race_data:
         race_lines = []
@@ -36,30 +33,9 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
             if block_objectives.weeks_to_race:
                 race_lines.append(f"- Weeks to race: {block_objectives.weeks_to_race}")
         if block_objectives.race_type:
-            race_lines.append(f"- Race type: {block_objectives.race_type}")
-        if perf.last_hyrox_date and perf.last_hyrox_time:
-            race_lines.append(f"- Recent best: {perf.last_hyrox_time} ({perf.last_hyrox_date})")
-        elif perf.last_hyrox_time:
-            race_lines.append(f"- Recent best: {perf.last_hyrox_time}")
-        if perf.goal_hyrox_time:
-            race_lines.append(f"- Goal time: {perf.goal_hyrox_time}")
-        if perf.races_completed > 0:
-            race_lines.append(f"- Races completed: {perf.races_completed}")
+            race_lines.append(f"- Race category: {block_objectives.race_type.replace('_', ' ').title()}")
 
         race_section = "\n**Race Context:**\n\n" + "\n".join(race_lines) + "\n"
-
-    # Build performance profile section
-    performance_profile = ""
-    if perf.strong_stations or perf.weak_stations:
-        profile_lines = []
-        if perf.strong_stations:
-            stations_str = ", ".join(perf.strong_stations)
-            profile_lines.append(f"- Strong stations: {stations_str}")
-        if perf.weak_stations:
-            stations_str = ", ".join(perf.weak_stations)
-            profile_lines.append(f"- Limiter stations: {stations_str}")
-
-        performance_profile = "\n**Performance Profile:**\n\n" + "\n".join(profile_lines) + "\n"
 
     # Build equipment section
     equipment_list = ", ".join(athlete_profile.equipment.available_equipment)
@@ -139,7 +115,7 @@ Week 1 is a BASELINE week - sessions should be challenging but clearly achievabl
 """
 
     return f"""You are an elite HYROX coach and strict scheduler. You are designing training for {athlete_profile.name}, a {athlete_profile.age}-year-old hybrid athlete in a {block_objectives.primary_goal} phase.
-{injury_section}{race_section}{performance_profile}{hyrox_spec_section}
+{injury_section}{race_section}{hyrox_spec_section}
 **Physiological Parameters:**
 
 - HRmax: {hr_max} bpm

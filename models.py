@@ -90,16 +90,6 @@ class TrainingWeekStructure(BaseModel):
             return f"{training_days_list[0]} → {training_days_list[-1]} (with rest on {', '.join(rest_list)})"
 
 
-class PerformanceBenchmarks(BaseModel):
-    """Performance benchmarks and HYROX-specific data."""
-    last_hyrox_date: Optional[str] = Field(None, description="Date of last HYROX race")
-    last_hyrox_time: Optional[str] = Field(None, description="Last HYROX time (HH:MM:SS format)")
-    goal_hyrox_time: Optional[str] = Field(None, description="Goal HYROX time (HH:MM:SS format)")
-    races_completed: int = Field(default=0, description="Number of HYROX races completed")
-    strong_stations: List[str] = Field(default=[], description="Stations where athlete excels")
-    weak_stations: List[str] = Field(default=[], description="Stations needing improvement")
-
-
 class Equipment(BaseModel):
     """Available equipment for training."""
     primary_location: str = Field(
@@ -170,7 +160,6 @@ class AthleteProfile(BaseModel):
     week_structure: TrainingWeekStructure = Field(default_factory=TrainingWeekStructure)
     equipment: Equipment = Field(default_factory=Equipment)
     injury_info: InjuryInformation = Field(default_factory=InjuryInformation)
-    performance_benchmarks: PerformanceBenchmarks = Field(default_factory=PerformanceBenchmarks)
 
 
 class TrainingBlockInput(BaseModel):

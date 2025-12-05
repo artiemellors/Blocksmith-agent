@@ -137,11 +137,23 @@
                 <!-- Block Objectives -->
                 <section class="form-section">
                     <h2>Block Objectives</h2>
-                    <div class="form-group">
-                        <label for="primary_goal">Primary Goal *</label>
-                        <input type="text" id="primary_goal" name="primary_goal" required value="BUILD"
-                               placeholder="e.g., build, peak, base building">
-                        <small>What's your main focus? (e.g., build, peak, base building)</small>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="primary_goal">Primary Goal *</label>
+                            <input type="text" id="primary_goal" name="primary_goal" required value="BUILD"
+                                   placeholder="e.g., build, peak, base building">
+                            <small>What's your main focus? (e.g., build, peak, base building)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="race_type">Race Category *</label>
+                            <select id="race_type" name="race_type" required>
+                                <option value="men_open" selected>Men's Open</option>
+                                <option value="men_pro">Men's Pro</option>
+                                <option value="women_open">Women's Open</option>
+                                <option value="women_pro">Women's Pro</option>
+                            </select>
+                            <small>Determines official race weights for stations</small>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="specific_focus_areas">Specific Focus Areas</label>
@@ -179,74 +191,6 @@
                         </div>
                     </div>
                 </section>
-
-                <!-- Race & Performance Context (Optional - Collapsible) -->
-                <div class="section-container">
-                    <div class="collapsible-header" onclick="toggleSection('race-content', 'race-icon')">
-                        <span id="race-icon" class="arrow-icon">▶</span>
-                        <div class="header-content">
-                            <div class="header-title">Race & Performance Context (Optional)</div>
-                            <div class="header-subtitle">Provide race goals and station strengths/limiters</div>
-                        </div>
-                    </div>
-
-                    <div id="race-content" class="collapsible-content" style="display: none;">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="target_race_date">Target Race Date</label>
-                                <input type="date" id="target_race_date" name="target_race_date">
-                            </div>
-                            <div class="form-group">
-                                <label for="race_type">Race Category</label>
-                                <select id="race_type" name="race_type">
-                                    <option value="">Select race category...</option>
-                                    <option value="men_open">Men's Open</option>
-                                    <option value="men_pro">Men's Pro</option>
-                                    <option value="women_open">Women's Open</option>
-                                    <option value="women_pro">Women's Pro</option>
-                                </select>
-                                <small>Determines station weights and wall ball target heights</small>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="last_hyrox_date">Last HYROX Race Date</label>
-                                <input type="date" id="last_hyrox_date" name="last_hyrox_date">
-                            </div>
-                            <div class="form-group">
-                                <label for="last_hyrox_time">Last HYROX Time</label>
-                                <input type="text" id="last_hyrox_time" name="last_hyrox_time"
-                                       pattern="\d{1,2}:\d{2}:\d{2}" placeholder="1:23:45">
-                                <small>Format: HH:MM:SS</small>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="goal_hyrox_time">Goal HYROX Time</label>
-                                <input type="text" id="goal_hyrox_time" name="goal_hyrox_time"
-                                       pattern="\d{1,2}:\d{2}:\d{2}" placeholder="1:15:00">
-                                <small>Format: HH:MM:SS</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="races_completed">Total Races Completed</label>
-                                <input type="number" id="races_completed" name="races_completed"
-                                       value="0" min="0" max="100">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="strong_stations">Strong Stations</label>
-                            <input type="text" id="strong_stations" name="strong_stations"
-                                   placeholder="e.g., SkiErg, Sled Push, Rowing">
-                            <small>Stations where you excel (comma-separated)</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="weak_stations">Stations to Improve</label>
-                            <input type="text" id="weak_stations" name="weak_stations"
-                                   placeholder="e.g., Wall Balls, Sandbag Lunges">
-                            <small>Stations needing work (comma-separated)</small>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Gym Equipment (Optional - Collapsible) -->
                 <div class="section-container">
