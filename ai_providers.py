@@ -47,13 +47,29 @@ class OpenAIProvider(AIProvider):
         self.client = OpenAI(api_key=api_key)
 
     def generate(self, prompt: str) -> str:
-        message = self.client.chat.completions.create(
-            model=self.model_name,
-            max_tokens=self.max_tokens,
-            temperature=self.temperature,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return message.choices[0].message.content
+        # OpenAI's newer models use max_completion_tokens instead of max_tokens
+        # Try max_completion_tokens first (works with all newer models)
+        try:
+            message = self.client.chat.completions.create(
+                model=self.model_name,
+                max_completion_tokens=self.max_tokens,
+                temperature=self.temperature,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return message.choices[0].message.content
+        except Exception as e:
+            # If that fails, try with max_tokens (for older models)
+            if "max_completion_tokens" in str(e).lower():
+                message = self.client.chat.completions.create(
+                    model=self.model_name,
+                    max_tokens=self.max_tokens,
+                    temperature=self.temperature,
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                return message.choices[0].message.content
+            else:
+                # Re-raise if it's a different error
+                raise
 
 
 class GeminiProvider(AIProvider):
