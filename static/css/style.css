@@ -109,7 +109,7 @@ body {
     font-weight: var(--font-body-weight);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    padding: var(--space-5xl) var(--space-2xl);
+    padding: var(--space-3xl) var(--space-2xl);
 }
 
 .container {
@@ -165,15 +165,15 @@ small, .caption {
 /* Header */
 header {
     text-align: center;
-    margin-bottom: var(--space-5xl);
-    padding: var(--space-4xl) 0;
+    margin-bottom: var(--space-3xl);
+    padding: var(--space-2xl) 0;
 }
 
 .subtitle {
     font-size: var(--font-body-size);
     color: var(--color-text-secondary);
     font-weight: 400;
-    margin-top: var(--space-md);
+    margin-top: var(--space-sm);
 }
 
 /* Cards */
