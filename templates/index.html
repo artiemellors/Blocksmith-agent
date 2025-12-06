@@ -174,8 +174,19 @@
                             <label for="running_mileage_week1">Starting Weekly Mileage (km) *</label>
                             <input type="number" id="running_mileage_week1" name="running_mileage_week1"
                                    required value="40" min="10" max="150" step="5">
-                            <small>Starting weekly running kilometers. Progression is automatic based on your training phase.</small>
+                            <small>Starting weekly running kilometers</small>
                         </div>
+                        <div class="form-group">
+                            <label for="weekly_progression_override">
+                                Weekly Progression (%)
+                                <span class="info-icon" data-tooltip="Default progression rates by phase:&#10;• BASE: +10% per week (high volume build)&#10;• BUILD: +5% per week (moderate progression)&#10;• PEAK: +2.5% per week (fine-tuning)&#10;• TAPER: -20% per week (volume reduction)&#10;• TRANSITION: 0% (maintenance)&#10;&#10;Leave blank to use the phase default, or enter a custom % to override.">ℹ️</span>
+                            </label>
+                            <input type="number" id="weekly_progression_override" name="weekly_progression_override"
+                                   min="-50" max="20" step="0.1" placeholder="Auto (phase default)">
+                            <small>Optional: Override automatic progression rate</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group">
                             <label for="block_duration_weeks">Block Duration (weeks)</label>
                             <input type="number" id="block_duration_weeks" name="block_duration_weeks"

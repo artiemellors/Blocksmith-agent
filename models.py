@@ -216,6 +216,10 @@ class BlockObjectives(BaseModel):
         default_factory=VolumeProgressionStrategy,
         description="Volume progression strategy based on training phase"
     )
+    weekly_progression_override: Optional[float] = Field(
+        None,
+        description="Optional manual override for weekly progression %. If None, uses phase-appropriate default."
+    )
     block_duration_weeks: int = Field(default=4, description="Number of build weeks before deload")
     deload_week: bool = Field(default=True, description="Include a deload week at the end")
     specific_focus_areas: List[str] = Field(
@@ -228,6 +232,9 @@ class BlockObjectives(BaseModel):
 
     def get_progression_percent(self) -> float:
         """Get the progression percentage for this block's training phase."""
+        # Use manual override if provided, otherwise use phase-based default
+        if self.weekly_progression_override is not None:
+            return self.weekly_progression_override
         return self.volume_progression.get_progression_for_phase(self.primary_goal)
 
     def get_weekly_volumes(self) -> List[int]:
@@ -237,6 +244,25 @@ class BlockObjectives(BaseModel):
         Returns:
             List of weekly volumes in km, including deload week if applicable
         """
+        # Create a custom progression rate if override is provided
+        if self.weekly_progression_override is not None:
+            # Temporarily override the phase-specific rate
+            custom_strategy = VolumeProgressionStrategy(
+                base_percent=self.weekly_progression_override,
+                build_percent=self.weekly_progression_override,
+                peak_percent=self.weekly_progression_override,
+                taper_percent=self.weekly_progression_override,
+                transition_percent=self.weekly_progression_override,
+                deload_percent=self.volume_progression.deload_percent  # Keep deload as-is
+            )
+            return custom_strategy.calculate_weekly_volumes(
+                phase=self.primary_goal,
+                starting_volume=self.running_mileage_week1,
+                num_weeks=self.block_duration_weeks + (1 if self.deload_week else 0),
+                include_deload=self.deload_week
+            )
+
+        # Use phase-based progression
         return self.volume_progression.calculate_weekly_volumes(
             phase=self.primary_goal,
             starting_volume=self.running_mileage_week1,

@@ -576,4 +576,35 @@ document.addEventListener('DOMContentLoaded', function() {
             icon.classList.remove('tooltip-active');
         });
     });
+
+    // Auto-update weekly progression placeholder based on training phase
+    const phaseSelect = document.getElementById('primary_goal');
+    const progressionInput = document.getElementById('weekly_progression_override');
+
+    if (phaseSelect && progressionInput) {
+        // Phase-to-progression mapping (matches VolumeProgressionStrategy defaults)
+        const phaseProgressionMap = {
+            'base': 10.0,
+            'build': 5.0,
+            'peak': 2.5,
+            'taper': -20.0,
+            'transition': 0.0
+        };
+
+        function updateProgressionPlaceholder() {
+            const selectedPhase = phaseSelect.value;
+            const defaultProgression = phaseProgressionMap[selectedPhase];
+
+            if (defaultProgression !== undefined) {
+                const sign = defaultProgression >= 0 ? '+' : '';
+                progressionInput.placeholder = `${sign}${defaultProgression}% (${selectedPhase.toUpperCase()} default)`;
+            }
+        }
+
+        // Update on page load
+        updateProgressionPlaceholder();
+
+        // Update when phase changes
+        phaseSelect.addEventListener('change', updateProgressionPlaceholder);
+    }
 });
