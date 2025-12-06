@@ -296,10 +296,17 @@ def generate():
         if data.get('specific_focus_areas'):
             specific_focus_areas = [f.strip() for f in data['specific_focus_areas'].split(',') if f.strip()]
 
+        # Handle optional weekly progression override
+        weekly_override = data.get('weekly_progression_override')
+        if weekly_override and str(weekly_override).strip():
+            weekly_override = float(weekly_override)
+        else:
+            weekly_override = None
+
         objectives = BlockObjectives(
             primary_goal=data['primary_goal'],
             running_mileage_week1=float(data['running_mileage_week1']),
-            weekly_progression_percent=float(data.get('weekly_progression_percent', 10)),
+            weekly_progression_override=weekly_override,
             block_duration_weeks=int(data.get('block_duration_weeks', 4)),
             deload_week=data.get('deload_week', 'yes').lower() in ['yes', 'true', '1'],
             race_type=data.get('race_type'),  # Add race category
