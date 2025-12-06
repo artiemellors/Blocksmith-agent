@@ -1031,6 +1031,31 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential acti
 - Highlight session intensity (Z1–Z5) clearly
 - Use clean formatting (headings, tables where appropriate for efficiency)
 
+**CRITICAL: Max Strength Session Requirements (Layer 3 - NON-NEGOTIABLE):**
+
+When including Max Strength sessions in Week 1, you MUST follow these structural rules from Layer 3:
+
+1. **Exactly 3 compound lifts** - ONE from each category:
+   - Category A (Hip-Dominant): Trap Bar Deadlift, Conventional Deadlift, OR RDL
+   - Category B (Knee-Dominant): Front Squat, Goblet Squat, OR High Bar Back Squat
+   - Category C (Upper Body): Push Press, Weighted Chin-Ups, OR Incline Bench Press
+   - **DO NOT substitute sleds, carries, or other movements for these categories**
+
+2. **Specific rep targets** based on phase:
+   - Phase 1 (early weeks): Use "8-7-7-6" or "8-8-7-7" (NOT "6-8 reps")
+   - Phase 2 (later weeks): Use "5-5-4-4" or "5-5-5-4" (NOT "4-5 reps")
+   - Week 1 is ALWAYS Phase 1, so use 8-7-7-6 pattern
+
+3. **Exactly 4 accessory exercises** in circuit format (NOT 3):
+   - Slot 1: Vertical push OR pull (opposite of Compound 3)
+   - Slot 2: Unilateral lower body
+   - Slot 3: Horizontal push OR pull (opposite of Compound 3, same as Slot 1)
+   - Slot 4: Core/anti-rotation
+   - **IF Compound 3 is push → Slots 1 & 3 are both PULL**
+   - **IF Compound 3 is pull → Slots 1 & 3 are both PUSH**
+
+**If these rules are violated, the Max Strength session is INVALID and must be corrected.**
+
 **Output convention:**
 
 - Label clearly: *Week 1 – {block_objectives.primary_goal} Phase*
