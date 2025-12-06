@@ -139,15 +139,18 @@
                     <h2>Block Objectives</h2>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="primary_goal">Training Phase *</label>
+                            <label for="primary_goal">
+                                Training Phase *
+                                <span class="info-icon" data-tooltip="BASE: High volume, low specificity. Build aerobic engine & structural strength. Mostly Zone 2 running, Phase 1 strength (6-8 reps), heavy overload on HYROX stations.&#10;&#10;BUILD: Moderate volume, moderate-high intensity. Develop threshold & race-specific fitness. T1/T2 running, transition to Phase 2 strength, race weight stations.&#10;&#10;PEAK: Low volume, very high intensity. Maximize race readiness. Race pace or faster, Phase 2 strength (4-5 reps), full race simulation.&#10;&#10;TAPER: Very low volume, maintain intensity. Shed fatigue before race. Cut volume 40-60%, keep loads heavy but low reps (no failure), minimal station work.&#10;&#10;TRANSITION: Unstructured recovery between training blocks. Active rest and skill practice.">ℹ️</span>
+                            </label>
                             <select id="primary_goal" name="primary_goal" required>
-                                <option value="base">Base - General Preparation (High Volume, Zone 2 Focus)</option>
-                                <option value="build" selected>Build - Specific Preparation (Threshold Development)</option>
-                                <option value="peak">Peak - Competition Phase (Race Specificity, High Intensity)</option>
-                                <option value="taper">Taper - Pre-Race (Low Volume, Maintain Intensity)</option>
-                                <option value="transition">Transition - Recovery (Unstructured, Active Rest)</option>
+                                <option value="base">Base - General Preparation</option>
+                                <option value="build" selected>Build - Specific Preparation</option>
+                                <option value="peak">Peak - Competition Phase</option>
+                                <option value="taper">Taper - Pre-Race Freshness</option>
+                                <option value="transition">Transition - Active Recovery</option>
                             </select>
-                            <small>Select your current periodization phase. <strong>Base</strong>: Build aerobic engine & strength foundation. <strong>Build</strong>: Develop threshold & race-specific fitness. <strong>Peak</strong>: Maximize race readiness. <strong>Taper</strong>: Shed fatigue before race. <strong>Transition</strong>: Recovery between blocks.</small>
+                            <small>Choose your current periodization phase. Hover over ℹ️ for detailed guidance.</small>
                         </div>
                         <div class="form-group">
                             <label for="race_type">Race Category *</label>
