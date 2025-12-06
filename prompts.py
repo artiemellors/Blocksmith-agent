@@ -1166,11 +1166,27 @@ def get_week_progression_prompt(week_number, previous_week_content, block_object
     runs = athlete_profile.week_structure.runs_per_week
     hyrox_weights = HyroxWeights.get_weights(block_objectives.race_type) if block_objectives.race_type else None
 
-    phase_description = {
-        2: "modest progression",
-        3: "peak / overload (hardest week before deload)",
-        4: "peak / overload (final hard week)"
-    }.get(week_number, "progression")
+    # Dynamic phase description based on actual block duration
+    total_weeks = block_objectives.block_duration_weeks
+    weeks_remaining = total_weeks - week_number
+
+    if week_number == 2:
+        phase_description = "modest progression"
+    elif week_number == total_weeks:
+        # Final week of the block
+        if block_objectives.deload_week:
+            phase_description = f"peak / overload (final hard week - deload follows in Week {total_weeks + 1})"
+        else:
+            phase_description = "peak / overload (final week)"
+    elif week_number == total_weeks - 1:
+        # Second-to-last week
+        phase_description = f"peak / overload (second hardest week - one more build week remains)"
+    elif weeks_remaining <= 2:
+        # Within 2 weeks of the end
+        phase_description = f"continued progression ({weeks_remaining} week{'s' if weeks_remaining > 1 else ''} until peak)"
+    else:
+        # Middle weeks
+        phase_description = "continued progression"
 
     # Build HYROX weights section if race category is provided
     hyrox_section = ""
