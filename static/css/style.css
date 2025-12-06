@@ -327,8 +327,19 @@ label {
 }
 
 .info-icon:hover::before,
-.info-icon:hover::after {
+.info-icon:hover::after,
+.info-icon.tooltip-active::before,
+.info-icon.tooltip-active::after {
     opacity: 1;
+}
+
+/* Mobile touch feedback */
+@media (max-width: 768px) {
+    .info-icon {
+        font-size: 16px;
+        width: 20px;
+        height: 20px;
+    }
 }
 
 /* Inputs */

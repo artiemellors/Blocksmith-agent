@@ -557,3 +557,23 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 console.log('Blocksmith web interface loaded');
+
+// Mobile-friendly tooltip toggle
+document.addEventListener('DOMContentLoaded', function() {
+    const infoIcons = document.querySelectorAll('.info-icon');
+
+    infoIcons.forEach(icon => {
+        // Toggle tooltip on click/tap
+        icon.addEventListener('click', function(e) {
+            e.stopPropagation();
+            this.classList.toggle('tooltip-active');
+        });
+    });
+
+    // Close tooltip when clicking outside
+    document.addEventListener('click', function() {
+        infoIcons.forEach(icon => {
+            icon.classList.remove('tooltip-active');
+        });
+    });
+});
