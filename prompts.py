@@ -2,10 +2,24 @@
 Prompt templates for each layer of training block generation.
 Version 2: Philosophy-guided with realistic work capacity constraints.
 """
+from models import TrainingPhase
 
 def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
     """Layer 0 - Context & Global Rules"""
     from models import HyroxWeights
+
+    # Determine phase-specific instructions
+    phase_instructions = ""
+    if block_objectives.primary_goal == TrainingPhase.BASE:
+        phase_instructions = "CURRENT PHASE: GENERAL PREPARATION (BASE). High Volume / Low Specificity. Goal: Build engine and structural strength. Running: Mostly Zone 2. Strength: Phase 1 (Volume). HYROX: Heavy overload, low heart rate."
+    elif block_objectives.primary_goal == TrainingPhase.BUILD:
+        phase_instructions = "CURRENT PHASE: SPECIFIC PREPARATION (BUILD). Moderate Volume / Moderate-High Intensity. Goal: Threshold development. Running: Threshold (T1/T2) focus. Strength: Transition Phase 1 to 2. HYROX: Race weights, compromised running."
+    elif block_objectives.primary_goal == TrainingPhase.PEAK:
+        phase_instructions = "CURRENT PHASE: COMPETITION (PEAK). Low Volume / Very High Intensity. Goal: Race specificity. Running: Race pace or faster. Strength: Phase 2 (Intensity). HYROX: Full race simulation intensity."
+    elif block_objectives.primary_goal == TrainingPhase.TAPER:
+        phase_instructions = "CURRENT PHASE: TAPER. Very Low Volume / High Intensity / Maximum Freshness. Goal: Shed fatigue to reveal fitness. Rule: Leave the gym feeling better than you entered. Cut volume by 40-60% but keep intensity sharp."
+    elif block_objectives.primary_goal == TrainingPhase.TRANSITION:
+        phase_instructions = "CURRENT PHASE: TRANSITION. Unstructured / Recovery focus."
 
     hr_max = athlete_profile.physiological_params.hr_max
     t1_pace = athlete_profile.physiological_params.threshold_t1_pace
@@ -114,7 +128,12 @@ Week 1 is a BASELINE week - sessions should be challenging but clearly achievabl
 
 """
 
-    return f"""You are an elite HYROX coach and strict scheduler. You are designing training for {athlete_profile.name}, a {athlete_profile.age}-year-old hybrid athlete in a {block_objectives.primary_goal} phase.
+    return f"""You are an elite HYROX coach and strict scheduler. You are designing training for {athlete_profile.name}, a {athlete_profile.age}-year-old hybrid athlete in a {block_objectives.primary_goal.value} phase.
+
+**PERIODIZATION CONTEXT:**
+
+{phase_instructions}
+
 {injury_section}{race_section}{hyrox_spec_section}
 **Physiological Parameters:**
 
@@ -292,11 +311,31 @@ For each running session, include:
 - Label them clearly by session type: *Run Quality 1 (Threshold Intervals)*, *Run Quality 2 (Progression Run)*, *Endurance Run (Long Z2)*, *Endurance Run (Easy Z2)*"""
 
 
-def get_layer_3_prompt():
+def get_layer_3_prompt(block_objectives):
     """Layer 3 - Max Strength Sessions Expansion"""
-    return """Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand only the Max Strength sessions into full detail.
+
+    # Determine rep range instructions based on phase
+    rep_instructions = ""
+    if block_objectives.primary_goal == TrainingPhase.BASE:
+        rep_instructions = "Use PHASE 1 Rep Ranges (6-8 reps) exclusively for volume accumulation."
+    elif block_objectives.primary_goal == TrainingPhase.BUILD:
+        rep_instructions = "Start with Phase 1, progressing toward Phase 2 (heavier loads)."
+    elif block_objectives.primary_goal == TrainingPhase.PEAK:
+        rep_instructions = "Use PHASE 2 Rep Ranges (4-5 reps) exclusively for peak strength."
+    elif block_objectives.primary_goal == TrainingPhase.TAPER:
+        rep_instructions = "PRIMING SESSION ONLY. Reduce volume to 2 sets max. Maintain heavy loads (75-80%) to keep CNS primed, but low reps (RPE 6-7). NO FAILURE. Goal is tension without fatigue."
+    elif block_objectives.primary_goal == TrainingPhase.TRANSITION:
+        rep_instructions = "Unstructured or skip."
+
+    return f"""Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand only the Max Strength sessions into full detail.
 
 **Objectives:**
+
+**PHASE-SPECIFIC REP RANGE MANDATE:**
+
+{rep_instructions}
+
+**General Objectives:**
 
 - Build absolute strength in HYROX-relevant compound lifts → improved running economy, station performance, injury resilience
 - Use periodized rep ranges: higher volume early (6-8 reps), higher intensity later (4-5 reps)
@@ -843,8 +882,22 @@ Choose formats that match athlete experience level and training phase objectives
 - Each session should be fully detailed with all numbers, loads, paces, and rest periods"""
 
 
-def get_layer_5_prompt(hyrox_weights):
+def get_layer_5_prompt(hyrox_weights, block_objectives):
     """Layer 5 - HYROX Combo / Brick Session Expansion"""
+
+    # Determine focus instructions based on phase
+    focus_instructions = ""
+    if block_objectives.primary_goal == TrainingPhase.BASE:
+        focus_instructions = "Focus: OVERLOAD & CAPACITY. Stations: Go HEAVIER than race weight (10-20% overload). Running: Steady Zone 2 (or Erg sub) to manage impact. Do not spike HR."
+    elif block_objectives.primary_goal == TrainingPhase.BUILD:
+        focus_instructions = "Focus: THRESHOLD INTEGRATION. Stations: EXACT RACE WEIGHT. Running: Threshold Pace (T1/T2). Focus on holding strong pace after heavy work."
+    elif block_objectives.primary_goal == TrainingPhase.PEAK:
+        focus_instructions = "Focus: RACE SIMULATION. Stations: EXACT RACE WEIGHT. Running: RACE PACE or FASTER (Zone 4/5). Focus on transition speed and intensity."
+    elif block_objectives.primary_goal == TrainingPhase.TAPER:
+        focus_instructions = "Focus: CONFIDENCE & SHARPNESS. Stations: Race Weight. Running: Race Pace. CRITICAL: Cut volume drastically (e.g., only 2-3 rounds or 12-15 mins total work). Touch the intensity, then stop. No grinding."
+    else:  # TRANSITION
+        focus_instructions = "Focus: Unstructured practice or skip entirely."
+
     return f"""Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand the HYROX Combo / Brick session into full detail.
 
 **Official HYROX Race Specifications:**
@@ -854,6 +907,10 @@ def get_layer_5_prompt(hyrox_weights):
 - Wall Balls: {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m, 100 reps in race
 - Sandbag: {hyrox_weights.sandbag_kg}kg, 100m in race
 - Farmers Carry: 2×{hyrox_weights.farmers_carry_kg[0]}kg, 200m in race
+
+**PHASE-SPECIFIC FOCUS:**
+
+{focus_instructions}
 
 **Purpose:**
 

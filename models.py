@@ -1,6 +1,7 @@
 """
 Data models for training block generation.
 """
+from enum import Enum
 from dataclasses import dataclass
 from typing import Optional, Dict, List
 from pydantic import BaseModel, Field
@@ -136,9 +137,21 @@ class InjuryInformation(BaseModel):
     volume_reduction_percent: int = Field(default=25, description="% to reduce volume if soreness exceeds cutoff")
 
 
+class TrainingPhase(str, Enum):
+    """Training periodization phases."""
+    BASE = "base"
+    BUILD = "build"
+    PEAK = "peak"
+    TAPER = "taper"
+    TRANSITION = "transition"
+
+
 class BlockObjectives(BaseModel):
     """Objectives and focus areas for the training block."""
-    primary_goal: str = Field(..., description="Main goal for this block (e.g., 'BUILD', 'PEAK', 'Base building')")
+    primary_goal: TrainingPhase = Field(
+        ...,
+        description="The specific periodisation phase: Base (Capacity), Build (Threshold), Peak (Race Specificity), Taper (Freshness), or Transition (Rest)."
+    )
     running_mileage_week1: int = Field(..., description="Starting weekly mileage in km")
     weekly_progression_percent: int = Field(default=10, description="% increase in mileage per week")
     block_duration_weeks: int = Field(default=4, description="Number of build weeks before deload")

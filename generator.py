@@ -159,7 +159,7 @@ class TrainingBlockGenerator:
         # Layer 3: Max Strength Sessions
         layer_3 = self.generate_layer(
             "Layer 3",
-            get_layer_3_prompt(),
+            get_layer_3_prompt(objectives),
             context=f"{layer_0}\n\n{layer_1}"
         )
 
@@ -173,7 +173,7 @@ class TrainingBlockGenerator:
         # Layer 5: HYROX Combo / Brick Session
         layer_5 = self.generate_layer(
             "Layer 5",
-            get_layer_5_prompt(hyrox_weights),
+            get_layer_5_prompt(hyrox_weights, objectives),
             context=f"{layer_0}\n\n{layer_1}"
         )
 
