@@ -4,54 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Training Block Ready - Blocksmith</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .logo {
-            font-size: 36px;
-            color: #2563eb;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        .logo-icon {
-            font-size: 40px;
-            margin-right: 8px;
-        }
-
-        .subtitle {
-            color: #6b7280;
-            font-size: 16px;
-        }
-
+        /* Success page specific styles */
         .success-hero {
-            background: white;
-            border-radius: 16px;
-            padding: 40px;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            margin-bottom: 32px;
+            margin-bottom: var(--space-3xl);
             animation: slideUp 0.6s ease-out;
         }
 
@@ -68,45 +26,47 @@
 
         .success-icon {
             font-size: 64px;
-            margin-bottom: 16px;
+            margin-bottom: var(--space-lg);
         }
 
         .success-title {
-            font-size: 32px;
-            color: #10b981;
-            font-weight: 700;
-            margin-bottom: 12px;
+            font-size: var(--font-h1-size);
+            color: var(--color-success);
+            font-weight: var(--font-h1-weight);
+            letter-spacing: var(--font-h1-spacing);
+            margin-bottom: var(--space-md);
         }
 
         .success-subtitle {
-            color: #6b7280;
-            font-size: 18px;
+            color: var(--color-text-secondary);
+            font-size: var(--font-body-size);
         }
 
-        .block-card {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: white;
-            border-radius: 12px;
-            padding: 32px;
-            margin: 32px auto;
+        .block-summary-card {
+            background: linear-gradient(135deg, var(--color-hyrox-yellow) 0%, var(--color-hyrox-yellow-hover) 100%);
+            color: var(--color-charcoal);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2xl);
+            margin: var(--space-2xl) auto;
             max-width: 600px;
-            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+            box-shadow: var(--shadow-yellow);
         }
 
-        .block-card h2 {
-            font-size: 28px;
-            margin-bottom: 20px;
+        .block-summary-card h2 {
+            font-size: var(--font-h2-size);
+            font-weight: var(--font-h2-weight);
+            margin-bottom: var(--space-lg);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: var(--space-md);
             justify-content: center;
         }
 
         .block-stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-top: 24px;
+            gap: var(--space-lg);
+            margin-top: var(--space-xl);
         }
 
         .stat {
@@ -120,91 +80,77 @@
         }
 
         .stat-label {
-            font-size: 14px;
-            opacity: 0.9;
-            margin-top: 4px;
+            font-size: var(--font-caption-size);
+            opacity: 0.8;
+            margin-top: var(--space-xs);
         }
 
         .focus-area {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-size: 16px;
-        }
-
-        .section {
-            margin: 48px 0;
-        }
-
-        .section-header {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            background: rgba(0, 0, 0, 0.1);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin-top: var(--space-lg);
+            font-size: var(--font-body-size);
         }
 
         .weeks-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            margin-bottom: 32px;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-2xl);
         }
 
         .week-card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            background: var(--color-white);
+            border-radius: var(--radius-md);
+            padding: var(--space-xl);
+            box-shadow: var(--shadow-md);
             transition: all 0.3s ease;
-            border: 2px solid transparent;
+            border: 2px solid var(--color-border);
         }
 
         .week-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
-            border-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--color-hyrox-yellow);
         }
 
         .week-card.deload {
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-            border-color: #10b981;
+            background: var(--color-success-bg);
+            border-color: var(--color-success);
         }
 
         .week-number {
-            font-size: 14px;
-            color: #6b7280;
+            font-size: var(--font-caption-size);
+            color: var(--color-text-secondary);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .week-type {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1f2937;
-            margin: 8px 0 16px 0;
+            font-size: var(--font-h2-size);
+            font-weight: var(--font-h2-weight);
+            color: var(--color-charcoal);
+            margin: var(--space-sm) 0 var(--space-lg) 0;
         }
 
         .week-card.deload .week-type {
-            color: #10b981;
+            color: var(--color-success);
         }
 
         .week-metrics {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: var(--space-sm);
         }
 
         .metric-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #e5e7eb;
+            padding: var(--space-sm) 0;
+            border-bottom: 1px solid var(--color-border);
         }
 
         .metric-row:last-child {
@@ -212,31 +158,31 @@
         }
 
         .metric-label {
-            color: #6b7280;
-            font-size: 14px;
+            color: var(--color-text-secondary);
+            font-size: var(--font-caption-size);
         }
 
         .metric-value {
             font-weight: 600;
-            color: #1f2937;
-            font-size: 16px;
+            color: var(--color-charcoal);
+            font-size: var(--font-body-size);
         }
 
         .included-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 16px;
-            margin-bottom: 32px;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-2xl);
         }
 
         .included-item {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+            background: var(--color-white);
+            padding: var(--space-lg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
             display: flex;
             align-items: start;
-            gap: 12px;
+            gap: var(--space-md);
         }
 
         .included-icon {
@@ -245,74 +191,49 @@
         }
 
         .included-text {
-            color: #4b5563;
-            font-size: 15px;
-            line-height: 1.5;
+            color: var(--color-charcoal);
+            font-size: var(--font-body-size);
+            line-height: var(--font-body-height);
         }
 
         .download-section {
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            background: var(--color-white);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3xl);
+            box-shadow: var(--shadow-md);
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .download-section h2 {
+            font-size: var(--font-h1-size);
+            font-weight: var(--font-h1-weight);
+            color: var(--color-charcoal);
+            margin-bottom: var(--space-md);
+        }
+
+        .download-section p {
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-xl);
         }
 
         .button-group {
             display: flex;
-            gap: 16px;
+            gap: var(--space-lg);
             justify-content: center;
             flex-wrap: wrap;
-            margin-top: 24px;
-        }
-
-        .btn {
-            padding: 16px 32px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-primary {
-            background: #2563eb;
-            color: white;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-        }
-
-        .btn-primary:hover {
-            background: #1d4ed8;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #2563eb;
-            border: 2px solid #2563eb;
-        }
-
-        .btn-secondary:hover {
-            background: #eff6ff;
         }
 
         .download-note {
-            color: #6b7280;
-            font-size: 14px;
-            margin-top: 16px;
+            color: var(--color-text-secondary);
+            font-size: var(--font-caption-size);
+            margin-top: var(--space-lg);
         }
 
         @media (max-width: 768px) {
             .block-stats {
                 grid-template-columns: 1fr;
-                gap: 12px;
+                gap: var(--space-md);
             }
 
             .weeks-grid {
@@ -332,19 +253,21 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <div class="logo">
-                <span class="logo-icon">🏋️</span>Blocksmith
+        <!-- Header matching form page -->
+        <header class="header">
+            <div class="header-title">
+                <span class="header-icon">🏋️</span>Blocksmith
             </div>
-            <div class="subtitle">Automated HYROX Training Block Generator</div>
-        </div>
+            <p class="header-subtitle">Automated HYROX Training Block Generator</p>
+        </header>
 
+        <!-- Success Hero -->
         <div class="success-hero">
             <div class="success-icon">✅</div>
             <h1 class="success-title">Training Block Generated Successfully!</h1>
             <p class="success-subtitle">Your personalized training plan is ready to download</p>
 
-            <div class="block-card">
+            <div class="block-summary-card">
                 <h2>🏋️ {{ block.phase }} Phase</h2>
                 <div class="block-stats">
                     <div class="stat">
@@ -366,10 +289,9 @@
             </div>
         </div>
 
-        <div class="section">
-            <h2 class="section-header">
-                📅 Your Training Weeks
-            </h2>
+        <!-- Training Weeks -->
+        <section class="section-container">
+            <h2>📅 Your Training Weeks</h2>
             <div class="weeks-grid">
                 {% for week in block.weeks %}
                 <div class="week-card {% if week.type == 'Deload' %}deload{% endif %}">
@@ -388,12 +310,11 @@
                 </div>
                 {% endfor %}
             </div>
-        </div>
+        </section>
 
-        <div class="section">
-            <h2 class="section-header">
-                📦 What's Included
-            </h2>
+        <!-- What's Included -->
+        <section class="section-container">
+            <h2>📦 What's Included</h2>
             <div class="included-grid">
                 <div class="included-item">
                     <span class="included-icon">✓</span>
@@ -420,11 +341,12 @@
                     <span class="included-text">Intensity monitoring guidelines</span>
                 </div>
             </div>
-        </div>
+        </section>
 
+        <!-- Download Section -->
         <div class="download-section">
-            <h2 style="font-size: 28px; margin-bottom: 16px;">Ready to Start Training?</h2>
-            <p style="color: #6b7280; margin-bottom: 24px;">Download your complete training block and begin your journey</p>
+            <h2>Ready to Start Training?</h2>
+            <p>Download your complete training block and begin your journey</p>
 
             <div class="button-group">
                 <a href="/download/{{ generation_id }}" class="btn btn-primary">
