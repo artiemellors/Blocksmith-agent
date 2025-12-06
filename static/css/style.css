@@ -546,6 +546,7 @@ button:disabled, .btn-primary:disabled {
     font-size: var(--font-small-size);
     color: var(--color-text-secondary);
     font-style: italic;
+    text-align: center;
 }
 
 /* Success Container */
