@@ -4,6 +4,24 @@ Version 2: Philosophy-guided with realistic work capacity constraints.
 """
 from models import TrainingPhase
 
+
+def get_volume_schedule_text(block_objectives):
+    """Generate a formatted text description of the weekly volume schedule."""
+    volumes = block_objectives.get_weekly_volumes()
+    progression_pct = block_objectives.get_progression_percent()
+
+    # Build the schedule text
+    lines = []
+    lines.append(f"Training phase: {block_objectives.primary_goal.value.upper()} (progression: {progression_pct:+.1f}% per week)")
+    lines.append("")
+
+    for i, volume in enumerate(volumes, 1):
+        week_type = "DELOAD" if i == len(volumes) and block_objectives.deload_week else "BUILD"
+        lines.append(f"- Week {i}: {volume}km ({week_type})")
+
+    return "\n".join(lines)
+
+
 def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
     """Layer 0 - Context & Global Rules"""
     from models import HyroxWeights
@@ -153,9 +171,9 @@ Week 1 is a BASELINE week - sessions should be challenging but clearly achievabl
 - Primary location: {athlete_profile.equipment.primary_location}
 - Available: {equipment_list}{substitution_section}
 
-**Run Mileage Rule:**
+**Weekly Volume Schedule:**
 
-- Weekly run mileage = {block_objectives.running_mileage_week1}km in Week 1, then +{block_objectives.weekly_progression_percent}% per week through Week {block_objectives.block_duration_weeks}
+{get_volume_schedule_text(block_objectives)}
 
 **Guardrails:**
 
@@ -259,7 +277,7 @@ Brick sessions (Layer 5) provide race-specific running practice but do NOT repla
 **Objectives:**
 
 - Total weekly volume: **{block_objectives.running_mileage_week1}km** (Week 1), distributed across {runs} runs
-- Gradual build: +{block_objectives.weekly_progression_percent}% mileage per week in following weeks
+- Phase-appropriate progression: {block_objectives.get_progression_percent():+.1f}% per week ({block_objectives.primary_goal.value} phase)
 - Cover 2x Quality sessions (threshold / intervals), 1x Long Z2 run, 1x Easy Z2 run
 - Alternate hard and easy days; avoid stacking high intensity
 - Assign each run clear **purpose** (e.g., Threshold Intervals for clearance, Long Run for base)
@@ -1138,7 +1156,11 @@ def get_week_progression_prompt(week_number, previous_week_content, block_object
     """Generic prompt for Week 2, 3, or 4 progression"""
     from models import HyroxWeights
 
-    week_km = block_objectives.running_mileage_week1 * (1 + (block_objectives.weekly_progression_percent / 100)) ** (week_number - 1)
+    # Get the pre-calculated weekly volumes
+    weekly_volumes = block_objectives.get_weekly_volumes()
+    week_km = weekly_volumes[week_number - 1] if week_number <= len(weekly_volumes) else weekly_volumes[-1]
+    progression_pct = block_objectives.get_progression_percent()
+
     sessions = athlete_profile.week_structure.main_sessions_per_week
     training_days = athlete_profile.week_structure.get_training_days_range()
     runs = athlete_profile.week_structure.runs_per_week
@@ -1182,7 +1204,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
 **Progression Rules:**
 
 1. **Running Volume**
-    - Increase **total weekly mileage by ~{block_objectives.weekly_progression_percent}%** (target ≈ {week_km:.0f} km)
+    - Target **total weekly mileage: {week_km:.0f} km** (phase-appropriate {progression_pct:+.1f}% progression)
     - Distribute volume proportionally across sessions (do not overload a single run)
 
 2. **Intensity Balance**
@@ -1225,8 +1247,11 @@ def get_deload_prompt(week_number, peak_week_content, block_objectives, athlete_
     """Layer 10 - Deload Week"""
     from models import HyroxWeights
 
-    peak_km = block_objectives.running_mileage_week1 * (1 + (block_objectives.weekly_progression_percent / 100)) ** (block_objectives.block_duration_weeks - 1)
-    deload_km = peak_km * 0.65  # 30-40% reduction
+    # Get the pre-calculated weekly volumes (deload is last week)
+    weekly_volumes = block_objectives.get_weekly_volumes()
+    deload_km = weekly_volumes[-1] if weekly_volumes else block_objectives.running_mileage_week1
+    peak_km = weekly_volumes[-2] if len(weekly_volumes) > 1 else block_objectives.running_mileage_week1
+
     sessions = athlete_profile.week_structure.main_sessions_per_week
     training_days = athlete_profile.week_structure.get_training_days_range()
     runs = athlete_profile.week_structure.runs_per_week

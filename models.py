@@ -146,6 +146,65 @@ class TrainingPhase(str, Enum):
     TRANSITION = "transition"
 
 
+class VolumeProgressionStrategy(BaseModel):
+    """Volume progression rates for different training phases."""
+    base_percent: float = Field(default=10.0, description="Weekly volume increase during base phase (%)")
+    build_percent: float = Field(default=5.0, description="Weekly volume increase during build phase (%)")
+    peak_percent: float = Field(default=2.5, description="Weekly volume increase during peak phase (%)")
+    taper_percent: float = Field(default=-20.0, description="Weekly volume decrease during taper phase (%)")
+    transition_percent: float = Field(default=0.0, description="Volume change during transition phase (%)")
+    deload_percent: float = Field(default=-40.0, description="Volume reduction during deload weeks (%)")
+
+    def get_progression_for_phase(self, phase: TrainingPhase) -> float:
+        """Get the progression percentage for a given training phase."""
+        progression_map = {
+            TrainingPhase.BASE: self.base_percent,
+            TrainingPhase.BUILD: self.build_percent,
+            TrainingPhase.PEAK: self.peak_percent,
+            TrainingPhase.TAPER: self.taper_percent,
+            TrainingPhase.TRANSITION: self.transition_percent,
+        }
+        return progression_map.get(phase, 0.0)
+
+    def calculate_weekly_volumes(
+        self,
+        phase: TrainingPhase,
+        starting_volume: int,
+        num_weeks: int,
+        include_deload: bool = True
+    ) -> List[int]:
+        """
+        Calculate weekly volume targets with phase-appropriate progression.
+
+        Args:
+            phase: The training phase
+            starting_volume: Starting weekly volume in km
+            num_weeks: Total number of weeks (including deload if applicable)
+            include_deload: Whether to include a deload week at the end
+
+        Returns:
+            List of weekly volumes in km
+        """
+        progression_rate = self.get_progression_for_phase(phase)
+        volumes = []
+        current_volume = starting_volume
+
+        # Calculate build weeks
+        build_weeks = num_weeks - 1 if include_deload else num_weeks
+
+        for week in range(build_weeks):
+            volumes.append(round(current_volume))
+            current_volume *= (1 + progression_rate / 100)
+
+        # Add deload week if requested
+        if include_deload:
+            peak_volume = volumes[-1] if volumes else starting_volume
+            deload_volume = round(peak_volume * (1 + self.deload_percent / 100))
+            volumes.append(deload_volume)
+
+        return volumes
+
+
 class BlockObjectives(BaseModel):
     """Objectives and focus areas for the training block."""
     primary_goal: TrainingPhase = Field(
@@ -153,7 +212,10 @@ class BlockObjectives(BaseModel):
         description="The specific periodisation phase: Base (Capacity), Build (Threshold), Peak (Race Specificity), Taper (Freshness), or Transition (Rest)."
     )
     running_mileage_week1: int = Field(..., description="Starting weekly mileage in km")
-    weekly_progression_percent: int = Field(default=10, description="% increase in mileage per week")
+    volume_progression: VolumeProgressionStrategy = Field(
+        default_factory=VolumeProgressionStrategy,
+        description="Volume progression strategy based on training phase"
+    )
     block_duration_weeks: int = Field(default=4, description="Number of build weeks before deload")
     deload_week: bool = Field(default=True, description="Include a deload week at the end")
     specific_focus_areas: List[str] = Field(
@@ -163,6 +225,24 @@ class BlockObjectives(BaseModel):
     target_race_date: Optional[str] = Field(None, description="Target race date")
     race_type: Optional[str] = Field(None, description="Race category (men_open, men_pro, women_open, women_pro)")
     weeks_to_race: Optional[int] = Field(None, description="Number of weeks until race")
+
+    def get_progression_percent(self) -> float:
+        """Get the progression percentage for this block's training phase."""
+        return self.volume_progression.get_progression_for_phase(self.primary_goal)
+
+    def get_weekly_volumes(self) -> List[int]:
+        """
+        Calculate the weekly volume schedule for this training block.
+
+        Returns:
+            List of weekly volumes in km, including deload week if applicable
+        """
+        return self.volume_progression.calculate_weekly_volumes(
+            phase=self.primary_goal,
+            starting_volume=self.running_mileage_week1,
+            num_weeks=self.block_duration_weeks + (1 if self.deload_week else 0),
+            include_deload=self.deload_week
+        )
 
 
 class AthleteProfile(BaseModel):

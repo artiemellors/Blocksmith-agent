@@ -174,22 +174,16 @@
                             <label for="running_mileage_week1">Starting Weekly Mileage (km) *</label>
                             <input type="number" id="running_mileage_week1" name="running_mileage_week1"
                                    required value="40" min="10" max="150" step="5">
-                            <small>Starting weekly running kilometers</small>
+                            <small>Starting weekly running kilometers. Progression is automatic based on your training phase.</small>
                         </div>
-                        <div class="form-group">
-                            <label for="weekly_progression_percent">Weekly Progression (%)</label>
-                            <input type="number" id="weekly_progression_percent" name="weekly_progression_percent"
-                                   value="10" min="5" max="20">
-                            <small>Percentage increase each week</small>
-                        </div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group">
                             <label for="block_duration_weeks">Block Duration (weeks)</label>
                             <input type="number" id="block_duration_weeks" name="block_duration_weeks"
                                    value="4" min="2" max="8">
                             <small>How many weeks before deload?</small>
                         </div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group">
                             <label for="deload_week">Include Deload Week?</label>
                             <select id="deload_week" name="deload_week">
