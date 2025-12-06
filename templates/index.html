@@ -139,10 +139,15 @@
                     <h2>Block Objectives</h2>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="primary_goal">Primary Goal *</label>
-                            <input type="text" id="primary_goal" name="primary_goal" required value="BUILD"
-                                   placeholder="e.g., build, peak, base building">
-                            <small>What's your main focus? (e.g., build, peak, base building)</small>
+                            <label for="primary_goal">Training Phase *</label>
+                            <select id="primary_goal" name="primary_goal" required>
+                                <option value="base">Base - General Preparation (High Volume, Zone 2 Focus)</option>
+                                <option value="build" selected>Build - Specific Preparation (Threshold Development)</option>
+                                <option value="peak">Peak - Competition Phase (Race Specificity, High Intensity)</option>
+                                <option value="taper">Taper - Pre-Race (Low Volume, Maintain Intensity)</option>
+                                <option value="transition">Transition - Recovery (Unstructured, Active Rest)</option>
+                            </select>
+                            <small>Select your current periodization phase. <strong>Base</strong>: Build aerobic engine & strength foundation. <strong>Build</strong>: Develop threshold & race-specific fitness. <strong>Peak</strong>: Maximize race readiness. <strong>Taper</strong>: Shed fatigue before race. <strong>Transition</strong>: Recovery between blocks.</small>
                         </div>
                         <div class="form-group">
                             <label for="race_type">Race Category *</label>
