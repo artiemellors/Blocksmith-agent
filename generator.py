@@ -220,13 +220,14 @@ class TrainingBlockGenerator:
             weeks[deload_week_num] = week_deload
 
         # Create Block Summary Index
+        progression_pct = objectives.get_progression_percent()
         summary_content = f"""# {athlete.name}'s Training Block - {objectives.primary_goal} Phase
 
 ## Block Overview
 
 **Duration:** {objectives.block_duration_weeks} weeks + {'1 deload week' if objectives.deload_week else 'no deload'}
 **Starting Mileage:** {objectives.running_mileage_week1} km/week
-**Progression:** +{objectives.weekly_progression_percent}% per week
+**Progression:** {progression_pct:+.1f}% per week
 **Focus Areas:** {', '.join(objectives.specific_focus_areas) if objectives.specific_focus_areas else 'General development'}
 
 ## Generated Weeks
@@ -234,7 +235,7 @@ class TrainingBlockGenerator:
 """
         for week_num in sorted(weeks.keys()):
             week_type = "Deload" if week_num == objectives.block_duration_weeks + 1 else "Build"
-            mileage = objectives.running_mileage_week1 * (1 + (objectives.weekly_progression_percent / 100)) ** (week_num - 1)
+            mileage = objectives.running_mileage_week1 * (1 + (progression_pct / 100)) ** (week_num - 1)
             if week_type == "Deload":
                 mileage = mileage * 0.65
 
