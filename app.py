@@ -518,5 +518,13 @@ if __name__ == '__main__':
     # Create output directory
     os.makedirs('output/web_generations', exist_ok=True)
 
-    # Run in debug mode (disable in production)
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    # Production vs Development configuration
+    is_production = os.getenv('FLASK_ENV') == 'production'
+
+    if is_production:
+        # Production: Let gunicorn handle the server (this code won't run)
+        # This is just a fallback if someone runs python app.py directly
+        app.run(debug=False, host='0.0.0.0', port=int(os.getenv('PORT', 10000)))
+    else:
+        # Development: Use Flask's built-in server
+        app.run(debug=True, host='127.0.0.1', port=5000)

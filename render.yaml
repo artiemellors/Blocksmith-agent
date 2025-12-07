@@ -1,0 +1,45 @@
+services:
+  # Blocksmith Web Service
+  - type: web
+    name: blocksmith
+    runtime: python
+    plan: starter  # Change to 'free' for free tier (spins down after inactivity)
+    region: oregon  # Choose: oregon, frankfurt, singapore, ohio
+
+    # Build configuration
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+
+    # Health check (optional but recommended)
+    healthCheckPath: /
+
+    # Environment variables
+    envVars:
+      # AI Provider API Keys (set these in Render dashboard)
+      - key: ANTHROPIC_API_KEY
+        sync: false  # Manual entry required
+
+      - key: OPENAI_API_KEY
+        sync: false  # Manual entry required
+
+      - key: GEMINI_API_KEY
+        sync: false  # Manual entry required
+
+      # Flask configuration
+      - key: FLASK_ENV
+        value: production
+
+      - key: FLASK_SECRET_KEY
+        generateValue: true  # Auto-generate secure random key
+
+      - key: PORT
+        value: 10000  # Render default port
+
+    # Auto-deploy settings
+    autoDeploy: true  # Auto-deploy when main branch is updated
+
+    # Disk storage for generated training blocks (optional)
+    disk:
+      name: blocksmith-storage
+      mountPath: /opt/render/project/src/output
+      sizeGB: 1  # 1GB storage for generated files

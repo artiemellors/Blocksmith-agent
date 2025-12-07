@@ -42,6 +42,7 @@ output/
 !USAGE.md
 !SETUP_GUIDE.md
 !WEB_INTERFACE.md
+!DEPLOYMENT.md
 
 # User config files
 *.txt
