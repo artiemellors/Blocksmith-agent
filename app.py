@@ -409,6 +409,31 @@ def success(generation_id):
         return f"Error loading training block: {str(e)}", 500
 
 
+@app.route('/api/markdown/<generation_id>/<filename>')
+def get_markdown(generation_id, filename):
+    """
+    Serve individual markdown files for the training block viewer.
+    """
+    try:
+        # Sanitize filename to prevent directory traversal
+        safe_filename = secure_filename(filename)
+
+        # Construct file path
+        file_path = f'output/web_generations/{generation_id}/{safe_filename}'
+
+        if not os.path.exists(file_path):
+            return "File not found", 404
+
+        # Read and return the markdown file
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        return content, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+    except Exception as e:
+        return f"Error loading file: {str(e)}", 500
+
+
 @app.route('/download/<generation_id>')
 def download_by_id(generation_id):
     """
