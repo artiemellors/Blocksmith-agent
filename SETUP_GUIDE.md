@@ -191,6 +191,20 @@ If you see that, congratulations! Blocksmith is ready to use! 🎉
 
 ### 6A: Create a Configuration File
 
+**Option A: Simple Text Format (Recommended - Easier)**
+
+**Mac:**
+```bash
+python3 main.py create-config-simple my_training_block.txt
+```
+
+**Windows:**
+```bash
+python main.py create-config-simple my_training_block.txt
+```
+
+**Option B: YAML Format**
+
 **Mac:**
 ```bash
 python3 main.py create-config my_training_block.yaml
@@ -201,7 +215,9 @@ python3 main.py create-config my_training_block.yaml
 python main.py create-config my_training_block.yaml
 ```
 
-You'll see: `✓ Sample configuration created: my_training_block.yaml`
+The text format (`.txt`) is recommended because it's simpler - just `key=value` pairs with no indentation to worry about!
+
+You'll see: `✓ Simple text configuration created: my_training_block.txt`
 
 ### 6B: Edit the Configuration File
 
@@ -209,44 +225,76 @@ Open the file in a text editor:
 
 **Mac:**
 ```bash
-open -e my_training_block.yaml
+open -e my_training_block.txt
 ```
+(or `.yaml` if you chose YAML format)
 
 **Windows:**
 ```bash
-notepad my_training_block.yaml
+notepad my_training_block.txt
+```
+(or `.yaml` if you chose YAML format)
+
+**Simple Text Format (.txt) - Looks like this:**
+
+```text
+# Change these values to match YOUR details:
+
+name=Arthur Mellors        # ← YOUR name
+age=41                     # ← YOUR age
+
+hr_max=188                 # ← YOUR max heart rate
+threshold_t1_pace=4:37     # ← YOUR T1 pace (mm:ss per km)
+threshold_t2_pace=4:17     # ← YOUR T2 pace
+
+active_injuries=           # ← List injuries like: knee pain, shoulder soreness
+
+# Training Week Structure (can customize these)
+rest_days=Monday           # ← Which day(s) to rest (can be multiple: Monday, Wednesday)
+total_sessions_per_week=8  # ← Total sessions per week
+double_days=Wednesday, Saturday  # ← Days with AM + PM sessions
+runs_per_week=4            # ← How many sessions are runs
+long_run_day=Sunday        # ← Which day has your long run
+
+primary_goal=BUILD         # ← What's your goal? (BUILD, PEAK, Base building, etc.)
+running_mileage_week1=40   # ← Starting weekly km
+weekly_progression_percent=10  # ← % increase each week
+block_duration_weeks=4     # ← How many weeks before deload?
+deload_week=yes
+specific_focus_areas=threshold running, sled work, wall balls  # ← What to focus on
 ```
 
-You'll see a file that looks like this:
+**YAML Format (.yaml) - Looks like this:**
 
 ```yaml
 athlete:
-  name: "Arthur Mellors"  # ← Change this to YOUR name
-  age: 41                 # ← Change this to YOUR age
+  name: "Arthur Mellors"   # ← Change to YOUR name
+  age: 41                  # ← Change to YOUR age
 
 physiological_parameters:
-  hr_max: 188                    # ← YOUR max heart rate
-  threshold_t1_pace: "4:37"      # ← YOUR T1 pace (minutes:seconds per km)
-  threshold_t2_pace: "4:17"      # ← YOUR T2 pace
+  hr_max: 188              # ← YOUR max heart rate
+  threshold_t1_pace: "4:37"  # ← YOUR T1 pace
+  threshold_t2_pace: "4:17"  # ← YOUR T2 pace
 
 injury_information:
-  active_injuries: []            # ← List any injuries, like ["knee pain"]
-  pain_threshold_during: 2
-  pain_threshold_next_day: 3
+  active_injuries: []      # ← List injuries: ["knee pain"]
+
+training_week_structure:
+  rest_days: "Monday"      # ← Rest day(s)
+  total_sessions_per_week: 8
+  double_days: "Wednesday, Saturday"
+  runs_per_week: 4
+  long_run_day: "Sunday"
 
 block_objectives:
-  primary_goal: "BUILD"          # ← What's your goal? (BUILD, PEAK, Base building, etc.)
-  running_mileage_week1: 40      # ← Starting weekly km
-  weekly_progression_percent: 10 # ← % increase each week
-  block_duration_weeks: 4        # ← How many weeks before deload?
+  primary_goal: "BUILD"    # ← Your goal
+  running_mileage_week1: 40
+  weekly_progression_percent: 10
+  block_duration_weeks: 4
   deload_week: true
   specific_focus_areas:
-    - "threshold running"        # ← What do you want to focus on?
+    - "threshold running"
     - "sled work"
-    - "wall balls"
-
-previous_training_block_file: null  # ← Path to previous block (optional)
-additional_context: null            # ← Any special instructions (optional)
 ```
 
 **Edit the values** to match YOUR details:
@@ -255,25 +303,33 @@ additional_context: null            # ← Any special instructions (optional)
 - Your threshold paces (if you don't know these, use a recent race pace or make a conservative guess)
 - Your current fitness level (starting mileage)
 - What you want to work on
+- **Training week structure** (optional - defaults are provided, but you can customize rest days, sessions, etc.)
 
 **Save the file** when you're done.
 
-**Tip**: If you don't know your threshold paces, here are some rough guidelines:
-- T1 (Tempo pace): Pace you could hold for about 45-60 minutes
-- T2 (Threshold pace): Pace you could hold for about 20-30 minutes
-- Format: "minutes:seconds" per kilometer, like "4:30" for 4 minutes 30 seconds per km
+**Tips:**
+- **Threshold paces** - If you don't know these:
+  - T1 (Tempo pace): Pace you could hold for about 45-60 minutes
+  - T2 (Threshold pace): Pace you could hold for about 20-30 minutes
+  - Format: "minutes:seconds" per km (e.g., "4:30" = 4 min 30 sec per km)
+- **Training structure** - The defaults work great! But you can customize:
+  - Multiple rest days: `rest_days=Monday, Wednesday`
+  - Fewer sessions: `total_sessions_per_week=6`
+  - More runs: `runs_per_week=5`
 
 ### 6C: Generate Your Training Block!
 
 **Mac:**
 ```bash
-python3 main.py generate --config my_training_block.yaml
+python3 main.py generate --config my_training_block.txt
 ```
+(or `.yaml` if you chose YAML format)
 
 **Windows:**
 ```bash
-python main.py generate --config my_training_block.yaml
+python main.py generate --config my_training_block.txt
 ```
+(or `.yaml` if you chose YAML format)
 
 You'll see:
 1. A summary of your configuration
@@ -323,10 +379,38 @@ This is your complete training block! You can also find it by:
 
 ### "Error loading configuration"
 
-**Solution**: There's a typo in your YAML file. Common issues:
-- Make sure the format is exactly right (spacing matters in YAML files)
+**Solution**: There's an error in your config file. Common issues:
+
+**For text files (.txt):**
+- Use `key=value` format (no spaces before the `=`)
+- Don't use quotes around values
+- Paces: `threshold_t1_pace=4:37` not `threshold_t1_pace="4:37"`
+
+**For YAML files (.yaml):**
+- Spacing matters! Use spaces, not tabs
 - Paces should be in quotes: `"4:37"` not `4:37`
 - Lists need a dash: `- "threshold running"` not just `"threshold running"`
+
+### Configuration validation errors
+
+**Solution**: The system checks your training week structure makes sense mathematically.
+
+**Example error:**
+```
+❌ Invalid training week structure
+   Training days: 5
+   Total sessions: 8
+   Double days needed: 3
+   Problem: You need 3 double days to fit 8 sessions in 5 training days
+```
+
+**What this means**: If you have 2 rest days (Monday, Wednesday), that's 5 training days. If you want 8 sessions per week, you need 3 days with AM + PM sessions (double days).
+
+**Common fixes:**
+- **Too many sessions**: Reduce `total_sessions_per_week` or reduce `rest_days`
+- **Double days mismatch**: Adjust `double_days` to match the math
+- **Long run on rest day**: Change `long_run_day` to a training day
+- **Read the error message** - it tells you exactly what's wrong and suggests a fix!
 
 ### "Rate limit error"
 

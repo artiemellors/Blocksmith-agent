@@ -1,6 +1,8 @@
 """
 Data models for training block generation.
 """
+from enum import Enum
+from dataclasses import dataclass
 from typing import Optional, Dict, List
 from pydantic import BaseModel, Field
 
@@ -10,6 +12,7 @@ class PhysiologicalParameters(BaseModel):
     hr_max: int = Field(..., description="Maximum heart rate in bpm")
     threshold_t1_pace: str = Field(..., description="T1 threshold pace (mm:ss/km format)")
     threshold_t2_pace: str = Field(..., description="T2 threshold pace (mm:ss/km format)")
+    vo2_max: Optional[int] = Field(None, description="VO2 max in ml/kg/min")
 
     # Heart rate zones (as percentages of HRmax)
     zone1_min: int = 60
@@ -27,8 +30,8 @@ class PhysiologicalParameters(BaseModel):
 class TrainingWeekStructure(BaseModel):
     """Structure and constraints for the training week."""
     training_days: str = "Tuesday → Sunday"
-    rest_day: str = "Monday"
-    main_sessions_per_week: int = 8
+    rest_days: str = "Monday"  # Comma-separated list of rest days
+    main_sessions_per_week: int = 8  # Total number of sessions per week
     double_days: str = "Wednesday, Saturday"  # Which days have AM + PM sessions
     runs_per_week: int = 4  # Number of running sessions per week
     long_run_day: str = "Sunday"  # Which day should have the long run
@@ -37,6 +40,20 @@ class TrainingWeekStructure(BaseModel):
     weekend_session_time_min: int = 90
     weekend_session_time_max: int = 105
 
+    def get_rest_days_list(self) -> list[str]:
+        """Get list of rest days from the comma-separated string."""
+        if not self.rest_days:
+            return []
+        return [d.strip() for d in self.rest_days.split(',') if d.strip()]
+
+    def get_num_rest_days(self) -> int:
+        """Calculate number of rest days."""
+        return len(self.get_rest_days_list())
+
+    def get_num_training_days(self) -> int:
+        """Calculate number of training days (7 - rest days)."""
+        return 7 - self.get_num_rest_days()
+
     def get_num_double_days(self) -> int:
         """Calculate number of double-days from the double_days string."""
         if not self.double_days:
@@ -44,31 +61,71 @@ class TrainingWeekStructure(BaseModel):
         return len([d.strip() for d in self.double_days.split(',') if d.strip()])
 
     def get_training_days_range(self) -> str:
-        """Calculate training days range based on rest day."""
+        """Calculate training days range based on rest days."""
         days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-        try:
-            rest_idx = days.index(self.rest_day)
-        except ValueError:
-            return "Tuesday → Sunday"  # fallback
+        rest_list = self.get_rest_days_list()
 
-        # Training starts day after rest
-        start_idx = (rest_idx + 1) % 7
-        # Training ends day before rest
-        end_idx = (rest_idx - 1) % 7
+        if not rest_list:
+            return "Monday → Sunday"
 
-        return f"{days[start_idx]} → {days[end_idx]}"
+        # If only one rest day, return range
+        if len(rest_list) == 1:
+            try:
+                rest_idx = days.index(rest_list[0])
+            except ValueError:
+                return "Tuesday → Sunday"  # fallback
+
+            # Training starts day after rest
+            start_idx = (rest_idx + 1) % 7
+            # Training ends day before rest
+            end_idx = (rest_idx - 1) % 7
+
+            return f"{days[start_idx]} → {days[end_idx]}"
+
+        # Multiple rest days - just list training days
+        rest_set = set(rest_list)
+        training_days_list = [d for d in days if d not in rest_set]
+        if len(training_days_list) <= 3:
+            return ", ".join(training_days_list)
+        else:
+            return f"{training_days_list[0]} → {training_days_list[-1]} (with rest on {', '.join(rest_list)})"
 
 
 class Equipment(BaseModel):
     """Available equipment for training."""
-    gym_equipment: List[str] = Field(
-        default=["Full HYROX setup"],
-        description="Equipment available at gym"
+    primary_location: str = Field(
+        default="Full HYROX Gym",
+        description="Primary training location"
     )
-    home_equipment: List[str] = Field(
-        default=["exercise bike", "6kg wall ball", "10kg wall ball", "20kg kettlebell", "barbell", "sandbag"],
-        description="Equipment available at home"
+    available_equipment: List[str] = Field(
+        default=[
+            "SkiErg", "Sled", "Sled Track", "Burpee Broad Jump space", "Rowing Machine",
+            "Farmers Carry handles", "Sandbag lunges space", "Wall Balls", "Full barbell setup"
+        ],
+        description="Equipment available for training"
     )
+
+
+@dataclass
+class HyroxWeights:
+    """Official HYROX competition weights by category"""
+    sled_push_kg: int
+    sled_pull_kg: int
+    wall_ball_kg: int
+    wall_ball_target_m: float
+    sandbag_kg: int
+    farmers_carry_kg: tuple  # (per hand)
+
+    @staticmethod
+    def get_weights(category: str) -> 'HyroxWeights':
+        """Get official race weights for a competition category"""
+        weights_map = {
+            'men_open': HyroxWeights(152, 103, 6, 3.0, 20, (24, 24)),
+            'men_pro': HyroxWeights(202, 153, 9, 3.0, 30, (32, 32)),
+            'women_open': HyroxWeights(102, 78, 4, 2.7, 10, (16, 16)),
+            'women_pro': HyroxWeights(152, 103, 6, 2.7, 20, (24, 24)),
+        }
+        return weights_map.get(category, weights_map['men_open'])
 
 
 class InjuryInformation(BaseModel):
@@ -80,17 +137,138 @@ class InjuryInformation(BaseModel):
     volume_reduction_percent: int = Field(default=25, description="% to reduce volume if soreness exceeds cutoff")
 
 
+class TrainingPhase(str, Enum):
+    """Training periodization phases."""
+    BASE = "base"
+    BUILD = "build"
+    PEAK = "peak"
+    TAPER = "taper"
+    TRANSITION = "transition"
+
+
+class VolumeProgressionStrategy(BaseModel):
+    """Volume progression rates for different training phases."""
+    base_percent: float = Field(default=10.0, description="Weekly volume increase during base phase (%)")
+    build_percent: float = Field(default=5.0, description="Weekly volume increase during build phase (%)")
+    peak_percent: float = Field(default=2.5, description="Weekly volume increase during peak phase (%)")
+    taper_percent: float = Field(default=-20.0, description="Weekly volume decrease during taper phase (%)")
+    transition_percent: float = Field(default=0.0, description="Volume change during transition phase (%)")
+    deload_percent: float = Field(default=-40.0, description="Volume reduction during deload weeks (%)")
+
+    def get_progression_for_phase(self, phase: TrainingPhase) -> float:
+        """Get the progression percentage for a given training phase."""
+        progression_map = {
+            TrainingPhase.BASE: self.base_percent,
+            TrainingPhase.BUILD: self.build_percent,
+            TrainingPhase.PEAK: self.peak_percent,
+            TrainingPhase.TAPER: self.taper_percent,
+            TrainingPhase.TRANSITION: self.transition_percent,
+        }
+        return progression_map.get(phase, 0.0)
+
+    def calculate_weekly_volumes(
+        self,
+        phase: TrainingPhase,
+        starting_volume: int,
+        num_weeks: int,
+        include_deload: bool = True
+    ) -> List[int]:
+        """
+        Calculate weekly volume targets with phase-appropriate progression.
+
+        Args:
+            phase: The training phase
+            starting_volume: Starting weekly volume in km
+            num_weeks: Total number of weeks (including deload if applicable)
+            include_deload: Whether to include a deload week at the end
+
+        Returns:
+            List of weekly volumes in km
+        """
+        progression_rate = self.get_progression_for_phase(phase)
+        volumes = []
+        current_volume = starting_volume
+
+        # Calculate build weeks
+        build_weeks = num_weeks - 1 if include_deload else num_weeks
+
+        for week in range(build_weeks):
+            volumes.append(round(current_volume))
+            current_volume *= (1 + progression_rate / 100)
+
+        # Add deload week if requested
+        if include_deload:
+            peak_volume = volumes[-1] if volumes else starting_volume
+            deload_volume = round(peak_volume * (1 + self.deload_percent / 100))
+            volumes.append(deload_volume)
+
+        return volumes
+
+
 class BlockObjectives(BaseModel):
     """Objectives and focus areas for the training block."""
-    primary_goal: str = Field(..., description="Main goal for this block (e.g., 'BUILD', 'PEAK', 'Base building')")
+    primary_goal: TrainingPhase = Field(
+        ...,
+        description="The specific periodisation phase: Base (Capacity), Build (Threshold), Peak (Race Specificity), Taper (Freshness), or Transition (Rest)."
+    )
     running_mileage_week1: int = Field(..., description="Starting weekly mileage in km")
-    weekly_progression_percent: int = Field(default=10, description="% increase in mileage per week")
+    volume_progression: VolumeProgressionStrategy = Field(
+        default_factory=VolumeProgressionStrategy,
+        description="Volume progression strategy based on training phase"
+    )
+    weekly_progression_override: Optional[float] = Field(
+        None,
+        description="Optional manual override for weekly progression %. If None, uses phase-appropriate default."
+    )
     block_duration_weeks: int = Field(default=4, description="Number of build weeks before deload")
     deload_week: bool = Field(default=True, description="Include a deload week at the end")
     specific_focus_areas: List[str] = Field(
         default=[],
         description="Specific areas to focus on (e.g., 'threshold running', 'sled work', 'wall balls')"
     )
+    target_race_date: Optional[str] = Field(None, description="Target race date")
+    race_type: Optional[str] = Field(None, description="Race category (men_open, men_pro, women_open, women_pro)")
+    weeks_to_race: Optional[int] = Field(None, description="Number of weeks until race")
+
+    def get_progression_percent(self) -> float:
+        """Get the progression percentage for this block's training phase."""
+        # Use manual override if provided, otherwise use phase-based default
+        if self.weekly_progression_override is not None:
+            return self.weekly_progression_override
+        return self.volume_progression.get_progression_for_phase(self.primary_goal)
+
+    def get_weekly_volumes(self) -> List[int]:
+        """
+        Calculate the weekly volume schedule for this training block.
+
+        Returns:
+            List of weekly volumes in km, including deload week if applicable
+        """
+        # Create a custom progression rate if override is provided
+        if self.weekly_progression_override is not None:
+            # Temporarily override the phase-specific rate
+            custom_strategy = VolumeProgressionStrategy(
+                base_percent=self.weekly_progression_override,
+                build_percent=self.weekly_progression_override,
+                peak_percent=self.weekly_progression_override,
+                taper_percent=self.weekly_progression_override,
+                transition_percent=self.weekly_progression_override,
+                deload_percent=self.volume_progression.deload_percent  # Keep deload as-is
+            )
+            return custom_strategy.calculate_weekly_volumes(
+                phase=self.primary_goal,
+                starting_volume=self.running_mileage_week1,
+                num_weeks=self.block_duration_weeks + (1 if self.deload_week else 0),
+                include_deload=self.deload_week
+            )
+
+        # Use phase-based progression
+        return self.volume_progression.calculate_weekly_volumes(
+            phase=self.primary_goal,
+            starting_volume=self.running_mileage_week1,
+            num_weeks=self.block_duration_weeks + (1 if self.deload_week else 0),
+            include_deload=self.deload_week
+        )
 
 
 class AthleteProfile(BaseModel):
@@ -119,6 +297,7 @@ class TrainingBlockInput(BaseModel):
 
 class GenerationConfig(BaseModel):
     """Configuration for the generation process."""
+    provider: str = "anthropic"  # "anthropic", "openai", or "gemini"
     model_name: str = "claude-sonnet-4-5-20250929"
     max_tokens: int = 16000
     temperature: float = 1.0

@@ -2,42 +2,10 @@
 Prompt templates for each layer of training block generation.
 Version 2: Philosophy-guided with realistic work capacity constraints.
 """
-from models import TrainingPhase
-
-
-def get_volume_schedule_text(block_objectives):
-    """Generate a formatted text description of the weekly volume schedule."""
-    volumes = block_objectives.get_weekly_volumes()
-    progression_pct = block_objectives.get_progression_percent()
-
-    # Build the schedule text
-    lines = []
-    lines.append(f"Training phase: {block_objectives.primary_goal.value.upper()} (progression: {progression_pct:+.1f}% per week)")
-    lines.append("")
-
-    for i, volume in enumerate(volumes, 1):
-        week_type = "DELOAD" if i == len(volumes) and block_objectives.deload_week else "BUILD"
-        lines.append(f"- Week {i}: {volume}km ({week_type})")
-
-    return "\n".join(lines)
-
 
 def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
     """Layer 0 - Context & Global Rules"""
     from models import HyroxWeights
-
-    # Determine phase-specific instructions
-    phase_instructions = ""
-    if block_objectives.primary_goal == TrainingPhase.BASE:
-        phase_instructions = "CURRENT PHASE: GENERAL PREPARATION (BASE). High Volume / Low Specificity. Goal: Build engine and structural strength. Running: Mostly Zone 2. Strength: Phase 1 (Volume). HYROX: Heavy overload, low heart rate."
-    elif block_objectives.primary_goal == TrainingPhase.BUILD:
-        phase_instructions = "CURRENT PHASE: SPECIFIC PREPARATION (BUILD). Moderate Volume / Moderate-High Intensity. Goal: Threshold development. Running: Threshold (T1/T2) focus. Strength: Transition Phase 1 to 2. HYROX: Race weights, compromised running."
-    elif block_objectives.primary_goal == TrainingPhase.PEAK:
-        phase_instructions = "CURRENT PHASE: COMPETITION (PEAK). Low Volume / Very High Intensity. Goal: Race specificity. Running: Race pace or faster. Strength: Phase 2 (Intensity). HYROX: Full race simulation intensity."
-    elif block_objectives.primary_goal == TrainingPhase.TAPER:
-        phase_instructions = "CURRENT PHASE: TAPER. Very Low Volume / High Intensity / Maximum Freshness. Goal: Shed fatigue to reveal fitness. Rule: Leave the gym feeling better than you entered. Cut volume by 40-60% but keep intensity sharp."
-    elif block_objectives.primary_goal == TrainingPhase.TRANSITION:
-        phase_instructions = "CURRENT PHASE: TRANSITION. Unstructured / Recovery focus."
 
     hr_max = athlete_profile.physiological_params.hr_max
     t1_pace = athlete_profile.physiological_params.threshold_t1_pace
@@ -56,7 +24,10 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
 
     # Build race context section
     race_section = ""
-    has_race_data = (block_objectives.target_race_date or block_objectives.race_type)
+    perf = athlete_profile.performance_benchmarks
+    has_race_data = (block_objectives.target_race_date or block_objectives.race_type or
+                     perf.last_hyrox_date or perf.last_hyrox_time or
+                     perf.goal_hyrox_time or perf.races_completed > 0)
 
     if has_race_data:
         race_lines = []
@@ -65,9 +36,30 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
             if block_objectives.weeks_to_race:
                 race_lines.append(f"- Weeks to race: {block_objectives.weeks_to_race}")
         if block_objectives.race_type:
-            race_lines.append(f"- Race category: {block_objectives.race_type.replace('_', ' ').title()}")
+            race_lines.append(f"- Race type: {block_objectives.race_type}")
+        if perf.last_hyrox_date and perf.last_hyrox_time:
+            race_lines.append(f"- Recent best: {perf.last_hyrox_time} ({perf.last_hyrox_date})")
+        elif perf.last_hyrox_time:
+            race_lines.append(f"- Recent best: {perf.last_hyrox_time}")
+        if perf.goal_hyrox_time:
+            race_lines.append(f"- Goal time: {perf.goal_hyrox_time}")
+        if perf.races_completed > 0:
+            race_lines.append(f"- Races completed: {perf.races_completed}")
 
         race_section = "\n**Race Context:**\n\n" + "\n".join(race_lines) + "\n"
+
+    # Build performance profile section
+    performance_profile = ""
+    if perf.strong_stations or perf.weak_stations:
+        profile_lines = []
+        if perf.strong_stations:
+            stations_str = ", ".join(perf.strong_stations)
+            profile_lines.append(f"- Strong stations: {stations_str}")
+        if perf.weak_stations:
+            stations_str = ", ".join(perf.weak_stations)
+            profile_lines.append(f"- Limiter stations: {stations_str}")
+
+        performance_profile = "\n**Performance Profile:**\n\n" + "\n".join(profile_lines) + "\n"
 
     # Build equipment section
     equipment_list = ", ".join(athlete_profile.equipment.available_equipment)
@@ -146,13 +138,8 @@ Week 1 is a BASELINE week - sessions should be challenging but clearly achievabl
 
 """
 
-    return f"""You are an elite HYROX coach and strict scheduler. You are designing training for {athlete_profile.name}, a {athlete_profile.age}-year-old hybrid athlete in a {block_objectives.primary_goal.value} phase.
-
-**PERIODIZATION CONTEXT:**
-
-{phase_instructions}
-
-{injury_section}{race_section}{hyrox_spec_section}
+    return f"""You are an elite HYROX coach and strict scheduler. You are designing training for {athlete_profile.name}, a {athlete_profile.age}-year-old hybrid athlete in a {block_objectives.primary_goal} phase.
+{injury_section}{race_section}{performance_profile}{hyrox_spec_section}
 **Physiological Parameters:**
 
 - HRmax: {hr_max} bpm
@@ -171,9 +158,9 @@ Week 1 is a BASELINE week - sessions should be challenging but clearly achievabl
 - Primary location: {athlete_profile.equipment.primary_location}
 - Available: {equipment_list}{substitution_section}
 
-**Weekly Volume Schedule:**
+**Run Mileage Rule:**
 
-{get_volume_schedule_text(block_objectives)}
+- Weekly run mileage = {block_objectives.running_mileage_week1}km in Week 1, then +{block_objectives.weekly_progression_percent}% per week through Week {block_objectives.block_duration_weeks}
 
 **Guardrails:**
 
@@ -277,7 +264,7 @@ Brick sessions (Layer 5) provide race-specific running practice but do NOT repla
 **Objectives:**
 
 - Total weekly volume: **{block_objectives.running_mileage_week1}km** (Week 1), distributed across {runs} runs
-- Phase-appropriate progression: {block_objectives.get_progression_percent():+.1f}% per week ({block_objectives.primary_goal.value} phase)
+- Gradual build: +{block_objectives.weekly_progression_percent}% mileage per week in following weeks
 - Cover 2x Quality sessions (threshold / intervals), 1x Long Z2 run, 1x Easy Z2 run
 - Alternate hard and easy days; avoid stacking high intensity
 - Assign each run clear **purpose** (e.g., Threshold Intervals for clearance, Long Run for base)
@@ -329,390 +316,44 @@ For each running session, include:
 - Label them clearly by session type: *Run Quality 1 (Threshold Intervals)*, *Run Quality 2 (Progression Run)*, *Endurance Run (Long Z2)*, *Endurance Run (Easy Z2)*"""
 
 
-def get_layer_3_prompt(block_objectives):
+def get_layer_3_prompt():
     """Layer 3 - Max Strength Sessions Expansion"""
-
-    # Determine rep range instructions based on phase
-    rep_instructions = ""
-    if block_objectives.primary_goal == TrainingPhase.BASE:
-        rep_instructions = "Use PHASE 1 Rep Ranges (6-8 reps) exclusively for volume accumulation."
-    elif block_objectives.primary_goal == TrainingPhase.BUILD:
-        rep_instructions = "Start with Phase 1, progressing toward Phase 2 (heavier loads)."
-    elif block_objectives.primary_goal == TrainingPhase.PEAK:
-        rep_instructions = "Use PHASE 2 Rep Ranges (4-5 reps) exclusively for peak strength."
-    elif block_objectives.primary_goal == TrainingPhase.TAPER:
-        rep_instructions = "PRIMING SESSION ONLY. Reduce volume to 2 sets max. Maintain heavy loads (75-80%) to keep CNS primed, but low reps (RPE 6-7). NO FAILURE. Goal is tension without fatigue."
-    elif block_objectives.primary_goal == TrainingPhase.TRANSITION:
-        rep_instructions = "Unstructured or skip."
-
-    return f"""Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand only the Max Strength sessions into full detail.
+    return """Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand only the Max Strength sessions into full detail.
 
 **Objectives:**
 
-**PHASE-SPECIFIC REP RANGE MANDATE:**
+- Build absolute strength in compound lifts → improved economy, resilience, and transfer into HYROX strength endurance
+- Focus on low rep, high quality lifts
+- Keep sessions ≤75 min
+- No overlapping same-day fatigue with hard run sessions
 
-{rep_instructions}
+**Structure required in output:**
 
-**General Objectives:**
+For each strength session, include:
 
-- Build absolute strength in HYROX-relevant compound lifts → improved running economy, station performance, injury resilience
-- Use periodized rep ranges: higher volume early (6-8 reps), higher intensity later (4-5 reps)
-- Keep sessions 75-85 minutes total
-- Schedule at least 24 hours away from threshold/interval running sessions
+- **Purpose** (why it's in the program)
+- **Warm-up** (mobility, activation, ramp-up sets)
+- **Main lifts** (2–3 compound lifts: squat, deadlift, bench/press, pull-up variants). Explicit sets × reps × %1RM or RPE
+- **Accessory work** (1–2 short blocks targeting weak links or HYROX transfer — e.g., core stability, unilateral strength, grip)
+- **Cooldown** (mobility, breathing reset, stretch priority areas)
+- **Progression knob** (e.g., increase load by 2.5–5%, add 1 set, tighten rest)
 
-**Session Structure:**
+**Rules:**
 
-1. **Warm-up (15 min)**
-   - General: 5 min cardio at easy pace (row/ski/bike) HR 120-130
-   - Mobility: 5 min (hip 90/90 stretch 60s each side, spiderman with reach 5/side, goblet squat hold 60s, band pull-aparts 20 reps, dead bugs 10/side)
-   - Specific: 5 min ramp sets for first compound (empty bar × 10, 40% × 5, 60% × 3, 75% × 1, rest 60-90s between)
+- Use rep schemes in the **3–6 rep** range for compounds
+- Accessories may include unilateral lifts (lunges, RDLs), core, or posterior chain balance
+- No more than 4 total main compound lifts per session
+- Keep rest long (2–3 min for heavy compounds, 60–90s for accessories)
 
-2. **Compound Lifts (50 min total)**
-   - Exactly 3 lifts: ONE from each category below
-   - Time allocation: 20 min (hip-dominant) + 18 min (knee-dominant) + 12 min (upper body)
+**Output convention:**
 
-3. **Accessory Circuit (12-15 min)**
-   - 4 exercises, 3-4 rounds, 60-90s rest between rounds
-
-4. **Cooldown (5 min)**
-   - Hip flexor stretch 90s/side, hamstring stretch 90s/side, thoracic rotation 10/side
-   - 2 min diaphragmatic breathing (4s in, 6s out)
-
-**COMPOUND LIFT SELECTION RULES:**
-
-**Rule 1: Pick EXACTLY ONE from each category (total = 3 lifts)**
-
-**Category A (Hip-Dominant):**
-- Trap Bar Deadlift (PREFERRED - best HYROX transfer)
-- Conventional Deadlift
-- Romanian Deadlift (RDL)
-
-**Category B (Knee-Dominant):**
-- Front Squat (PREFERRED - best HYROX transfer)
-- Goblet Squat (heavy DB/KB)
-- High Bar Back Squat
-- Avoid: Low bar back squat (poor HYROX transfer)
-
-**Category C (Upper Body):**
-- Push Press (PREFERRED - best wall ball transfer)
-- Weighted Chin-Ups (choose if pulling weaker than pushing)
-- Incline Bench Press (30-45°)
-- Avoid: Flat bench press unless necessary
-
-**Rule 2: Order by CNS demand (highest to lowest)**
-1st: Category A (hip-dominant)
-2nd: Category B (knee-dominant)
-3rd: Category C (upper body)
-
-**PERIODIZED PROGRESSION SCHEME (applies to ALL 3 compound lifts):**
-
-Use 4 sets with periodized rep ranges that shift from higher volume to higher intensity as the training block progresses.
-
-**PERIODIZATION APPROACH:**
-
-**Phase 1: Early Block Weeks (Higher Rep Range - Volume Phase)**
-- Timing: Roughly first half of the training block
-- Rep range: 4 sets × 6-8 reps
-- Rep targets within session: 8-7-7-6 or 8-8-7-7
-- Load: Approximately 70-75% estimated 1RM
-- Rest: 2 min between sets (lower body), 90s (upper body)
-- Target RPE: 7-8 on most sets
-- Focus: Build work capacity, reinforce technique, accumulate training volume
-
-**Phase 2: Later Block Weeks (Lower Rep Range - Intensity Phase)**
-- Timing: Roughly second half of the training block
-- Rep range: 4 sets × 4-5 reps
-- Rep targets within session: 5-5-4-4 or 5-5-5-4
-- Load: Approximately 80-85% estimated 1RM
-- Rest: 2 min between sets (lower body), 90s (upper body)
-- Target RPE: 8-9 on most sets
-- Focus: Peak strength, higher intensity loads, maintain volume through heavier weight
-
-**Transition Timing (Use These Guidelines):**
-
-The transition from higher to lower rep ranges should occur roughly at the midpoint of the training block:
-
-- 4-week block: Weeks 1-2 use 6-8 reps, Week 3 use 4-5 reps, Week 4 deload
-- 6-week block: Weeks 1-3 use 6-8 reps, Weeks 4-5 use 4-5 reps, Week 6 deload
-- 8-week block: Weeks 1-4 use 6-8 reps, Weeks 5-7 use 4-5 reps, Week 8 deload
-- 12-week block: Weeks 1-6 use 6-8 reps, Weeks 7-11 use 4-5 reps, Week 12 deload
-
-**Rep Targets Within Each Session:**
-
-The rep targets decrease across sets due to natural fatigue accumulation. With only 90-120s rest, maintaining max reps across all sets isn't realistic.
-
-For 6-8 rep range sessions (Phase 1):
-- Set 1: Target 8 reps (you're fresh)
-- Set 2: Target 7-8 reps (slight fatigue)
-- Set 3: Target 7 reps (more fatigue)
-- Set 4: Target 6-7 reps (accumulated fatigue)
-
-For 4-5 rep range sessions (Phase 2):
-- Set 1: Target 5 reps (you're fresh)
-- Set 2: Target 5 reps (slight fatigue)
-- Set 3: Target 4-5 reps (more fatigue)
-- Set 4: Target 4 reps (accumulated fatigue)
-
-**Load Selection Guidelines:**
-
-For 6-8 rep range (Phase 1):
-- Choose approximately 70-75% estimated 1RM
-- Starting a new load: Should achieve roughly 8-7-7-6 or 8-8-7-6 reps across 4 sets
-- If you hit 8-8-8-8 easily on first session, load is too light
-- If you hit 6-6-5-5 on first session, load is too heavy
-- Target RPE 7-8 on most sets
-
-For 4-5 rep range (Phase 2):
-- Choose approximately 80-85% estimated 1RM
-- Starting a new load: Should achieve roughly 5-5-4-4 or 5-4-4-4 reps across 4 sets
-- If you hit 5-5-5-5 comfortably on first session, load is too light
-- If you hit 4-3-3-3 on first session, load is too heavy
-- Target RPE 8-9 on most sets (this is the higher intensity phase)
-
-**Rest Intervals (same for both phases):**
-- Lower body compounds (Categories A & B): 2 min between sets
-- Upper body compound (Category C): 90s between sets
-
-**PROGRESSION PRINCIPLES:**
-
-**During 6-8 Rep Range Sessions (Phase 1):**
-
-Building reps at same load:
-- Start each new load conservatively (should hit 8-7-7-6 or 8-8-7-6)
-- Keep load constant for 2-3 sessions
-- Each session, try to add 1-3 total reps across all 4 sets
-- Example progression: Session 1: 8-7-7-6 (28 reps) → Session 2: 8-8-7-7 (30 reps) → Session 3: 8-8-8-7 (31 reps)
-
-Progression trigger (when to add weight):
-- When you achieve: Set 1: 8 reps, Set 2: 8 reps, Set 3: 8 reps
-- Then next session add: Lower body +5kg, Upper body +2.5kg
-- After adding weight, reps drop back (e.g., to 8-7-7-6). This is normal and expected.
-
-**During 4-5 Rep Range Sessions (Phase 2):**
-
-Building reps at same load:
-- Start each new load conservatively (should hit 5-5-4-4 or 5-4-4-4)
-- Keep load constant for 2-3 sessions
-- Each session, try to add 1-2 total reps across all 4 sets
-- Example progression: Session 1: 5-5-4-4 (18 reps) → Session 2: 5-5-5-4 (19 reps) → Session 3: 5-5-5-5 (20 reps)
-
-Progression trigger (when to add weight):
-- When you achieve: Set 1: 5 reps, Set 2: 5 reps, Set 3: 5 reps
-- Then next session add: Lower body +5kg, Upper body +2.5kg
-- After adding weight, reps may drop back (e.g., to 5-4-4-4). This is normal and expected.
-
-**Transitioning Between Phases:**
-
-When moving from Phase 1 (6-8 reps) to Phase 2 (4-5 reps):
-- Increase load by approximately 5-10% for lower body or 2.5-5kg for upper body
-- This accounts for the shift from 70-75% loads (Phase 1) to 80-85% loads (Phase 2)
-- First session at lower rep range should feel manageable (hit 5-5-4-4 or 5-4-4-4)
-- Then build reps from there using normal progression principles
-
-Example transition:
-- End of Phase 1: Trap Bar Deadlift 140kg achieving 8-8-8-7
-- Start of Phase 2: Trap Bar Deadlift 150kg achieving 5-5-4-4
-- Continue building: 150kg → 5-5-5-4 → 5-5-5-5 → 155kg → 5-5-4-4 (cycle repeats)
-
-**Deload Sessions (when programmed in training block):**
-- Reduce load to 65-70% of current working weight
-- 4 sets × 8 reps (all sets should hit 8 comfortably)
-- Target RPE 5-6, focus on movement quality and technique
-- Use 8 reps regardless of whether you were in Phase 1 (6-8) or Phase 2 (4-5)
-- After deload, return to the appropriate rep range for that point in the block
-
-**Quality Standards (both phases):**
-- Explosive concentric, controlled eccentric (2-3s lowering)
-- Full range of motion on all reps
-- 2-second pause at bottom of squats and bench variations
-- Stop set if bar speed slows significantly or form breaks down
-- It's okay to hit the low end of rep range on final sets
-
-**ACCESSORY CIRCUIT (CRITICAL FOR BALANCED COVERAGE):**
-
-Format: 4 exercises, 3-4 rounds, 60-90s rest between rounds
-
-**IMPORTANT: Slots 1 and 3 must be OPPOSITE of Compound 3 for balanced upper body work**
-
-**IF Compound 3 = PUSH-dominant (Push Press, Incline Bench, Bench Press, Strict OHP):**
-Then BOTH Slot 1 and Slot 3 should be PULL exercises:
-
-Slot 1 - Vertical Pull (pick one):
-- Ring/TRX Rows: 12-15 reps @ RPE 7
-- Weighted Chin-Up Negatives: 5-8 reps @ RPE 7-8 (3-5s eccentric)
-- Lat Pulldown: 10-12 reps @ RPE 7
-- Face Pulls: 15-20 reps @ RPE 6-7
-
-Slot 3 - Horizontal Pull (pick one):
-- Single-arm DB Row: 8-10 reps per side @ RPE 7-8
-- Bent-over DB Rows: 10-12 reps @ RPE 7
-- Chest-Supported Row: 10-12 reps @ RPE 7
-- Inverted Rows: 10-15 reps @ RPE 7
-
-Result: 1 push compound + 2 pull accessories = BALANCED upper body
-
-**IF Compound 3 = PULL-dominant (Weighted Chin-Ups, Weighted Pull-Ups, Barbell Rows):**
-Then BOTH Slot 1 and Slot 3 should be PUSH exercises:
-
-Slot 1 - Horizontal Push/Chest Focus (pick one):
-- Incline DB Press: 10-12 reps @ RPE 7 (30-45° angle)
-- Flat DB Press: 10-12 reps @ RPE 7
-- Weighted Dips: 8-12 reps @ RPE 7
-- Push-ups: 15-20 reps @ RPE 7
-
-Slot 3 - Vertical Push/Shoulder Focus (pick one):
-- DB Shoulder Press: 10-12 reps @ RPE 7
-- Landmine Press: 10-12 reps per side @ RPE 7
-- Pike Push-ups: 10-15 reps @ RPE 7
-- DB Pec Fly: 12-15 reps @ RPE 6-7
-
-Result: 1 pull compound + 2 push accessories = BALANCED upper body
-
-**Slot 2: Unilateral Lower Body (pick one, always the same regardless of Compound 3):**
-- Bulgarian Split Squat: 8-10 reps per leg @ RPE 7-8
-- Single-leg RDL: 8-10 reps per leg @ RPE 7
-- Reverse Lunges: 10 reps per leg @ RPE 7 (can hold DBs)
-- Step-ups: 8-10 reps per leg @ RPE 7 (on 20" box)
-
-**Slot 4: Core/Anti-Rotation (pick one, always the same regardless of Compound 3):**
-- Pallof Press: 10-12 reps per side @ RPE 7
-- Weighted Plank Hold: 45-60s @ RPE 7
-- Dead Bugs: 10-12 reps per side (controlled tempo)
-- Russian Twists: 20 total reps with weight @ RPE 7
-- Hanging Knee Raises: 10-15 reps @ RPE 7
-
-**Circuit Execution:**
-- "Walking pace" between exercises (control each rep, minimal rest <30s between exercises)
-- No exercise should go to failure - leave 2-3 reps in reserve
-- Rest 60-90s between complete rounds
-
-**Round Progression:**
-- Phase 1 (6-8 reps): Start with 3 rounds, build to 4 rounds over 2-3 sessions
-- Phase 2 (4-5 reps): Maintain 3-4 rounds OR add 2.5-5kg to accessory loads
-- Deload sessions: 2-3 rounds at same weight, focus on quality
-
-**OUTPUT FORMAT:**
-
-For each Max Strength session, provide:
-
-1. **Session Header:**
-   - Day scheduled (typically Tuesday or Wednesday)
-   - Total duration (75-85 min)
-   - Equipment needed
-   - Placement note (e.g., "Schedule 24h+ away from threshold running")
-   - Current phase note (e.g., "Phase 1: 6-8 rep range - volume accumulation")
-
-2. **Complete Warm-up:**
-   - All 3 phases with specific exercises and durations
-   - Exact ramp set protocol for first compound lift
-
-3. **All 3 Compound Lifts:**
-   - Exercise name
-   - Current phase rep range (either 6-8 or 4-5)
-   - 4 sets with specific rep targets (e.g., "8-7-7-6" or "5-5-4-4")
-   - Load recommendation based on estimated 1RM
-   - RPE targets for each set
-   - Rest intervals
-   - One-sentence technical cue
-
-4. **Complete Accessory Circuit:**
-   - All 4 exercises with sets, reps, RPE
-   - Clear note explaining which Compound 3 type was chosen (push vs pull) and how Slots 1 & 3 balance it
-   - Circuit format and rest periods
-
-5. **Cooldown:**
-   - Specific stretches with durations
-   - Breathing protocol
-
-6. **Session Notes:**
-   - Current phase explanation (Phase 1 volume or Phase 2 intensity)
-   - Why these exercises were chosen (2-3 sentences)
-   - Progression plan for next session (1-2 sentences explaining rep building)
-   - If transitioning phases soon, note when transition will occur
-
-**CRITICAL REMINDERS:**
-
-DO:
-- Identify which phase of the block this session falls in (early = 6-8 reps, later = 4-5 reps)
-- Choose exactly 3 compound lifts (one from each category)
-- Make Slots 1 & 3 OPPOSITE of Compound 3 (if push → both pull, if pull → both push)
-- Use appropriate rep range for the phase (6-8 early, 4-5 later)
-- Rest 2 min (lower), 90s (upper) between compound sets
-- Build reps for 2-3 sessions before adding weight
-- Prioritize HYROX-specific lifts (Trap Bar DL, Front Squat, Push Press)
-
-DON'T:
-- Use more than 3 compound lifts
-- Use more than 4 accessory exercises
-- Go to failure on accessories
-- Schedule within 24h of hard running
-- Mix rep ranges within a session (all 3 compounds use same phase)
-- Skip the periodization (always use 6-8 early, 4-5 later)
-
-**Why Periodized Rep Ranges for HYROX:**
-
-Phase 1 (6-8 reps): Builds work capacity, technique mastery, and muscular endurance base. Higher volume prepares the body for the training block while managing fatigue with moderate loads.
-
-Phase 2 (4-5 reps): Peaks strength and power output with heavier loads. This phase develops the raw strength that translates to faster sled times and explosive power for stations.
-
-This periodization optimizes the balance between volume accumulation and intensity for athletes training 1x/week with 40-50km running volume.
-
-Present sessions as: **Max Strength Session 1** or **Max Strength Session 2** (as per Week 1 skeleton)."""
+- Present as a **list of 1–2 Max Strength sessions** (as per Week 1 skeleton)
+- Label them clearly: *Strength Session 1 (Lower Body Max)*, *Strength Session 2 (Upper/Full Body Max)*"""
 
 
 def get_layer_4_prompt(hyrox_weights):
     """Layer 4 - Strength Endurance Sessions Expansion"""
     return f"""Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand only the Strength Endurance sessions into full detail.
-
-**CRITICAL DEFINITION:**
-
-Strength endurance sessions build the ability to sustain power output under metabolic fatigue. These are NOT traditional strength sessions.
-
-**What They Are NOT:**
-❌ Traditional strength with 5/3/1 progressions
-❌ Heavy singles or triples (>85% 1RM)
-❌ 2-3 minute rest periods between sets
-❌ Maximal load focus
-❌ "NFT" (Not For Time) accessory work at walking pace
-
-**What They ARE:**
-✅ Time-constrained work formats
-✅ Under 2 minutes rest maximum
-✅ Moderate loads (40-70% 1RM)
-✅ High heart rate / lactate focus
-✅ Sustained output across multiple rounds
-
-**FOUR VALID FORMATS:**
-
-Choose ONE to TWO formats per session. Total work time across all formats in the session must add up to 35-50 minutes.
-
-**Format 1: CIRCUIT**
-- 3-6 rounds with 1-3 min rest between rounds
-- 5-7 exercises per round
-- MUST include cardio machine (Row/Ski/Bike)
-- Structured, repeatable progression
-
-**Format 2: AMRAP (As Many Rounds As Possible)**
-- 20-40 minute time cap
-- 5-7 exercises per round
-- MUST include cardio machine (Row/Ski/Bike)
-- No rest - continuous work
-- Self-regulated pacing, mental toughness focus
-
-**Format 3: EMOM (Every Minute on the Minute)**
-- 15-30 minute duration
-- 5-6 exercises rotating
-- MUST include cardio machine (Row/Ski/Bike)
-- 10-20s built-in rest per minute
-
-**Format 4: IWT (Interval Weight Training)**
-- 5-6 rounds, 90s-3 min work per round
-- 60-90s rest between rounds
-- MUST include cardio machine (Row/Ski/Bike)
-- ALWAYS: Cardio machine FIRST, then strength movement
-- High-intensity lactate training
-
-**CRITICAL:** All four formats MUST include cardio machines (Row, Ski Erg, or Air Bike). This is non-negotiable.
 
 **Official HYROX Station Weights (Use These Exactly):**
 
@@ -722,34 +363,6 @@ Choose ONE to TWO formats per session. Total work time across all formats in the
 - Sandbag: {hyrox_weights.sandbag_kg}kg
 - Farmers Carry: 2×{hyrox_weights.farmers_carry_kg[0]}kg
 
-**EXERCISE SELECTION (Must Include 3 Categories):**
-
-**A. HYROX-Specific (2-3 exercises):**
-- SkiErg: 250-500m
-- Rowing: 250-500m
-- Sled Push/Pull: 12.5-25m
-- Farmer's Carry: 40-100m
-- Wall Balls: 20-35 reps
-- Burpees: 10-20 reps or 20-60m
-- Lunges (weighted): 15-40 reps or 25-80m
-
-**B. Functional Movements (2-3 exercises):**
-- DB Thrusters: 15-25 reps
-- KB Swings: 15-25 reps
-- Devil Press: 10-20 reps
-- Box Step-ups: 15-25 reps
-- Burpee box jumps: 10-20 reps
-- Air Squat jumps: 15-25 reps
-- Push-ups: 10-20 reps
-- DB Snatch (alternating): 15-25 reps
-
-**C. Traditional Strength (0-2 exercises, OPTIONAL):**
-- ONLY moderate loads (RPE 5-7)
-- KB/DB Deadlifts: 15-25 reps
-- DB Press variations: 12-20 reps
-- Pull-up variations: 8-15 reps
-- NOT heavy barbell work
-
 **Exercise Selection Philosophy:**
 
 **Priority Order:**
@@ -758,164 +371,87 @@ Choose ONE to TWO formats per session. Total work time across all formats in the
 3. Freely substitute superior alternatives when appropriate
 4. Quality of training stimulus > literal race simulation
 
-Example: A trap bar deadlift might build sled-pulling capacity better than doing sleds twice a week. Bulgarian split squats might develop quad endurance more effectively than sandbag lunges in certain contexts.
+**Example:** A trap bar deadlift or KB swing might build sled-pulling capacity better than doing sleds twice a week. Bulgarian split squats might develop quad endurance more effectively than sandbag lunges in certain contexts.
 
-**FORMAT-SPECIFIC RULES:**
+**Target muscle groups and movement patterns, not a predetermined exercise list.**
 
-**CIRCUIT Format:**
-- Rest: 1-3 minutes between rounds
-- MUST include cardio machine (Row/Ski/Bike) - NOT optional
-- Progression: Weeks 1-4 (2-3' rest), Weeks 5-8 (1-2' rest), Weeks 9-12 (1' rest or race pace)
-- Load: Sustainable across all rounds, RPE 5-7
-- Example structure: 5 rounds, 2' rest: 500m Row @2k+10" → 20 KB Deadlifts → 20 Air Squats → 15 Push-ups → 10 Burpees
+**Realistic Work Capacity Prescription:**
 
-**AMRAP Format:**
-- Time cap: 15-30 minutes
-- NO rest - continuous work
-- MUST include cardio machine (Row/Ski/Bike) - NOT optional
-- Conservative loads for sustained effort, RPE 6-7
-- Emphasizes pacing strategy and mental game
-- Example: 20-min AMRAP: 250m Row → 15 Wall Balls → 25m Sled Push → 10 Devil Press → 80m Farmer's Carry
+**EMOM Guidelines:**
+- Work windows: 45-90 seconds for realistic completion
+- Don't combine max-effort cardio + heavy strength in short windows
 
-**EMOM Format:**
-- Duration: 15-30 minutes
-- MANDATORY: Must include cardio machine in rotation
-- 5-6 exercises rotating (NOT just 2)
-- Work fills 40-50 seconds, 10-20s rest per minute
+✅ **REALISTIC:**
+- "Sled push {hyrox_weights.sled_push_kg}kg 25m, rest remainder of 90s"
+- "RowErg 250m moderate effort, rest remainder of 2 min"
+- "Wall balls {hyrox_weights.wall_ball_kg}kg, 20 reps, rest remainder of 90s"
 
-**5-Exercise Rotation:**
-Minute 1: Cardio Machine 1 (e.g., Row 15 cal)
-Minute 2: Functional Movement (e.g., Push-ups 15-20)
-Minute 3: HYROX Movement (e.g., Wall Balls 20)
-Minute 4: Functional Movement (e.g., KB Swings 15)
-Minute 5: Cardio Machine 2 (e.g., Ski 15 cal)
-Repeat 3-6 rounds
+❌ **UNREALISTIC:**
+- "Sled push {hyrox_weights.sled_push_kg}kg 40m + RowErg 200m max effort in 2 min"
+- "Wall balls 50 reps + 400m run in 3 min"
 
-**6-Exercise Rotation:**
-Minute 1: Cardio Machine 1 (e.g., Row 15 cal)
-Minute 2: Functional Movement (e.g., DB Thrusters 15)
-Minute 3: HYROX Movement (e.g., Sled Push 12.5m)
-Minute 4: Functional Movement (e.g., Box Step-ups 20)
-Minute 5: Cardio Machine 2 (e.g., Ski 15 cal)
-Minute 6: HYROX Movement (e.g., Burpees 12)
-Repeat 3-5 rounds
+**EMOM Structure Options:**
+- Single movement, rotating loads/distances
+- Alternating movements every other minute
+- Density blocks (e.g., EMOM 12: odd minutes sled, even minutes row)
 
-**IWT Format:**
-- Structure: ALWAYS Cardio Machine → Strength Movement
-- 5-6 rounds, 90s-3 min work per round
-- 60-90s rest between rounds
-- Cardio: 85-90% effort (NOT max)
-- Strength: Max reps with good form until time cap
+**Circuit/Chipper Guidelines:**
+- Emphasize quality over speed
+- Mix complementary movement patterns
+- Use time caps to prevent grinding
+- Include strategic rest periods between rounds
 
-**Cardio Options (60-90s):**
-- Row: 20-30 calories or 500m
-- Ski Erg: 500m @ 85-90%
-- Air Bike: 20-30 calories @ 85-90%
-
-**Strength Options (remaining time until 2:00):**
-- Shoulder to Overhead (95-135lb): max reps
-- Thrusters (95-135lb): max reps
-- Devil Press (35-70lb): max reps
-- Power Snatch (95-135lb): max reps
-- Wall Balls: max reps
-- Burpee Pull-ups: max reps
-
-Example: 6 rounds every 3:00: 500m Ski @ 85-90% → Max Thrusters 95lb until 2:00 → Rest remaining time
-
-**LOAD GUIDELINES:**
-
-**General:**
-- Barbell: 95-165lb (typically 95-135lb)
-- Kettlebell: 35-70lb
-- Dumbbell: 35-70lb
-- Should allow "finish each set with some left in the tank"
-
-**Progression (choose 1-2, NOT all):**
-1. Density: Reduce rest between efforts
-2. Volume: More rounds/reps at same intensity
-3. Load: Heavier resistance at same volume
-
-**INTENSITY MARKERS:**
-
-- Circuit/AMRAP: RPE 6-7, HR Z2-Z4
-- EMOM: RPE 6-8, should have 10-15s rest each minute
-- IWT: "Lactate explosion," 85-90% on cardio, described as "very hard to make the shift"
+**Progression Vectors (choose 1-2, not all three):**
+1. **Density:** Reduce rest between efforts
+2. **Volume:** More rounds/reps at same intensity
+3. **Load:** Heavier resistance at same volume
 
 **Objectives:**
 
 - Build the ability to sustain submaximal strength under fatigue
-- Develop work capacity and lactate tolerance
-- Force adaptation by pairing strength movements with cardio intervals
-- Time cap: 60–75 min total session
+- Improve work capacity and efficiency in HYROX-specific stations (sleds, carries, wall balls, lunges, burpees)
+- Force adaptation by pairing **strength movements with cardio intervals** to simulate race demands
+- Time cap: 60–75 min
 
 **Structure required in output:**
 
-For EACH strength endurance session, include:
+For each strength endurance session, include:
 
-- **Purpose** (clear link to HYROX transfer and why this format was chosen)
-- **Format** (Circuit / AMRAP / EMOM / IWT)
-- **Warm-up** (mobility, activation, light machine work, 5-10 min)
-- **Main Blocks** (full session prescription using chosen format)
+- **Purpose** (clear link to HYROX transfer)
+- **Warm-up** (mobility, activation, light machine work)
+- **Main Blocks** (2–3 blocks using EMOMs, AMRAPs, circuits, or interval pairings of cardio + functional strength). Must include at least one machine (run, ski, row, echo/bike) per block. Explicit reps/sets/duration, intensity targets (HR zone, RPE, or pace)
 
-  For EVERY exercise, specify:
-  - Movement name
-  - Exact weight in kg (race weight for HYROX stations)
+  For EVERY station exercise, specify:
+  - Exact weight in kg (race weight if using HYROX stations)
   - Target height for wall balls
-  - Distance, reps, or duration
-  - Rest periods (for Circuit/IWT) or work structure (for EMOM/AMRAP)
-  - Intensity targets (HR zone, RPE, pace reference like @2k+10")
+  - Distance or reps
+  - Rest periods
 
-  Example formats:
-  - Circuit: "5 rounds, 2' rest: 400m Row @2k+5" → 15 Thrusters 2x15kg DB → 25m Sled Push {hyrox_weights.sled_push_kg}kg → 15 Wall Balls {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m"
-  - AMRAP: "20-min AMRAP: 250m Row → 15 KB Swings 24kg → 10 Box Step-ups 20" → 10 Push-ups → 50m Sled Push {hyrox_weights.sled_push_kg}kg"
-  - EMOM: "21-min EMOM (7 rounds): Min 1: 15 cal Row | Min 2: 15-20 Push-ups | Min 3: 12-15 KB Cleans 2x24kg"
-  - IWT: "6 rounds every 3:00: 25 cal Row (target sub-60s) → Max Thrusters 95lb until 2:00 → Rest remaining time"
+  Example: "Sled Push: {hyrox_weights.sled_push_kg}kg, 40m, 90s rest"
+  Example: "Wall Balls: {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m, 20 reps"
 
-- **Cooldown** (walk, flush, mobility, breathing, 10-15 min)
-- **Transfer Explanation** (how this builds toward HYROX race demands)
-- **Progression Knob** (how to scale in later weeks - volume, density, load, or machine interval adjustments)
+- **Cooldown** (walk, flush, mobility, breathing)
+- **Progression knob** (volume, density, load, or machine interval length)
 
 **Rules:**
 
-- ALL formats MUST include cardio machines - NOT optional
-- EMOM must use 5-6 exercises rotating, NOT just 2
-- Keep heart rate between upper Zone 2 → mid Zone 4 depending on format
-- Each main block should last 12–25 minutes
-- Balance sessions across the week: one more sled/carry focused; one more erg/wall ball focused
-- Explicit substitutions if needed (bike for run, alternatives for missing equipment)
+- Keep heart rate between **upper Zone 2 → mid Zone 4**, depending on block
+- Alternate knee-dominant vs. hip-dominant strength movements to manage fatigue
+- Each block should last **8–20 minutes**
+- Sessions should balance load: one more *sled/carry/burpee focused*; one more *wall ball/lunge/erg focused*
+- Explicit substitutions if running volume needs capping (swap to bike/erg)
 
-**Format Selection Guidance:**
-
-- Circuit: Structured practice, clear rounds, good for learning stations
-- AMRAP: Continuous work, teaches pacing, mental toughness
-- EMOM: Variety with time constraints, lactate tolerance, 5-6 movement rotation
-- IWT: Maximum intensity intervals, explicit cardio-strength pairing
-
-Choose formats that match athlete experience level and training phase objectives.
+**Week 1 Context:**
+This is Week 1 - design sessions that build work capacity foundation, allow athlete to learn movement patterns, and don't overreach with volume or intensity.
 
 **Output convention:**
 
 - Present as a **list of 2 Strength Endurance sessions** (as per Week 1 skeleton)
-- Label clearly with format: *Strength Endurance Session 1 (EMOM - Row/Ski/Strength)*, *Strength Endurance Session 2 (Circuit - HYROX Stations)*
-- Each session should be fully detailed with all numbers, loads, paces, and rest periods"""
+- Label clearly: *Strength Endurance Session 1 (Erg + Functional Strength)*, *Strength Endurance Session 2 (Run + HYROX Circuit)*"""
 
 
-def get_layer_5_prompt(hyrox_weights, block_objectives):
+def get_layer_5_prompt(hyrox_weights):
     """Layer 5 - HYROX Combo / Brick Session Expansion"""
-
-    # Determine focus instructions based on phase
-    focus_instructions = ""
-    if block_objectives.primary_goal == TrainingPhase.BASE:
-        focus_instructions = "Focus: OVERLOAD & CAPACITY. Stations: Go HEAVIER than race weight (10-20% overload). Running: Steady Zone 2 (or Erg sub) to manage impact. Do not spike HR."
-    elif block_objectives.primary_goal == TrainingPhase.BUILD:
-        focus_instructions = "Focus: THRESHOLD INTEGRATION. Stations: EXACT RACE WEIGHT. Running: Threshold Pace (T1/T2). Focus on holding strong pace after heavy work."
-    elif block_objectives.primary_goal == TrainingPhase.PEAK:
-        focus_instructions = "Focus: RACE SIMULATION. Stations: EXACT RACE WEIGHT. Running: RACE PACE or FASTER (Zone 4/5). Focus on transition speed and intensity."
-    elif block_objectives.primary_goal == TrainingPhase.TAPER:
-        focus_instructions = "Focus: CONFIDENCE & SHARPNESS. Stations: Race Weight. Running: Race Pace. CRITICAL: Cut volume drastically (e.g., only 2-3 rounds or 12-15 mins total work). Touch the intensity, then stop. No grinding."
-    else:  # TRANSITION
-        focus_instructions = "Focus: Unstructured practice or skip entirely."
-
     return f"""Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand the HYROX Combo / Brick session into full detail.
 
 **Official HYROX Race Specifications:**
@@ -925,10 +461,6 @@ def get_layer_5_prompt(hyrox_weights, block_objectives):
 - Wall Balls: {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m, 100 reps in race
 - Sandbag: {hyrox_weights.sandbag_kg}kg, 100m in race
 - Farmers Carry: 2×{hyrox_weights.farmers_carry_kg[0]}kg, 200m in race
-
-**PHASE-SPECIFIC FOCUS:**
-
-{focus_instructions}
 
 **Purpose:**
 
@@ -1106,31 +638,6 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential acti
 - Highlight session intensity (Z1–Z5) clearly
 - Use clean formatting (headings, tables where appropriate for efficiency)
 
-**CRITICAL: Max Strength Session Requirements (Layer 3 - NON-NEGOTIABLE):**
-
-When including Max Strength sessions in Week 1, you MUST follow these structural rules from Layer 3:
-
-1. **Exactly 3 compound lifts** - ONE from each category:
-   - Category A (Hip-Dominant): Trap Bar Deadlift, Conventional Deadlift, OR RDL
-   - Category B (Knee-Dominant): Front Squat, Goblet Squat, OR High Bar Back Squat
-   - Category C (Upper Body): Push Press, Weighted Chin-Ups, OR Incline Bench Press
-   - **DO NOT substitute sleds, carries, or other movements for these categories**
-
-2. **Specific rep targets** based on phase:
-   - Phase 1 (early weeks): Use "8-7-7-6" or "8-8-7-7" (NOT "6-8 reps")
-   - Phase 2 (later weeks): Use "5-5-4-4" or "5-5-5-4" (NOT "4-5 reps")
-   - Week 1 is ALWAYS Phase 1, so use 8-7-7-6 pattern
-
-3. **Exactly 4 accessory exercises** in circuit format (NOT 3):
-   - Slot 1: Vertical push OR pull (opposite of Compound 3)
-   - Slot 2: Unilateral lower body
-   - Slot 3: Horizontal push OR pull (opposite of Compound 3, same as Slot 1)
-   - Slot 4: Core/anti-rotation
-   - **IF Compound 3 is push → Slots 1 & 3 are both PULL**
-   - **IF Compound 3 is pull → Slots 1 & 3 are both PUSH**
-
-**If these rules are violated, the Max Strength session is INVALID and must be corrected.**
-
 **Output convention:**
 
 - Label clearly: *Week 1 – {block_objectives.primary_goal} Phase*
@@ -1156,37 +663,17 @@ def get_week_progression_prompt(week_number, previous_week_content, block_object
     """Generic prompt for Week 2, 3, or 4 progression"""
     from models import HyroxWeights
 
-    # Get the pre-calculated weekly volumes
-    weekly_volumes = block_objectives.get_weekly_volumes()
-    week_km = weekly_volumes[week_number - 1] if week_number <= len(weekly_volumes) else weekly_volumes[-1]
-    progression_pct = block_objectives.get_progression_percent()
-
+    week_km = block_objectives.running_mileage_week1 * (1 + (block_objectives.weekly_progression_percent / 100)) ** (week_number - 1)
     sessions = athlete_profile.week_structure.main_sessions_per_week
     training_days = athlete_profile.week_structure.get_training_days_range()
     runs = athlete_profile.week_structure.runs_per_week
     hyrox_weights = HyroxWeights.get_weights(block_objectives.race_type) if block_objectives.race_type else None
 
-    # Dynamic phase description based on actual block duration
-    total_weeks = block_objectives.block_duration_weeks
-    weeks_remaining = total_weeks - week_number
-
-    if week_number == 2:
-        phase_description = "modest progression"
-    elif week_number == total_weeks:
-        # Final week of the block
-        if block_objectives.deload_week:
-            phase_description = f"peak / overload (final hard week - deload follows in Week {total_weeks + 1})"
-        else:
-            phase_description = "peak / overload (final week)"
-    elif week_number == total_weeks - 1:
-        # Second-to-last week
-        phase_description = f"peak / overload (second hardest week - one more build week remains)"
-    elif weeks_remaining <= 2:
-        # Within 2 weeks of the end
-        phase_description = f"continued progression ({weeks_remaining} week{'s' if weeks_remaining > 1 else ''} until peak)"
-    else:
-        # Middle weeks
-        phase_description = "continued progression"
+    phase_description = {
+        2: "modest progression",
+        3: "peak / overload (hardest week before deload)",
+        4: "peak / overload (final hard week)"
+    }.get(week_number, "progression")
 
     # Build HYROX weights section if race category is provided
     hyrox_section = ""
@@ -1220,7 +707,7 @@ You MUST complete the ENTIRE week within 7,500 tokens. Prioritize essential work
 **Progression Rules:**
 
 1. **Running Volume**
-    - Target **total weekly mileage: {week_km:.0f} km** (phase-appropriate {progression_pct:+.1f}% progression)
+    - Increase **total weekly mileage by ~{block_objectives.weekly_progression_percent}%** (target ≈ {week_km:.0f} km)
     - Distribute volume proportionally across sessions (do not overload a single run)
 
 2. **Intensity Balance**
@@ -1263,11 +750,8 @@ def get_deload_prompt(week_number, peak_week_content, block_objectives, athlete_
     """Layer 10 - Deload Week"""
     from models import HyroxWeights
 
-    # Get the pre-calculated weekly volumes (deload is last week)
-    weekly_volumes = block_objectives.get_weekly_volumes()
-    deload_km = weekly_volumes[-1] if weekly_volumes else block_objectives.running_mileage_week1
-    peak_km = weekly_volumes[-2] if len(weekly_volumes) > 1 else block_objectives.running_mileage_week1
-
+    peak_km = block_objectives.running_mileage_week1 * (1 + (block_objectives.weekly_progression_percent / 100)) ** (block_objectives.block_duration_weeks - 1)
+    deload_km = peak_km * 0.65  # 30-40% reduction
     sessions = athlete_profile.week_structure.main_sessions_per_week
     training_days = athlete_profile.week_structure.get_training_days_range()
     runs = athlete_profile.week_structure.runs_per_week

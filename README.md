@@ -19,18 +19,70 @@ Then run a single command to generate a complete, detailed training block that i
 
 - Week-by-week progression (typically 4 build weeks + 1 deload week)
 - Full session details (running, strength, strength endurance, HYROX combos, mini sessions)
+- **Official HYROX race weights** prescribed exactly (152kg sled for men's open, etc.)
 - Warm-ups, cooldowns, progression knobs, and substitutions
 - Intensity audits and mileage tracking
 - HYROX race-specific training with proper fatigue management
 
+## Two Ways to Use Blocksmith
+
+### 🌐 Web Interface (Easy - No Command Line!)
+
+Point-and-click interface with visual form, race category selection, and real-time progress tracking:
+
+```bash
+python3 app.py  # or python app.py on Windows
+```
+
+Then open `http://127.0.0.1:5000` in your browser.
+
+- Select your race category (Men's Open, Men's Pro, Women's Open, Women's Pro)
+- System automatically applies official HYROX competition weights
+- Track generation progress with live updates
+
+**See [WEB_INTERFACE.md](WEB_INTERFACE.md) for the complete web interface guide.**
+
+### 💻 Command Line Interface (Advanced)
+
+Powerful CLI for automation and scripting. See [Quick Start](#quick-start) below.
+
+---
+
 ## Features
 
+- **Web Interface**: User-friendly form with real-time progress tracking and validation
+- **HYROX Competition Weights**: Uses official race weights (152kg sled for men's open, 6kg wall ball, etc.) - no arbitrary percentages
+- **Race-Specific Training**: Prescribes exact race weights across all sessions with volume/density progression
 - **Layered Generation**: Uses 11+ interconnected prompts to build progressively detailed training plans
-- **Configurable**: Simple YAML configuration for athlete profile, objectives, and constraints
+- **Configurable**: Simple text or YAML configuration for athlete profile, objectives, and constraints
 - **Previous Block Context**: Builds on your last training block for continuity
 - **Injury Management**: Respects pain thresholds and provides substitutions
 - **Full Traceability**: Saves intermediate layer outputs for review
 - **Professional Output**: Generates markdown-formatted training blocks ready for use
+
+## HYROX Competition Weights
+
+Blocksmith uses **official HYROX competition weights** based on your race category, ensuring your training matches race day demands exactly.
+
+### Race Categories and Weights
+
+| Category | Sled Push | Sled Pull | Wall Ball | Sandbag | Farmers Carry |
+|----------|-----------|-----------|-----------|---------|---------------|
+| **Men's Open** | 152kg | 103kg | 6kg to 3.0m | 20kg | 2×24kg |
+| **Men's Pro** | 202kg | 153kg | 9kg to 3.0m | 30kg | 2×32kg |
+| **Women's Open** | 102kg | 78kg | 4kg to 2.7m | 10kg | 2×16kg |
+| **Women's Pro** | 152kg | 103kg | 6kg to 2.7m | 20kg | 2×24kg |
+
+### How It Works
+
+When you select a race category (`race_type`), Blocksmith:
+
+1. **Prescribes exact race weights** - "Sled push: 152kg for 4×25m" (not "70% of race weight")
+2. **Maintains race weight across all weeks** - No load reduction during progression
+3. **Progresses via volume and density** - More rounds, less rest, longer work periods
+4. **Reinforces race specificity** - Every HYROX session uses your competition loads
+
+This approach builds race-specific strength and confidence, eliminating the guesswork of percentage-based programming.
 
 ## Installation
 
@@ -72,30 +124,40 @@ ANTHROPIC_API_KEY=your_actual_api_key_here
 
 ### 1. Create a configuration file
 
+**Option A: Simple Text Format (Recommended - Easier to Edit)**
+
+```bash
+python main.py create-config-simple my_block_config.txt
+```
+
+**Option B: YAML Format**
+
 ```bash
 python main.py create-config my_block_config.yaml
 ```
 
-This creates a sample configuration file with all the necessary fields.
+Both create a sample configuration file with all necessary fields. The text format uses simple `key=value` pairs and is less error-prone than YAML.
 
 ### 2. Edit the configuration
 
-Open `my_block_config.yaml` and customize:
+Open your config file and customize:
 
 - **Athlete information**: Name, age
 - **Physiological parameters**: HR max, threshold paces
 - **Injury information**: Active injuries, pain thresholds
+- **Training week structure**: Rest days, sessions per week, double days, runs per week
 - **Block objectives**: Goal (BUILD/PEAK/Base building), mileage, duration
 - **Previous block** (optional): Path to your last training block markdown file
 
 ### 3. Generate your training block
 
 ```bash
-python main.py generate --config my_block_config.yaml
+python main.py generate --config my_block_config.txt
 ```
+(or `.yaml` if you chose YAML format)
 
 The tool will:
-1. Load your configuration
+1. Load and validate your configuration
 2. Display a summary and ask for confirmation
 3. Generate each layer sequentially (Layer 0 → Layer 11)
 4. Save intermediate outputs and the final complete block
@@ -108,6 +170,48 @@ Your complete training block will be at:
 - `output/generation_summary.md` - Summary of generation
 
 ## Configuration File Structure
+
+### Simple Text Format (.txt)
+
+```text
+# Athlete Information
+name=Arthur Mellors
+age=42
+
+# Physiological Parameters
+hr_max=188
+threshold_t1_pace=4:37  # mm:ss per km
+threshold_t2_pace=4:17
+
+# Injury Information
+active_injuries=  # Leave empty or list: quad pain, shoulder soreness
+pain_threshold_during=2
+pain_threshold_next_day=3
+soreness_cutoff_hours=36
+volume_reduction_percent=25
+
+# Training Week Structure
+rest_days=Monday  # Can be multiple: Monday, Wednesday
+total_sessions_per_week=8
+double_days=Wednesday, Saturday  # Days with AM + PM sessions
+runs_per_week=4  # How many sessions are runs
+long_run_day=Sunday  # Which day has the long run
+
+# Block Objectives
+primary_goal=BUILD  # Examples: BUILD, PEAK, Base building
+running_mileage_week1=40  # km
+weekly_progression_percent=10
+block_duration_weeks=4
+deload_week=yes
+race_type=men_open  # Options: men_open, men_pro, women_open, women_pro
+specific_focus_areas=threshold running, sled work, wall balls
+
+# Optional
+previous_training_block_file=  # Path to previous block
+additional_context=  # Special instructions
+```
+
+### YAML Format (.yaml)
 
 ```yaml
 athlete:
@@ -126,12 +230,20 @@ injury_information:
   soreness_cutoff_hours: 36
   volume_reduction_percent: 25
 
+training_week_structure:
+  rest_days: "Monday"  # Can be multiple: "Monday, Wednesday"
+  total_sessions_per_week: 8
+  double_days: "Wednesday, Saturday"  # Days with AM + PM sessions
+  runs_per_week: 4  # How many sessions are runs
+  long_run_day: "Sunday"  # Which day has the long run
+
 block_objectives:
   primary_goal: "BUILD"  # Examples: BUILD, PEAK, Base building
   running_mileage_week1: 40  # km
   weekly_progression_percent: 10
   block_duration_weeks: 4
   deload_week: true
+  race_type: "men_open"  # Options: men_open, men_pro, women_open, women_pro
   specific_focus_areas:
     - "threshold running"
     - "sled work"
@@ -143,6 +255,18 @@ previous_training_block_file: "previous_block.md"
 additional_context: "Focus on shoulder health this block"
 ```
 
+### Configuration Validation
+
+Blocksmith validates your configuration before generation and provides helpful error messages:
+
+**Example validation:**
+- ✅ Sessions fit within training days (can't have 12 sessions in 5 training days)
+- ✅ Double days math is correct (8 sessions - 6 training days = 2 double days needed)
+- ✅ Runs don't exceed total sessions
+- ✅ Long run day is a training day (not a rest day)
+
+If validation fails, you'll see a clear error message with suggestions for fixing the issue.
+
 ## Command Reference
 
 ### Generate a training block
@@ -152,7 +276,7 @@ python main.py generate --config CONFIG_FILE [OPTIONS]
 ```
 
 **Options:**
-- `--config, -c`: Path to YAML configuration file (required)
+- `--config, -c`: Path to configuration file (.txt or .yaml) (required)
 - `--output-dir, -o`: Output directory (default: `output`)
 - `--api-key, -k`: Anthropic API key (or use ANTHROPIC_API_KEY env var)
 - `--model, -m`: Claude model to use (default: claude-sonnet-4-5-20250929)
@@ -160,8 +284,14 @@ python main.py generate --config CONFIG_FILE [OPTIONS]
 
 ### Create a sample configuration
 
+**Simple text format (recommended):**
 ```bash
-python main.py create-config OUTPUT_FILE
+python main.py create-config-simple OUTPUT_FILE.txt
+```
+
+**YAML format:**
+```bash
+python main.py create-config OUTPUT_FILE.yaml
 ```
 
 ### Show version
@@ -174,20 +304,20 @@ python main.py version
 
 Blocksmith uses a **layered prompt engineering** approach:
 
-1. **Layer 0**: Establishes global context, rules, and constraints
+1. **Layer 0**: Establishes global context, rules, constraints, and **official HYROX race specifications**
 2. **Layer 1**: Creates Week 1 skeleton (session archetypes only)
 3. **Layers 2-6**: Expand each session type in detail:
    - Running sessions
    - Max strength sessions
-   - Strength endurance sessions
-   - HYROX combo/brick sessions
+   - **Strength endurance sessions** (with exact race weights)
+   - **HYROX combo/brick sessions** (with race-specific loads)
    - Aerobic engine/recovery & mini sessions
 4. **Layer 7**: Assembles complete Week 1 with all details
-5. **Layers 8-10**: Generates Weeks 2-4 with progressive overload
-6. **Deload Layer**: Creates recovery week (if enabled)
+5. **Layers 8-10**: Generates Weeks 2-4 with progressive overload (maintaining race weight)
+6. **Deload Layer**: Creates recovery week (if enabled, keeping race weight)
 7. **Layer 11**: Assembles final block artifact with all weeks
 
-Each layer builds on previous outputs, creating a coherent, detailed training plan.
+Each layer builds on previous outputs, creating a coherent, detailed training plan. When a race category is specified, HYROX weights are injected into multiple layers to ensure consistent, race-specific prescriptions throughout the block.
 
 ## Examples
 
@@ -211,11 +341,12 @@ python main.py generate --config my_config.yaml --model claude-opus-4-20250514
 
 ## Tips
 
-1. **Previous Block**: Including your previous training block helps maintain continuity and progressive overload
-2. **Specific Focus Areas**: List 2-3 key areas to emphasize in `specific_focus_areas`
-3. **Injury Management**: Be honest about active injuries - the system will adapt sessions accordingly
-4. **Review Layers**: Check intermediate layer outputs to understand how the plan was built
-5. **Iteration**: You can regenerate with tweaked parameters to compare different approaches
+1. **Race Category**: Always specify `race_type` (men_open, men_pro, women_open, women_pro) to get exact competition weights
+2. **Previous Block**: Including your previous training block helps maintain continuity and progressive overload
+3. **Specific Focus Areas**: List 2-3 key areas to emphasize in `specific_focus_areas`
+4. **Injury Management**: Be honest about active injuries - the system will adapt sessions accordingly
+5. **Review Layers**: Check intermediate layer outputs to understand how the plan was built
+6. **Iteration**: You can regenerate with tweaked parameters to compare different approaches
 
 ## Cost Estimation
 
@@ -236,7 +367,19 @@ Error: API key not provided
 ```
 Error loading configuration: ...
 ```
-**Solution**: Check YAML syntax, ensure all required fields are present
+**Solution**:
+- For `.txt` files: Check `key=value` format, ensure no extra spaces before `=`
+- For `.yaml` files: Check YAML syntax (indentation matters!), ensure all required fields are present
+
+### Configuration Validation Error
+```
+❌ Invalid training week structure
+```
+**Solution**: Read the error message carefully - it explains exactly what's wrong and suggests a fix. Common issues:
+- Double days don't match math (e.g., 8 sessions with 6 training days needs 2 double days)
+- Too many sessions for available training days
+- Long run scheduled on a rest day
+- More runs than total sessions
 
 ### Rate Limit Error
 **Solution**: The generator includes 1-second delays between API calls. If still rate-limited, wait a few minutes and retry.
@@ -246,13 +389,16 @@ Error loading configuration: ...
 ```
 Blocksmith/
 ├── main.py              # CLI interface
+├── app.py               # Web interface (Flask)
 ├── generator.py         # Core generation engine
-├── prompts.py           # Layer prompt templates
-├── models.py            # Data models (Pydantic)
+├── prompts.py           # Layer prompt templates (includes HYROX weights)
+├── models.py            # Data models (Pydantic + HyroxWeights)
 ├── requirements.txt     # Python dependencies
 ├── .env.example         # Example environment variables
 ├── .gitignore          # Git ignore rules
 ├── README.md           # This file
+├── templates/          # HTML templates for web interface
+├── static/             # CSS and JavaScript for web interface
 └── output/             # Generated training blocks (created at runtime)
 ```
 

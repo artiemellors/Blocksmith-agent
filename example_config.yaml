@@ -25,6 +25,34 @@ injury_information:
   # Percentage to reduce volume if soreness exceeds cutoff
   volume_reduction_percent: 25
 
+training_week_structure:
+  # Which days do you rest? (comma-separated)
+  # Examples: "Monday" OR "Monday, Wednesday" OR "Friday"
+  rest_days: "Monday"
+
+  # How many total sessions per week do you want?
+  # (System calculates based on your training days how many double days you need)
+  total_sessions_per_week: 8
+
+  # Which days should have double sessions (AM + PM)?
+  # Leave empty if no double days needed, or specify days (comma-separated)
+  # Examples: "Wednesday, Saturday" OR "Tuesday, Thursday, Saturday"
+  # NOTE: Must match the math (total_sessions - training_days = double_days needed)
+  double_days: "Wednesday, Saturday"
+
+  # How many of your sessions should be runs?
+  runs_per_week: 4
+
+  # Which training day should have your long run?
+  # Examples: "Sunday", "Saturday"
+  long_run_day: "Sunday"
+
+  # Session time ranges in minutes
+  weekday_session_time_min: 45
+  weekday_session_time_max: 75
+  weekend_session_time_min: 90
+  weekend_session_time_max: 105
+
 block_objectives:
   # Primary goal: Describe your training phase
   # Examples: "BUILD endurance and strength", "PEAK for race", "Base building", etc.

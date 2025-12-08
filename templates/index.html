@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blocksmith - Training Block Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏋️ Blocksmith</h1>
+            <p class="subtitle">Automated HYROX Training Block Generator</p>
+        </header>
+
+        <div id="form-container" class="form-section">
+            <form id="config-form">
+                <!-- Advanced Settings (Collapsible) -->
+                <div class="section-container">
+                    <div class="collapsible-header" onclick="toggleSection('advanced-content', 'advanced-icon')">
+                        <span id="advanced-icon" class="arrow-icon">▶</span>
+                        <div class="header-content">
+                            <div class="header-title">⚙️ Advanced Settings (Optional)</div>
+                            <div class="header-subtitle">Choose AI provider and model</div>
+                        </div>
+                    </div>
+
+                    <div id="advanced-content" class="collapsible-content" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ai_provider">AI Provider</label>
+                                <select id="ai_provider" name="ai_provider" onchange="updateModelOptions()">
+                                    <option value="anthropic" selected>Anthropic (Claude)</option>
+                                    <option value="openai">OpenAI (GPT)</option>
+                                    <option value="gemini">Google (Gemini)</option>
+                                </select>
+                                <small>Select which AI service to use for generation</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="model_name">Model</label>
+                                <select id="model_name" name="model_name">
+                                    <!-- Options will be populated by JavaScript -->
+                                </select>
+                                <small id="model_info" class="model-info"></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Athlete Information -->
+                <section class="form-section">
+                    <h2>Athlete Information</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Name *</label>
+                            <input type="text" id="name" name="name" required placeholder="Your Name">
+                        </div>
+                        <div class="form-group">
+                            <label for="age">Age *</label>
+                            <input type="number" id="age" name="age" required min="18" max="100" placeholder="35">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Physiological Parameters -->
+                <section class="form-section">
+                    <h2>Physiological Parameters</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hr_max">Max Heart Rate (HR Max) *</label>
+                            <input type="number" id="hr_max" name="hr_max" required min="120" max="220" placeholder="188">
+                            <small>Your maximum heart rate in beats per minute</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="vo2_max">VO2 Max (ml/kg/min)</label>
+                            <input type="number" id="vo2_max" name="vo2_max" min="30" max="90" placeholder="55">
+                            <small>Optional - helps calibrate interval intensities</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="threshold_t1_pace">T1 Threshold Pace (mm:ss per km) *</label>
+                            <input type="text" id="threshold_t1_pace" name="threshold_t1_pace" required
+                                   pattern="\d{1,2}:\d{2}" placeholder="4:37">
+                            <small>Pace you can hold for 45-60 minutes (e.g., 4:37)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="threshold_t2_pace">T2 Threshold Pace (mm:ss per km) *</label>
+                            <input type="text" id="threshold_t2_pace" name="threshold_t2_pace" required
+                                   pattern="\d{1,2}:\d{2}" placeholder="4:17">
+                            <small>Pace you can hold for 20-30 minutes (e.g., 4:17)</small>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Training Week Structure -->
+                <section class="form-section">
+                    <h2>Training Week Structure</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="rest_days">Rest Days *</label>
+                            <input type="text" id="rest_days" name="rest_days" required value="Monday"
+                                   placeholder="Monday, Wednesday">
+                            <small>Which day(s) to rest (comma-separated)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="total_sessions_per_week">Total Sessions Per Week *</label>
+                            <input type="number" id="total_sessions_per_week" name="total_sessions_per_week"
+                                   required value="8" min="3" max="14">
+                            <small>Total training sessions per week</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="double_days">Double Days</label>
+                            <input type="text" id="double_days" name="double_days"
+                                   value="Wednesday, Saturday" placeholder="Wednesday, Saturday">
+                            <small>Days with AM + PM sessions (comma-separated)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="runs_per_week">Runs Per Week *</label>
+                            <input type="number" id="runs_per_week" name="runs_per_week"
+                                   required value="4" min="1" max="7">
+                            <small>How many sessions are runs</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="long_run_day">Long Run Day *</label>
+                            <input type="text" id="long_run_day" name="long_run_day"
+                                   required value="Sunday" placeholder="Sunday">
+                            <small>Which day has your long run</small>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Block Objectives -->
+                <section class="form-section">
+                    <h2>Block Objectives</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="primary_goal">
+                                Training Phase *
+                                <span class="info-icon" data-tooltip="BASE: High volume, low specificity. Build aerobic engine & structural strength. Mostly Zone 2 running, Phase 1 strength (6-8 reps), heavy overload on HYROX stations.&#10;&#10;BUILD: Moderate volume, moderate-high intensity. Develop threshold & race-specific fitness. T1/T2 running, transition to Phase 2 strength, race weight stations.&#10;&#10;PEAK: Low volume, very high intensity. Maximize race readiness. Race pace or faster, Phase 2 strength (4-5 reps), full race simulation.&#10;&#10;TAPER: Very low volume, maintain intensity. Shed fatigue before race. Cut volume 40-60%, keep loads heavy but low reps (no failure), minimal station work.&#10;&#10;TRANSITION: Unstructured recovery between training blocks. Active rest and skill practice.">ℹ️</span>
+                            </label>
+                            <select id="primary_goal" name="primary_goal" required>
+                                <option value="base">Base - General Preparation</option>
+                                <option value="build" selected>Build - Specific Preparation</option>
+                                <option value="peak">Peak - Competition Phase</option>
+                                <option value="taper">Taper - Pre-Race Freshness</option>
+                                <option value="transition">Transition - Active Recovery</option>
+                            </select>
+                            <small>Choose your current periodization phase. Hover over ℹ️ for detailed guidance.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="race_type">Race Category *</label>
+                            <select id="race_type" name="race_type" required>
+                                <option value="men_open" selected>Men's Open</option>
+                                <option value="men_pro">Men's Pro</option>
+                                <option value="women_open">Women's Open</option>
+                                <option value="women_pro">Women's Pro</option>
+                            </select>
+                            <small>Determines official race weights for stations</small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="specific_focus_areas">Specific Focus Areas</label>
+                        <input type="text" id="specific_focus_areas" name="specific_focus_areas"
+                               placeholder="e.g., threshold running, sled work, wall balls">
+                        <small>2-4 areas to emphasize (comma-separated)</small>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="running_mileage_week1">Starting Weekly Mileage (km) *</label>
+                            <input type="number" id="running_mileage_week1" name="running_mileage_week1"
+                                   required value="40" min="10" max="150" step="5">
+                            <small>Starting weekly running kilometers</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="weekly_progression_override">
+                                Weekly Progression (%)
+                                <span class="info-icon" data-tooltip="Default progression rates by phase:&#10;• BASE: +10% per week (high volume build)&#10;• BUILD: +5% per week (moderate progression)&#10;• PEAK: +2.5% per week (fine-tuning)&#10;• TAPER: -20% per week (volume reduction)&#10;• TRANSITION: 0% (maintenance)&#10;&#10;Leave blank to use the phase default, or enter a custom % to override.">ℹ️</span>
+                            </label>
+                            <input type="number" id="weekly_progression_override" name="weekly_progression_override"
+                                   min="-50" max="20" step="0.1" placeholder="Auto (phase default)">
+                            <small>Optional: Override automatic progression rate</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="block_duration_weeks">Block Duration (weeks)</label>
+                            <input type="number" id="block_duration_weeks" name="block_duration_weeks"
+                                   value="4" min="2" max="8">
+                            <small>How many weeks before deload?</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="deload_week">Include Deload Week?</label>
+                            <select id="deload_week" name="deload_week">
+                                <option value="yes" selected>Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Gym Equipment (Optional - Collapsible) -->
+                <div class="section-container">
+                    <div class="collapsible-header" onclick="toggleSection('equipment-content', 'equipment-icon')">
+                        <span id="equipment-icon" class="arrow-icon">▶</span>
+                        <div class="header-content">
+                            <div class="header-title">Gym Equipment (Optional)</div>
+                            <div class="header-subtitle">Select your available training equipment</div>
+                        </div>
+                    </div>
+
+                    <div id="equipment-content" class="collapsible-content" style="display: none;">
+                        <div class="form-group">
+                            <label for="gym_setup">Gym Setup</label>
+                            <select id="gym_setup" name="primary_location">
+                                <option value="Full HYROX Gym" selected>Full HYROX Gym</option>
+                                <option value="Standard Gym">Standard Gym</option>
+                                <option value="Limited Equipment">Limited Equipment</option>
+                            </select>
+                            <small>Selecting a preset will auto-check equipment below</small>
+                        </div>
+
+                        <div class="equipment-section">
+                            <h3>🏋️ HYROX Stations</h3>
+                            <div class="equipment-grid">
+                                <label class="equipment-card">
+                                    <input type="checkbox" name="equipment" value="Sled" checked>
+                                    <div class="equipment-card-content">
+                                        <span class="equipment-icon">🛷</span>
+                                        <span class="equipment-name">Sleds</span>
+                                        <span class="equipment-desc">Push & Pull</span>
+                                    </div>
+                                </label>
+                                <label class="equipment-card">
+                                    <input type="checkbox" name="equipment" value="SkiErg" checked>
+                                    <div class="equipment-card-content">
+                                        <span class="equipment-icon">⛷️</span>
+                                        <span class="equipment-name">SkiErg</span>
+                                        <span class="equipment-desc">1000m</span>
+                                    </div>
+                                </label>
+                                <label class="equipment-card">
+                                    <input type="checkbox" name="equipment" value="Wall Balls" checked>
+                                    <div class="equipment-card-content">
+                                        <span class="equipment-icon">🏀</span>
+                                        <span class="equipment-name">Wall Balls</span>
+                                        <span class="equipment-desc">100 reps</span>
+                                    </div>
+                                </label>
+                                <label class="equipment-card">
+                                    <input type="checkbox" name="equipment" value="Sandbag" checked>
+                                    <div class="equipment-card-content">
+                                        <span class="equipment-icon">💼</span>
+                                        <span class="equipment-name">Sandbag</span>
+                                        <span class="equipment-desc">Lunges 100m</span>
+                                    </div>
+                                </label>
+                                <label class="equipment-card">
+                                    <input type="checkbox" name="equipment" value="Farmers Carry handles" checked>
+                                    <div class="equipment-card-content">
+                                        <span class="equipment-icon">🏋️</span>
+                                        <span class="equipment-name">Farmers Carry</span>
+                                        <span class="equipment-desc">200m</span>
+                                    </div>
+                                </label>
+                                <label class="equipment-card">
+                                    <input type="checkbox" name="equipment" value="Rowing Machine" checked>
+                                    <div class="equipment-card-content">
+                                        <span class="equipment-icon">🚣</span>
+                                        <span class="equipment-name">RowErg</span>
+                                        <span class="equipment-desc">1000m</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="equipment-section">
+                            <h3>💪 Cardio Machines</h3>
+                            <div class="equipment-grid">
+                                <label class="equipment-card">
+                                    <input type="checkbox" name="equipment" value="Echo Bike" checked>
+                                    <div class="equipment-card-content">
+                                        <span class="equipment-icon">🚴</span>
+                                        <span class="equipment-name">Echo Bike</span>
+                                        <span class="equipment-desc">Assault Bike</span>
+                                    </div>
+                                </label>
+                                <label class="equipment-card">
+                                    <input type="checkbox" name="equipment" value="Exercise Bike" checked>
+                                    <div class="equipment-card-content">
+                                        <span class="equipment-icon">🚲</span>
+                                        <span class="equipment-name">Exercise Bike</span>
+                                        <span class="equipment-desc">Standard</span>
+                                    </div>
+                                </label>
+                                <label class="equipment-card">
+                                    <input type="checkbox" name="equipment" value="Treadmill" checked>
+                                    <div class="equipment-card-content">
+                                        <span class="equipment-icon">🏃</span>
+                                        <span class="equipment-name">Treadmill</span>
+                                        <span class="equipment-desc">Running</span>
+                                    </div>
+                                </label>
+                                <label class="equipment-card">
+                                    <input type="checkbox" name="equipment" value="Sled Track" checked>
+                                    <div class="equipment-card-content">
+                                        <span class="equipment-icon">🛤️</span>
+                                        <span class="equipment-name">Sled Track</span>
+                                        <span class="equipment-desc">50m</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="equipment-section">
+                            <h3>🔧 Strength Equipment</h3>
+                            <div class="equipment-grid">
+                                <label class="equipment-card">
+                                    <input type="checkbox" name="equipment" value="Full barbell setup" checked>
+                                    <div class="equipment-card-content">
+                                        <span class="equipment-icon">🏋️‍♂️</span>
+                                        <span class="equipment-name">Barbell</span>
+                                        <span class="equipment-desc">& Plates</span>
+                                    </div>
+                                </label>
+                                <label class="equipment-card">
+                                    <input type="checkbox" name="equipment" value="Dumbbells" checked>
+                                    <div class="equipment-card-content">
+                                        <span class="equipment-icon">🔩</span>
+                                        <span class="equipment-name">Dumbbells</span>
+                                        <span class="equipment-desc">Various weights</span>
+                                    </div>
+                                </label>
+                                <label class="equipment-card">
+                                    <input type="checkbox" name="equipment" value="Kettlebells" checked>
+                                    <div class="equipment-card-content">
+                                        <span class="equipment-icon">⚖️</span>
+                                        <span class="equipment-name">Kettlebells</span>
+                                        <span class="equipment-desc">Swings & carries</span>
+                                    </div>
+                                </label>
+                                <label class="equipment-card">
+                                    <input type="checkbox" name="equipment" value="Pull-up Bar" checked>
+                                    <div class="equipment-card-content">
+                                        <span class="equipment-icon">📊</span>
+                                        <span class="equipment-name">Pull-up Bar</span>
+                                        <span class="equipment-desc">Bodyweight</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Injury & Recovery Management (Optional - Collapsible) -->
+                <div class="section-container">
+                    <div class="collapsible-header" onclick="toggleSection('injury-content', 'injury-icon')">
+                        <span id="injury-icon" class="arrow-icon">▶</span>
+                        <div class="header-content">
+                            <div class="header-title">Injury & Recovery Management (Optional)</div>
+                            <div class="header-subtitle">Customize training based on injuries and recovery needs</div>
+                        </div>
+                    </div>
+
+                    <div id="injury-content" class="collapsible-content" style="display: none;">
+                        <div class="form-group">
+                            <label for="active_injuries">Active Injuries</label>
+                            <input type="text" id="active_injuries" name="active_injuries"
+                                   placeholder="e.g., knee pain, shoulder soreness (comma-separated)">
+                            <small>List any current injuries or niggles</small>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pain_threshold_during">Pain Threshold During (0-10)</label>
+                                <input type="number" id="pain_threshold_during" name="pain_threshold_during"
+                                       value="2" min="0" max="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="pain_threshold_next_day">Pain Threshold Next Day (0-10)</label>
+                                <input type="number" id="pain_threshold_next_day" name="pain_threshold_next_day"
+                                       value="3" min="0" max="10">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="soreness_cutoff_hours">Soreness Cutoff (hours)</label>
+                                <input type="number" id="soreness_cutoff_hours" name="soreness_cutoff_hours"
+                                       value="36" min="12" max="72">
+                            </div>
+                            <div class="form-group">
+                                <label for="volume_reduction_percent">Volume Reduction (%)</label>
+                                <input type="number" id="volume_reduction_percent" name="volume_reduction_percent"
+                                       value="25" min="10" max="50">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Context & History (Optional - Collapsible) -->
+                <div class="section-container">
+                    <div class="collapsible-header" onclick="toggleSection('context-content', 'context-icon')">
+                        <span id="context-icon" class="arrow-icon">▶</span>
+                        <div class="header-content">
+                            <div class="header-title">Additional Context & History (Optional)</div>
+                            <div class="header-subtitle">Provide extra context or previous training blocks for better continuity</div>
+                        </div>
+                    </div>
+
+                    <div id="context-content" class="collapsible-content" style="display: none;">
+                        <div class="form-group">
+                            <label for="additional_context">Special Instructions</label>
+                            <textarea id="additional_context" name="additional_context" rows="4"
+                                      placeholder="Any special instructions or context for this training block..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="previous_block">Previous Training Block (Optional)</label>
+                            <textarea id="previous_block" name="previous_block_content" rows="6"
+                                      placeholder="Paste your previous training block here to maintain continuity..."></textarea>
+                            <small>Including your previous block helps maintain progression</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-actions">
+                    <button type="submit" id="generate-btn" class="btn-primary">
+                        Generate Training Block
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Progress Section (hidden initially) -->
+        <div id="progress-container" class="progress-section" style="display: none;">
+            <h2 id="progress-heading">Generating Your Training Block</h2>
+            <div class="progress-wrapper">
+                <span id="progress-text">0%</span>
+                <div class="progress-bar-container">
+                    <div id="progress-bar" class="progress-bar" style="width: 0%;"></div>
+                </div>
+            </div>
+            <p id="progress-message" class="progress-message">Initializing...</p>
+
+            <div id="error-message" class="error-message" style="display: none;"></div>
+        </div>
+
+        <!-- Humorous rotating message (below progress card) -->
+        <p id="humor-message" class="humor-message" style="display: none;"></p>
+
+        <!-- Success Section (hidden initially) -->
+        <div id="success-container" class="success-section" style="display: none;">
+            <div class="success-header">
+                <h2>✅ Training Block Generated Successfully!</h2>
+                <p>Your training block is ready to download.</p>
+            </div>
+
+            <!-- Block Summary Preview -->
+            <div id="summary-preview" class="summary-preview">
+                <h3>📋 Block Summary Preview</h3>
+                <div id="summary-content" class="summary-content">
+                    <!-- Summary content will be inserted here by JavaScript -->
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button id="download-btn" class="btn-primary">
+                    📦 Download Training Block (ZIP)
+                </button>
+                <button id="new-block-btn" class="btn-secondary">
+                    Generate Another Block
+                </button>
+            </div>
+            <p class="download-info">
+                <small>The ZIP file contains your BLOCK_SUMMARY.md and all individual week files.</small>
+            </p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
