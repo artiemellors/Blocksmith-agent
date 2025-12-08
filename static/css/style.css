@@ -177,7 +177,8 @@ header {
 }
 
 /* Cards */
-.form-section {
+/* Individual form sections (cards) */
+section.form-section {
     background: var(--color-white);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
@@ -185,6 +186,11 @@ header {
     margin-bottom: var(--space-2xl);
     box-shadow: var(--shadow-md);
     transition: all 0.2s ease;
+}
+
+/* Outer form container - no visual styling, just layout */
+#form-container {
+    margin-bottom: var(--space-2xl);
 }
 
 .section-container {
