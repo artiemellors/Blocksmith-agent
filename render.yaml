@@ -22,8 +22,8 @@ services:
       - key: OPENAI_API_KEY
         sync: false  # Manual entry required
 
-      - key: GEMINI_API_KEY
-        sync: false  # Manual entry required
+      - key: GOOGLE_API_KEY
+        sync: false  # Manual entry required (for Gemini)
 
       # Flask configuration
       - key: FLASK_ENV
