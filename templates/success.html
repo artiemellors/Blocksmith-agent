@@ -120,6 +120,8 @@
             display: flex;
             gap: 12px;
             min-width: max-content;
+            max-width: 900px;
+            margin: 0 auto;
         }
 
         .tab {
@@ -405,7 +407,10 @@
                 .replace(/â€¢/g, '•')
                 .replace(/â€™/g, "'")
                 .replace(/â€œ/g, '"')
-                .replace(/â€/g, '"');
+                .replace(/â€/g, '"')
+                // Remove "Layer X - " references (e.g., "WEEK 1 — Layer 7" → "WEEK 1")
+                .replace(/\s*[—–-]\s*Layer\s+\d+/gi, '')
+                .replace(/Layer\s+\d+\s*[—–-]\s*/gi, '');
         }
 
         // Load markdown content for a week
