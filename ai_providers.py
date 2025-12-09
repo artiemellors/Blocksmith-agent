@@ -88,7 +88,24 @@ class GeminiProvider(AIProvider):
                 temperature=self.temperature,
             )
         )
-        return response.text
+
+        # Check if response has content
+        if not response.candidates:
+            raise ValueError("Gemini returned no candidates. The prompt may have triggered safety filters.")
+
+        candidate = response.candidates[0]
+
+        # Check finish reason
+        if candidate.finish_reason == 1:  # STOP - normal completion
+            if not candidate.content or not candidate.content.parts:
+                raise ValueError("Gemini completed but returned no content. Try rephrasing your prompt.")
+            return response.text
+        elif candidate.finish_reason == 3:  # SAFETY
+            raise ValueError("Gemini blocked the response due to safety filters. Try adjusting your prompt.")
+        elif candidate.finish_reason == 2:  # MAX_TOKENS
+            raise ValueError(f"Gemini hit the max token limit ({self.max_tokens}). Try increasing max_tokens.")
+        else:
+            raise ValueError(f"Gemini stopped with finish_reason: {candidate.finish_reason}")
 
 
 def get_provider(
