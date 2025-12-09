@@ -361,6 +361,18 @@ def generate():
         }), 500
 
 
+@app.route('/api/debug/sessions')
+def debug_sessions():
+    """Debug endpoint to check session storage."""
+    import os
+    return jsonify({
+        'worker_pid': os.getpid(),
+        'sessions_count': len(generation_status),
+        'session_ids': list(generation_status.keys()),
+        'sessions_status': {sid: status.get('status', 'unknown') for sid, status in generation_status.items()}
+    })
+
+
 @app.route('/api/status/<session_id>')
 def get_status(session_id):
     """
