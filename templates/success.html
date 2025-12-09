@@ -3,364 +3,472 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Training Block Ready - Blocksmith</title>
+    <title>Training Block - Blocksmith</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        /* Success page specific styles */
-        .success-hero {
-            text-align: center;
-            margin-bottom: var(--space-3xl);
-            animation: slideUp 0.6s ease-out;
+        /* Page background */
+        body {
+            background: #f8f8f6;
+            padding: 0;
+            margin: 0;
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .container {
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
         }
 
-        .success-icon {
-            font-size: 64px;
-            margin-bottom: var(--space-lg);
-        }
-
-        .success-title {
-            font-size: var(--font-h1-size);
-            color: var(--color-success);
-            font-weight: var(--font-h1-weight);
-            letter-spacing: var(--font-h1-spacing);
-            margin-bottom: var(--space-md);
-        }
-
-        .success-subtitle {
-            color: var(--color-text-secondary);
-            font-size: var(--font-body-size);
-        }
-
-        .block-summary-card {
-            background: linear-gradient(135deg, var(--color-hyrox-yellow) 0%, var(--color-hyrox-yellow-hover) 100%);
-            color: var(--color-charcoal);
-            border-radius: var(--radius-lg);
-            padding: var(--space-2xl);
-            margin: var(--space-2xl) auto;
-            max-width: 600px;
-            box-shadow: var(--shadow-yellow);
-        }
-
-        .block-summary-card h2 {
-            font-size: var(--font-h2-size);
-            font-weight: var(--font-h2-weight);
-            margin-bottom: var(--space-lg);
-            display: flex;
-            align-items: center;
-            gap: var(--space-md);
-            justify-content: center;
-        }
-
-        .block-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: var(--space-lg);
-            margin-top: var(--space-xl);
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            display: block;
-        }
-
-        .stat-label {
-            font-size: var(--font-caption-size);
-            opacity: 0.8;
-            margin-top: var(--space-xs);
-        }
-
-        .focus-area {
-            background: rgba(0, 0, 0, 0.1);
-            padding: var(--space-md);
-            border-radius: var(--radius-md);
-            margin-top: var(--space-lg);
-            font-size: var(--font-body-size);
-        }
-
-        .weeks-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: var(--space-lg);
-            margin-bottom: var(--space-2xl);
-        }
-
-        .week-card {
-            background: var(--color-white);
-            border-radius: var(--radius-md);
-            padding: var(--space-xl);
-            box-shadow: var(--shadow-md);
-            transition: all 0.3s ease;
-            border: 2px solid var(--color-border);
-        }
-
-        .week-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--color-hyrox-yellow);
-        }
-
-        .week-card.deload {
-            background: var(--color-success-bg);
-            border-color: var(--color-success);
-        }
-
-        .week-number {
-            font-size: var(--font-caption-size);
-            color: var(--color-text-secondary);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .week-type {
-            font-size: var(--font-h2-size);
-            font-weight: var(--font-h2-weight);
-            color: var(--color-charcoal);
-            margin: var(--space-sm) 0 var(--space-lg) 0;
-        }
-
-        .week-card.deload .week-type {
-            color: var(--color-success);
-        }
-
-        .week-metrics {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-sm);
-        }
-
-        .metric-row {
+        /* Sticky header */
+        .results-header {
+            background: #fff;
+            border-bottom: 1px solid #e5e5e5;
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: var(--space-sm) 0;
-            border-bottom: 1px solid var(--color-border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
 
-        .metric-row:last-child {
-            border-bottom: none;
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .metric-label {
-            color: var(--color-text-secondary);
-            font-size: var(--font-caption-size);
+        .header-logo {
+            font-size: 28px;
+            line-height: 1;
         }
 
-        .metric-value {
+        .header-text h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+            padding: 0;
+            border: none;
+            color: #1a1a1a;
+            letter-spacing: -0.3px;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            color: #666;
+            margin: 2px 0 0 0;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: #1a1a1a;
+            border: 1px solid #d0d0d0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
             font-weight: 600;
-            color: var(--color-charcoal);
-            font-size: var(--font-body-size);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
         }
 
-        .included-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: var(--space-lg);
-            margin-bottom: var(--space-2xl);
+        .btn-secondary:hover {
+            background: #f8f8f6;
+            border-color: #b0b0b0;
         }
 
-        .included-item {
-            background: var(--color-white);
-            padding: var(--space-lg);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-sm);
+        .btn-primary {
+            background: #f5c842;
+            color: #1a1a1a;
+            border: 1px solid #f5c842;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #e5b832;
+            border-color: #e5b832;
+        }
+
+        /* Week tabs */
+        .tabs-container {
+            background: #fff;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e5e5;
+            overflow-x: auto;
+        }
+
+        .tabs {
             display: flex;
-            align-items: start;
-            gap: var(--space-md);
+            gap: 12px;
+            min-width: max-content;
+            max-width: 900px;
+            margin: 0 auto;
         }
 
-        .included-icon {
-            font-size: 24px;
-            flex-shrink: 0;
-        }
-
-        .included-text {
-            color: var(--color-charcoal);
-            font-size: var(--font-body-size);
-            line-height: var(--font-body-height);
-        }
-
-        .download-section {
-            background: var(--color-white);
-            border-radius: var(--radius-lg);
-            padding: var(--space-3xl);
-            box-shadow: var(--shadow-md);
+        .tab {
+            background: #fff;
+            color: #1a1a1a;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px 20px;
+            min-width: 110px;
             text-align: center;
-            margin-bottom: var(--space-2xl);
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
         }
 
-        .download-section h2 {
-            font-size: var(--font-h1-size);
-            font-weight: var(--font-h1-weight);
-            color: var(--color-charcoal);
-            margin-bottom: var(--space-md);
+        .tab:hover {
+            border-color: #b0b0b0;
         }
 
-        .download-section p {
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-xl);
+        .tab.active {
+            background: #1a1a1a;
+            color: #fff;
+            border: 2px solid #1a1a1a;
         }
 
-        .button-group {
+        .tab-week-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            opacity: 0.6;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .tab.active .tab-week-label {
+            opacity: 0.8;
+        }
+
+        .tab-phase {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .tab-phase.deload {
+            color: #10b981;
+        }
+
+        .tab.active .tab-phase.deload {
+            color: #10b981;
+        }
+
+        .tab-mileage {
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        .tab.active .tab-mileage {
+            opacity: 0.9;
+        }
+
+        /* Markdown content area */
+        .content-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 0;
+        }
+
+        .markdown-container {
+            background: #fff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            min-height: 600px;
+        }
+
+        .loading {
             display: flex;
-            gap: var(--space-lg);
+            align-items: center;
             justify-content: center;
-            flex-wrap: wrap;
+            min-height: 600px;
+            color: #666;
+            font-size: 15px;
         }
 
-        .download-note {
-            color: var(--color-text-secondary);
-            font-size: var(--font-caption-size);
-            margin-top: var(--space-lg);
+        /* Markdown styling */
+        .markdown-content h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin: 0 0 8px 0;
+            padding: 0;
+            border: none;
+            letter-spacing: -0.3px;
         }
 
+        .markdown-content h2 {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 24px 0 12px 0;
+            padding: 0 0 8px 0;
+            border-bottom: 2px solid #f5c842;
+            display: inline-block;
+        }
+
+        .markdown-content h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #444;
+            margin: 20px 0 12px 0;
+        }
+
+        .markdown-content h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 16px 0 8px 0;
+        }
+
+        .markdown-content p {
+            font-size: 14px;
+            color: #444;
+            line-height: 1.6;
+            margin: 0 0 12px 0;
+        }
+
+        .markdown-content ul {
+            margin: 0 0 16px 0;
+            padding-left: 20px;
+        }
+
+        .markdown-content li {
+            font-size: 14px;
+            color: #444;
+            line-height: 1.8;
+            margin-bottom: 4px;
+        }
+
+        .markdown-content li strong {
+            color: #1a1a1a;
+        }
+
+        .markdown-content hr {
+            border: none;
+            border-top: 1px solid #e5e5e5;
+            margin: 28px 0;
+        }
+
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+
+        .markdown-content th {
+            text-align: left;
+            padding: 10px 12px;
+            background: #f8f8f6;
+            border-bottom: 2px solid #e5e5e5;
+            font-weight: 600;
+            color: #444;
+        }
+
+        .markdown-content td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #444;
+        }
+
+        .markdown-content em {
+            color: #666;
+            font-style: italic;
+        }
+
+        .markdown-content code {
+            background: #f8f8f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: monospace;
+        }
+
+        .markdown-content blockquote {
+            border-left: 3px solid #f5c842;
+            padding-left: 16px;
+            margin: 16px 0;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Mobile responsive */
         @media (max-width: 768px) {
-            .block-stats {
-                grid-template-columns: 1fr;
-                gap: var(--space-md);
+            .results-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 16px;
             }
 
-            .weeks-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .button-group {
+            .header-right {
+                width: 100%;
                 flex-direction: column;
             }
 
-            .btn {
+            .btn-secondary, .btn-primary {
                 width: 100%;
                 justify-content: center;
+            }
+
+            .markdown-container {
+                padding: 24px 20px;
+            }
+
+            .tabs-container {
+                padding: 16px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header matching form page -->
-        <header class="header">
-            <div class="header-title">
-                <span class="header-icon">🏋️</span>Blocksmith
+        <!-- Sticky Header -->
+        <header class="results-header">
+            <div class="header-left">
+                <div class="header-logo">🏋️</div>
+                <div class="header-text">
+                    <h1>Blocksmith</h1>
+                    <p class="header-subtitle">{{ block.weeks|length }}-week {{ block.phase|title }} Phase</p>
+                </div>
             </div>
-            <p class="header-subtitle">Automated HYROX Training Block Generator</p>
+            <div class="header-right">
+                <a href="/" class="btn-secondary">
+                    <span>↻</span> New Block
+                </a>
+                <a href="/download/{{ generation_id }}" class="btn-primary">
+                    <span>↓</span> Download ZIP
+                </a>
+            </div>
         </header>
 
-        <!-- Success Hero -->
-        <div class="success-hero">
-            <div class="success-icon">✅</div>
-            <h1 class="success-title">Training Block Generated Successfully!</h1>
-            <p class="success-subtitle">Your personalized training plan is ready to download</p>
-
-            <div class="block-summary-card">
-                <h2>🏋️ {{ block.phase }} Phase</h2>
-                <div class="block-stats">
-                    <div class="stat">
-                        <span class="stat-value">{{ block.weeks|length }}</span>
-                        <span class="stat-label">Weeks</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-value">{{ block.mileage_range }}</span>
-                        <span class="stat-label">km/week</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-value">{{ block.weeks[0].sessions if block.weeks else 6 }}</span>
-                        <span class="stat-label">Sessions/week</span>
-                    </div>
-                </div>
-                <div class="focus-area">
-                    <strong>Focus Areas:</strong> {{ block.focus_areas }}
-                </div>
-            </div>
-        </div>
-
-        <!-- Training Weeks -->
-        <section class="section-container">
-            <h2>📅 Your Training Weeks</h2>
-            <div class="weeks-grid">
+        <!-- Week Tabs -->
+        <div class="tabs-container">
+            <div class="tabs">
                 {% for week in block.weeks %}
-                <div class="week-card {% if week.type == 'Deload' %}deload{% endif %}">
-                    <div class="week-number">Week {{ week.num }}</div>
-                    <div class="week-type">{{ week.type }}</div>
-                    <div class="week-metrics">
-                        <div class="metric-row">
-                            <span class="metric-label">Mileage</span>
-                            <span class="metric-value">{{ week.mileage }} km</span>
-                        </div>
-                        <div class="metric-row">
-                            <span class="metric-label">Sessions</span>
-                            <span class="metric-value">{{ week.sessions }}</span>
-                        </div>
-                    </div>
+                <div class="tab {% if loop.first %}active{% endif %}"
+                     data-week="{{ week.num }}"
+                     data-filename="layer_{{ 6 + week.num }}_-_week_{{ week.num }}{% if week.type == 'Deload' %}_deload{% endif %}.md"
+                     onclick="loadWeek(this)">
+                    <div class="tab-week-label">Week {{ week.num }}</div>
+                    <div class="tab-phase {% if week.type == 'Deload' %}deload{% endif %}">{{ week.type }}</div>
+                    <div class="tab-mileage">{{ week.mileage }}km</div>
                 </div>
                 {% endfor %}
             </div>
-        </section>
+        </div>
 
-        <!-- What's Included -->
-        <section class="section-container">
-            <h2>📦 What's Included</h2>
-            <div class="included-grid">
-                <div class="included-item">
-                    <span class="included-icon">✓</span>
-                    <span class="included-text">{{ block.weeks|length }} complete weekly plans with daily workouts</span>
-                </div>
-                <div class="included-item">
-                    <span class="included-icon">✓</span>
-                    <span class="included-text">Progressive running sessions ({{ block.mileage_range }}km/week)</span>
-                </div>
-                <div class="included-item">
-                    <span class="included-icon">✓</span>
-                    <span class="included-text">Strength & conditioning programs</span>
-                </div>
-                <div class="included-item">
-                    <span class="included-icon">✓</span>
-                    <span class="included-text">HYROX-specific station work</span>
-                </div>
-                <div class="included-item">
-                    <span class="included-icon">✓</span>
-                    <span class="included-text">Recovery protocols & injury management</span>
-                </div>
-                <div class="included-item">
-                    <span class="included-icon">✓</span>
-                    <span class="included-text">Intensity monitoring guidelines</span>
+        <!-- Markdown Content Area -->
+        <div class="content-container">
+            <div class="markdown-container">
+                <div class="markdown-content" id="markdown-content">
+                    <div class="loading">Loading week content...</div>
                 </div>
             </div>
-        </section>
-
-        <!-- Download Section -->
-        <div class="download-section">
-            <h2>Ready to Start Training?</h2>
-            <p>Download your complete training block and begin your journey</p>
-
-            <div class="button-group">
-                <a href="/download/{{ generation_id }}" class="btn btn-primary">
-                    📥 Download Training Block (ZIP)
-                </a>
-                <a href="/" class="btn btn-secondary">
-                    🔄 Generate Another Block
-                </a>
-            </div>
-
-            <p class="download-note">
-                The ZIP file contains your BLOCK_SUMMARY.md and all individual week files
-            </p>
         </div>
     </div>
+
+    <script>
+        const generationId = '{{ generation_id }}';
+        let currentWeek = null;
+
+        // Fix encoding issues in markdown
+        function fixEncoding(text) {
+            return text
+                .replace(/â€"/g, '—')
+                .replace(/Ã—/g, '×')
+                .replace(/â†'/g, '→')
+                .replace(/âœ…/g, '✅')
+                .replace(/â‰¤/g, '≤')
+                .replace(/âš /g, '⚠')
+                .replace(/â€¢/g, '•')
+                .replace(/â€™/g, "'")
+                .replace(/â€œ/g, '"')
+                .replace(/â€/g, '"')
+                // Remove "Layer X - " references (e.g., "WEEK 1 — Layer 7" → "WEEK 1")
+                .replace(/\s*[—–-]\s*Layer\s+\d+/gi, '')
+                .replace(/Layer\s+\d+\s*[—–-]\s*/gi, '');
+        }
+
+        // Load markdown content for a week
+        async function loadWeek(tabElement) {
+            const filename = tabElement.dataset.filename;
+            const weekNum = tabElement.dataset.week;
+
+            // Skip if already loaded
+            if (currentWeek === weekNum) return;
+            currentWeek = weekNum;
+
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            tabElement.classList.add('active');
+
+            // Show loading state
+            const contentEl = document.getElementById('markdown-content');
+            contentEl.innerHTML = '<div class="loading">Loading week content...</div>';
+
+            try {
+                // Fetch markdown file
+                const response = await fetch(`/api/markdown/${generationId}/${filename}`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to load week content');
+                }
+
+                const markdown = await response.text();
+
+                // Fix encoding issues
+                const fixedMarkdown = fixEncoding(markdown);
+
+                // Convert markdown to HTML
+                const html = marked.parse(fixedMarkdown);
+
+                // Display content
+                contentEl.innerHTML = html;
+
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            } catch (error) {
+                console.error('Error loading week:', error);
+                contentEl.innerHTML = `
+                    <div class="loading" style="color: #dc2626;">
+                        ⚠️ Error loading week content. Please try again.
+                    </div>
+                `;
+            }
+        }
+
+        // Load first week on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const firstTab = document.querySelector('.tab.active');
+            if (firstTab) {
+                loadWeek(firstTab);
+            }
+        });
+    </script>
 </body>
 </html>
