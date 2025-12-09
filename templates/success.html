@@ -197,33 +197,18 @@
             min-height: 600px;
         }
 
-        .loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 200px;
-            color: #666;
-            font-size: 15px;
-            gap: 12px;
-        }
-
-        .loading::before {
-            content: '';
-            width: 20px;
-            height: 20px;
-            border: 2px solid #e5e5e5;
-            border-top-color: #1a1a1a;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Fade transition for content */
+        /* Fade transitions for content */
         .markdown-content {
-            animation: fadeIn 0.3s ease;
+            opacity: 1;
+            transition: opacity 0.2s ease;
+        }
+
+        .markdown-content.fade-out {
+            opacity: 0;
+        }
+
+        .markdown-content.fade-in {
+            animation: fadeIn 0.2s ease;
         }
 
         @keyframes fadeIn {
@@ -451,13 +436,20 @@
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             tabElement.classList.add('active');
 
-            // Show loading state
             const contentEl = document.getElementById('markdown-content');
-            contentEl.innerHTML = '<div class="loading">Loading week content...</div>';
+
+            // Fade out current content
+            contentEl.classList.add('fade-out');
 
             try {
-                // Fetch markdown file
-                const response = await fetch(`/api/markdown/${generationId}/${filename}`);
+                // Start fetching while fading out
+                const fetchPromise = fetch(`/api/markdown/${generationId}/${filename}`);
+
+                // Wait for fade-out animation (200ms)
+                await new Promise(resolve => setTimeout(resolve, 200));
+
+                // Get the fetched content
+                const response = await fetchPromise;
 
                 if (!response.ok) {
                     throw new Error('Failed to load week content');
@@ -471,8 +463,15 @@
                 // Convert markdown to HTML
                 const html = marked.parse(fixedMarkdown);
 
-                // Display content
+                // Replace content
                 contentEl.innerHTML = html;
+
+                // Remove fade-out and trigger fade-in
+                contentEl.classList.remove('fade-out');
+                contentEl.classList.add('fade-in');
+
+                // Remove fade-in class after animation completes
+                setTimeout(() => contentEl.classList.remove('fade-in'), 200);
 
                 // Scroll to top
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -480,10 +479,11 @@
             } catch (error) {
                 console.error('Error loading week:', error);
                 contentEl.innerHTML = `
-                    <div class="loading" style="color: #dc2626;">
+                    <div style="text-align: center; padding: 40px; color: #dc2626;">
                         ⚠️ Error loading week content. Please try again.
                     </div>
                 `;
+                contentEl.classList.remove('fade-out');
             }
         }
 

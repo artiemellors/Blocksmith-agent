@@ -122,16 +122,20 @@ All station loads are OFFICIAL RACE SPECIFICATIONS and must be prescribed EXACTL
 2. **Density**: Reduce rest between sets while maintaining race weight and volume
 3. **Strength**: Only in max strength sessions, use >race weight for lower volume (e.g., {hyrox_weights.sled_push_kg + 50}kg sled push 3x25m for overload)
 
-**Movement Duration Estimates (for realistic programming):**
+**Station Duration Estimates (average race times by division):**
 
-At race weight, typical durations for intermediate HYROX athlete:
-- Sled Push {hyrox_weights.sled_push_kg}kg, 50m: 60-120 seconds
-- Sled Pull {hyrox_weights.sled_pull_kg}kg, 50m: 45-90 seconds
-- Wall Balls {hyrox_weights.wall_ball_kg}kg: ~2-3 reps/second (100 reps = 30-50s)
-- RowErg 200m max effort: 40-50 seconds
-- RowErg 1000m: 3:15-4:00
-- Run 800m (post-station): 3:30-4:30
-- Run 1km (post-station): 4:30-5:30
+| Station | Pro Men | Pro Women | Open Men | Open Women |
+|---------|---------|-----------|----------|------------|
+| SkiErg 1000m | 4:09 | 4:56 | 4:24 | 5:21 |
+| Sled Push 50m | 3:23 | 4:23 | 3:03 | 2:40 |
+| Sled Pull 50m | 6:07 | 6:42 | 5:09 | 5:42 |
+| Burpee Broad Jumps 80m | 4:20 | 5:16 | 4:57 | 4:56 |
+| RowErg 1000m | 4:21 | 4:54 | 4:51 | 5:35 |
+| Farmers Carry 200m | 2:24 | 2:41 | 2:49 | 2:16 |
+| Sandbag Lunges 100m | 4:34 | 4:41 | 5:35 | 4:18 |
+| Wall Balls 100 reps | 6:14 | 5:31 | 6:30 | 4:45 |
+| Rox Zone (transitions) | 6:43 | 5:50 | 6:34 | 6:29 |
+| Total Running 8km | 40:34 | 42:15 | 42:55 | 48:33 |
 
 **Week 1 Calibration Principle:**
 
