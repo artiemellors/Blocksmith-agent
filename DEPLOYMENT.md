@@ -61,7 +61,7 @@ In the Render dashboard, add these environment variables:
 |-----|-------|-------|
 | `ANTHROPIC_API_KEY` | `sk-ant-...` | Your Anthropic API key (required) |
 | `OPENAI_API_KEY` | `sk-...` | Your OpenAI API key (optional) |
-| `GEMINI_API_KEY` | `AI...` | Your Google AI API key (optional) |
+| `GOOGLE_API_KEY` | `AI...` | Your Google AI API key for Gemini (optional) |
 | `FLASK_ENV` | `production` | Enables production mode |
 | `FLASK_SECRET_KEY` | *auto-generated* | Leave as auto-generated |
 
