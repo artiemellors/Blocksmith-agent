@@ -35,29 +35,25 @@
             gap: 12px;
         }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
+        .header-logo {
+            font-size: 28px;
+            line-height: 1;
         }
 
-        .logo-icon {
-            font-size: 24px;
-        }
-
-        .logo-text {
+        .header-text h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+            padding: 0;
+            border: none;
             color: #1a1a1a;
-            font-size: 18px;
-            font-weight: 600;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.3px;
         }
 
         .header-subtitle {
-            color: #6b6b6b;
             font-size: 13px;
-            padding-left: 12px;
-            border-left: 1px solid #e5e5e5;
+            color: #666;
+            margin: 2px 0 0 0;
         }
 
         .header-right {
@@ -67,24 +63,24 @@
         }
 
         .btn-about {
-            background: transparent;
-            border: 1px solid #d1d1d1;
+            background: #fff;
+            border: 1px solid #d0d0d0;
             color: #1a1a1a;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 10px 20px;
+            border-radius: 8px;
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
             text-decoration: none;
         }
 
         .btn-about:hover {
-            background: #f5f5f5;
-            border-color: #b1b1b1;
+            background: #f8f8f6;
+            border-color: #b0b0b0;
         }
 
         /* ========================================
@@ -281,11 +277,11 @@
          ======================================== -->
     <header class="page-header">
         <div class="header-left">
-            <a href="/" class="logo">
-                <span class="logo-icon">🏋️</span>
-                <span class="logo-text">Blocksmith</span>
-            </a>
-            <span class="header-subtitle">HYROX Training Block Generator</span>
+            <div class="header-logo">🏋️</div>
+            <div class="header-text">
+                <h1>Blocksmith</h1>
+                <p class="header-subtitle">HYROX Training Block Generator</p>
+            </div>
         </div>
 
         <div class="header-right">
