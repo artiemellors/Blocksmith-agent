@@ -5,14 +5,308 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blocksmith - Training Block Generator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Page layout overrides */
+        body {
+            background: #f8f8f6;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* ========================================
+           HEADER
+           ======================================== */
+        .page-header {
+            background-color: #ffffff;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #e5e5e5;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .header-text {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-text h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+            padding: 0;
+            border: none;
+            color: #1a1a1a;
+            letter-spacing: -0.3px;
+            line-height: 1.4;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            color: #666;
+            margin: 0;
+            padding-left: 12px;
+            border-left: 1px solid #e5e5e5;
+            line-height: 1.4;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-about {
+            background: #fff;
+            border: 1px solid #d0d0d0;
+            color: #1a1a1a;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .btn-about:hover {
+            background: #f8f8f6;
+            border-color: #b0b0b0;
+        }
+
+        /* ========================================
+           SIDE TRAY
+           ======================================== */
+        .tray-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0);
+            z-index: 200;
+            pointer-events: none;
+            transition: background 0.3s ease;
+        }
+
+        .tray-overlay.active {
+            background: rgba(0, 0, 0, 0.4);
+            pointer-events: auto;
+        }
+
+        .side-tray {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 420px;
+            max-width: 100%;
+            background: #ffffff;
+            z-index: 201;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .side-tray.active {
+            transform: translateX(0);
+        }
+
+        .tray-header {
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e5e5;
+            flex-shrink: 0;
+        }
+
+        .tray-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tray-title span {
+            font-size: 24px;
+        }
+
+        .tray-title h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .tray-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #6b6b6b;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            transition: color 0.2s;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+
+        .tray-close:hover {
+            color: #1a1a1a;
+            background: #f5f5f5;
+        }
+
+        .tray-content {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .tray-tagline {
+            font-size: 16px;
+            color: #1a1a1a;
+            font-weight: 500;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .tray-section {
+            margin-bottom: 28px;
+        }
+
+        .tray-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .tray-section h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .tray-section p {
+            font-size: 15px;
+            color: #4a4a4a;
+            line-height: 1.7;
+        }
+
+        .philosophy-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .philosophy-list li {
+            font-size: 15px;
+            color: #4a4a4a;
+            line-height: 1.65;
+            padding-left: 20px;
+            position: relative;
+            margin-bottom: 14px;
+        }
+
+        .philosophy-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .philosophy-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 8px;
+            height: 8px;
+            background: #f6c744;
+            border-radius: 50%;
+        }
+
+        .philosophy-list li strong {
+            color: #1a1a1a;
+        }
+
+        .tray-footer {
+            padding: 20px 24px;
+            background: #fafafa;
+            border-top: 1px solid #e5e5e5;
+            flex-shrink: 0;
+        }
+
+        .tray-footer p {
+            font-size: 13px;
+            color: #6b6b6b;
+        }
+
+        @media (max-width: 640px) {
+            .page-header {
+                padding: 12px 16px;
+            }
+
+            .header-subtitle {
+                display: none;
+            }
+
+            .side-tray {
+                width: 100%;
+            }
+
+            .tray-content {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🏋️ Blocksmith</h1>
-            <p class="subtitle">Automated HYROX Training Block Generator</p>
-        </header>
+    <!-- ========================================
+         STICKY HEADER
+         ======================================== -->
+    <header class="page-header">
+        <div class="header-left">
+            <div class="header-logo">🏋️</div>
+            <div class="header-text">
+                <h1>Blocksmith</h1>
+                <p class="header-subtitle">HYROX Training Block Generator</p>
+            </div>
+        </div>
 
+        <div class="header-right">
+            <button class="btn-about" onclick="openTray()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>About</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
         <div id="form-container" class="form-section">
             <form id="config-form">
                 <!-- Advanced Settings (Collapsible) -->
@@ -482,6 +776,135 @@
         </div>
     </div>
 
+    <!-- ========================================
+         SIDE TRAY OVERLAY
+         ======================================== -->
+    <div class="tray-overlay" id="trayOverlay" onclick="closeTray()"></div>
+
+    <!-- ========================================
+         SIDE TRAY
+         ======================================== -->
+    <aside class="side-tray" id="sideTray">
+        <div class="tray-header">
+            <div class="tray-title">
+                <span>🏋️</span>
+                <h2>Blocksmith</h2>
+            </div>
+            <button class="tray-close" onclick="closeTray()">&times;</button>
+        </div>
+
+        <div class="tray-content">
+            <p class="tray-tagline">
+                AI-powered training block generation built specifically for HYROX athletes.
+            </p>
+
+            <div class="tray-section">
+                <h3>What is Blocksmith?</h3>
+                <p>
+                    Blocksmith generates structured, periodized training blocks tailored to your
+                    physiological markers, weekly schedule, and race category. Input your threshold
+                    paces and heart rate data, configure your week — and receive fully prescribed
+                    sessions: sets, reps, paces, HR zones, rest periods, and progression rationale
+                    for every workout.
+                </p>
+            </div>
+
+            <div class="tray-section">
+                <h3>Training Phases</h3>
+                <p>
+                    Each block focuses on a single periodization phase:
+                </p>
+                <ul class="philosophy-list">
+                    <li>
+                        <strong>Base (General Preparation)</strong> — High volume, low specificity.
+                        Build your aerobic engine and structural strength. Running is mostly Zone 2,
+                        strength focuses on volume accumulation.
+                    </li>
+                    <li>
+                        <strong>Build (Specific Preparation)</strong> — Moderate volume, higher intensity.
+                        Threshold development with T1/T2 running. Station work at race weights with
+                        compromised running to build HYROX-specific fitness.
+                    </li>
+                    <li>
+                        <strong>Peak (Competition)</strong> — Lower volume, very high intensity.
+                        Race pace or faster running, full race simulation work. Strength shifts to
+                        intensity over volume.
+                    </li>
+                    <li>
+                        <strong>Taper</strong> — Maximum freshness. Cut volume 40–60% but keep
+                        intensity sharp. Leave each session feeling better than you started.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="tray-section">
+                <h3>Our Recommendations</h3>
+                <ul class="philosophy-list">
+                    <li>
+                        <strong>Focused 4–6 week blocks</strong> — We recommend each block targets
+                        a single training phase for concentrated adaptation. String together 2–3
+                        blocks to complete a full training phase.
+                    </li>
+                    <li>
+                        <strong>Deload weeks</strong> — Each block includes an optional deload week,
+                        and we highly recommend taking it. Volume drops ~40% while keeping movement
+                        quality sharp — this is when adaptation consolidates.
+                    </li>
+                    <li>
+                        <strong>Polarized intensity distribution</strong> — Sessions follow a
+                        60–70% easy, ~20% moderate, ~10% hard distribution by training time.
+                        No back-to-back high-intensity (Z4–Z5) days.
+                    </li>
+                    <li>
+                        <strong>Race weight, always</strong> — Station work uses official HYROX
+                        race weights for your category. Progression happens through volume (more
+                        reps, longer distances) and density (less rest) — not by reducing load.
+                    </li>
+                    <li>
+                        <strong>Individual adaptation</strong> — Your thresholds, available
+                        equipment, injury history, and schedule constraints shape every block.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="tray-section">
+                <h3>How It Works</h3>
+                <p>
+                    Select your training phase and race category (Men's/Women's Open or Pro),
+                    enter your physiological data (HR max, T1/T2 threshold paces), and configure
+                    your week structure — rest days, double days, long run day. Blocksmith builds
+                    each week progressively with phase-appropriate volume increases, then backs
+                    off in the deload week to let adaptation consolidate.
+                </p>
+            </div>
+        </div>
+
+        <div class="tray-footer">
+            <p>Built for athletes who want smarter training, not just more training.</p>
+        </div>
+    </aside>
+
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        // Side tray functions
+        function openTray() {
+            document.getElementById('sideTray').classList.add('active');
+            document.getElementById('trayOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeTray() {
+            document.getElementById('sideTray').classList.remove('active');
+            document.getElementById('trayOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeTray();
+            }
+        });
+    </script>
 </body>
 </html>
