@@ -958,7 +958,7 @@ You are designing a single HYROX combo / brick session that trains compromised r
 - Sled Push: {hyrox_weights.sled_push_kg}kg
 - Sled Pull: {hyrox_weights.sled_pull_kg}kg
 - Farmers Carry: {hyrox_weights.farmers_carry_kg}kg (total, split across both hands)
-- Sandbag Lunges: {hyrox_weights.sandbag_lunge_kg}kg
+- Sandbag Lunges: {hyrox_weights.sandbag_kg}kg
 - Wall Balls: {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m target
 
 **100% Race Volume Reference:**
