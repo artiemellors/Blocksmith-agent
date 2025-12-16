@@ -910,12 +910,15 @@ def get_layer_5_prompt(hyrox_weights, block_objectives):
     # Determine focus instructions based on phase
     if block_objectives.primary_goal == TrainingPhase.BASE:
         focus_instructions = (
-            "Focus: BASE STATION STRENGTH & LIGHT COMPROMISE.\n"
-            "- Primary purpose is to build base strength on key HYROX stations with some exposure to compromised running, "
-            "not a full race simulation.\n"
-            "- Station loads may be overloaded 5–15% above race weight for one or two focus stations, while keeping volumes moderate.\n"
-            "- Run segments should sit easier than T1 pace (e.g. T1+20 to T1+45 sec/km) so the limiter is the station work, not the running.\n"
-            "- Total compromised running (runs immediately after stations) should be modest, around 2–3 km using 400–600 m segments.\n"
+            "Focus: BASE STATION STRENGTH & ACTIVE RECOVERY.\n"
+            "- Primary purpose is to build base strength and skill on key HYROX stations WITHOUT compromising aerobic development.\n"
+            "- NO compromised running in BASE phase. Aerobic base development must stay clean with dedicated Zone 2 runs.\n"
+            "- Station loads may be overloaded 5–15% above race weight for one or two focus stations, with moderate volumes (25–50% race volume).\n"
+            "- Between station sets: Use active recovery cardio (bike, SkiErg, or RowErg) at Z1-Z2 for 1:30-2:30 to practice "
+            "lactate clearance and HR management, followed by 1:00 standing rest. OR use complete rest (2:30-3:00) if athlete is new to HYROX.\n"
+            "- Focus: Station technique, strength endurance, lactate clearance skill (not race-specific running fatigue).\n"
+            "- Example session: 5 rounds of Sled Push 25m + Sled Pull 25m, then 2:00 easy bike (Z2, breathing focus) + 1:00 standing rest.\n"
+            "- Progression: Start with complete rest in weeks 1-2, add active recovery cardio in weeks 3-4.\n"
         )
     elif block_objectives.primary_goal == TrainingPhase.BUILD:
         focus_instructions = (
@@ -1021,12 +1024,15 @@ You are designing a single HYROX combo / brick session that trains compromised r
 
 **Pattern selection by phase:**
 
-- BASE: Use patterns 1-3 (simpler, focus on 1-2 stations)
+- BASE: DO NOT use the standard patterns above (they all include running). Instead, use station-only patterns:
+  * Station A + Station B → Active Recovery Cardio (bike/erg Z1-Z2) + Rest
+  * Station Block (1-3 stations) → Active Recovery Cardio + Rest
+  * Example: Sled Push + Sled Pull → 2:00 easy bike + 1:00 standing rest
 - BUILD: Use patterns 2-5 (adding complexity and race patterns)
 - PEAK: Use patterns 4-6 (full race simulation)
 - TAPER: Use patterns 1-2 (keep it simple and clean)
 
-For all patterns:
+For BUILD, PEAK, and TAPER patterns (with running):
 - At least half of all run segments in the main set must come **after** station work (compromised running).
 - Do not design the entire workout as Run → Station only; the key adaptation is running after stations.
 - When using patterns 5 or 6, ensure wall balls always appear as the final station in each round.
@@ -1034,9 +1040,9 @@ For all patterns:
 **Run distance and volume guidelines:**
 
 - BASE:
-  - Use 400–600 m run segments.
-  - Total compromised running (runs immediately after stations) ≈ 2–3 km.
-  - Runs usually prescribed as T1+20 to T1+45s/km.
+  - NO running in brick/combo sessions. Station work only with active recovery cardio (bike/erg) or complete rest between sets.
+  - This preserves aerobic base development and allows clean Zone 2 running in dedicated run sessions.
+  - Between station sets: 1:30-2:30 easy bike/SkiErg/RowErg (Z1-Z2) + 1:00 standing rest, OR 2:30-3:00 complete rest.
 
 - BUILD:
   - Use 400–800 m run segments.
@@ -1055,7 +1061,7 @@ For all patterns:
 
 **Rest period guidelines:**
 
-- BASE: 2:00-3:00 between rounds (allow full recovery)
+- BASE: 1:30-2:30 active recovery cardio (bike/SkiErg/RowErg at Z1-Z2) + 1:00 standing rest, OR 2:30-3:00 complete rest (use complete rest for beginners or weeks 1-2, add active recovery weeks 3-4)
 - BUILD: 90s-2:00 (partial recovery, building work capacity)
 - PEAK: 60s-90s (race-like rest, high density)
 - TAPER: 2:00-3:00 (keep it fresh)
