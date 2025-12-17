@@ -37,7 +37,24 @@ def get_layer_0_prompt(athlete_profile, block_objectives, injury_context=""):
     elif block_objectives.primary_goal == TrainingPhase.TAPER:
         phase_instructions = "CURRENT PHASE: TAPER. Very Low Volume / High Intensity / Maximum Freshness. Goal: Shed fatigue to reveal fitness. Rule: Leave the gym feeling better than you entered. Cut volume by 40-60% but keep intensity sharp."
     elif block_objectives.primary_goal == TrainingPhase.TRANSITION:
-        phase_instructions = "CURRENT PHASE: TRANSITION. Unstructured / Recovery focus."
+        phase_instructions = """CURRENT PHASE: TRANSITION (Active Recovery). VERY Low Volume / VERY Low Intensity / Maximum Recovery.
+
+**Purpose:** Allow physical and mental recovery after a competition or hard training block. Prepare the body for the next training phase.
+
+**Training Prescription:**
+- Running: Easy Zone 1-2 ONLY. Short duration (20-40 min max). No threshold work, no intervals, no tempo.
+- Strength: Skip max strength sessions OR do light technique work only (50-60% loads, RPE 4-5, no progression).
+- HYROX Combo: SKIP ENTIRELY. No race-weight work. No compromised running. This phase is about recovery, not race specificity.
+- Strength Endurance: Skip or convert to light aerobic work (easy bike/erg).
+- Primary Focus: Aerobic recovery sessions (30-50 min easy bike/erg/swim at Z1-Z2), mobility work, and rest.
+
+**Volume Targets:**
+- Total weekly running: 50-60% of normal volume, ALL easy pace
+- Total sessions: 3-5 light sessions maximum (down from normal 6-9 sessions)
+- Session duration: 30-50 min maximum
+- Intensity distribution: 100% Zone 1-2 (NO Zone 3+)
+
+**Key Principle:** Every session should leave you feeling BETTER than when you started. If in doubt, do less."""
 
     hr_max = athlete_profile.physiological_params.hr_max
     t1_pace = athlete_profile.physiological_params.threshold_t1_pace
@@ -271,6 +288,58 @@ def get_layer_2_prompt(block_objectives, t1_pace, t2_pace, athlete_profile):
     long_run_day = athlete_profile.week_structure.long_run_day
     weekend_min = athlete_profile.week_structure.weekend_session_time_min
     weekend_max = athlete_profile.week_structure.weekend_session_time_max
+
+    # TRANSITION phase gets completely different running prescription
+    if block_objectives.primary_goal == TrainingPhase.TRANSITION:
+        return f"""Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand only the running sessions into full detail.
+
+**TRANSITION PHASE RUNNING PRESCRIPTION:**
+
+This is a RECOVERY phase. Running sessions should be SHORT, EASY, and OPTIONAL.
+
+**Objectives:**
+
+- Total weekly volume: **{block_objectives.running_mileage_week1}km** (Week 1) - should be 50-60% of normal training volume
+- ALL runs at Zone 1-2 ONLY (conversational pace, significantly slower than T1)
+- NO threshold work, NO intervals, NO tempo runs, NO VO2 sessions
+- Duration: 20-40 minutes maximum per run
+- Frequency: 2-4 easy runs maximum per week
+- Skip runs entirely if feeling tired or sore
+
+**Session Types (ALL easy aerobic):**
+
+1. **Easy Recovery Run** (Zone 1-2)
+   - Duration: 20-30 minutes
+   - Pace: T1+60 to T1+90 sec/km (very comfortable, conversational)
+   - HR: 60-75% max (Zone 1-2)
+   - Purpose: Gentle movement, promote blood flow and recovery
+   - Can be replaced with easy bike or swim if preferred
+
+2. **Short Easy Run** (Zone 1-2)
+   - Duration: 25-40 minutes
+   - Pace: T1+45 to T1+75 sec/km (comfortable, easy breathing)
+   - HR: 65-75% max (Zone 2)
+   - Purpose: Maintain basic aerobic stimulus without stress
+   - Optional: Can include 3-5 × 20-30 second VERY light strides (85-90% effort, not max) with full recovery IF feeling fresh
+
+**Structure for each run:**
+
+- **Warm-up:** 5 min walk/very slow jog
+- **Main:** Easy running at Zone 1-2, focus on relaxed form
+- **Cooldown:** 5 min walk, light stretching
+- **Total time:** 20-40 min including warm-up/cooldown
+
+**CRITICAL RULES:**
+
+- If the athlete feels ANY fatigue, cut the run short or skip it entirely
+- NEVER push pace - this is recovery, not training
+- Walking breaks are encouraged if needed
+- Better to do 20 min easy than 40 min moderate
+- Can substitute with bike, swim, or elliptical for zero-impact recovery
+
+**Output format:**
+
+Provide 2-4 easy running sessions (based on skeleton from Layer 1) with the structure above. Each should be clearly labeled as "Easy Recovery Run" with duration, pace guidance (as T1+Xs/km), and HR zones. Make it abundantly clear that these are OPTIONAL and should be skipped if the athlete isn't feeling fully recovered."""
 
     return f"""Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand only the running sessions into full detail.
 
@@ -664,8 +733,56 @@ This periodization optimizes the balance between volume accumulation and intensi
 Present sessions as: **Max Strength Session 1** or **Max Strength Session 2** (as per Week 1 skeleton)."""
 
 
-def get_layer_4_prompt(hyrox_weights):
+def get_layer_4_prompt(hyrox_weights, block_objectives):
     """Layer 4 - Strength Endurance Sessions Expansion"""
+
+    # TRANSITION phase gets completely different guidance
+    if block_objectives.primary_goal == TrainingPhase.TRANSITION:
+        return """Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand only the Strength Endurance sessions into full detail.
+
+**TRANSITION PHASE - STRENGTH ENDURANCE PRESCRIPTION:**
+
+**RECOMMENDED: SKIP STRENGTH ENDURANCE SESSIONS ENTIRELY during TRANSITION phase.**
+
+If the skeleton from Layer 1 includes a Strength Endurance session, REPLACE it with one of these light recovery alternatives:
+
+**Option 1: Easy Aerobic Session (PREFERRED)**
+- 30-40 min easy bike, RowErg, or SkiErg at Zone 1-2
+- HR: 60-75% max
+- RPE: 3-4 out of 10 (very comfortable)
+- Purpose: Active recovery, gentle movement
+- Include 5 min easy warm-up and 5 min easy cooldown
+- Can add 10-15 min of mobility work after
+
+**Option 2: Movement & Mobility Session**
+- 30-40 minutes total
+- Light dynamic stretching (10 min)
+- Yoga flow or Pilates (20 min)
+- Breathing work (5-10 min)
+- NO strength work, NO high heart rate
+- Purpose: Restore range of motion, mental recovery
+
+**Option 3: VERY Light Movement Circuit (only if athlete insists on some resistance work)**
+- Duration: 20-30 min max
+- Format: 3-4 rounds, walk pace between exercises, 2-3 min rest between rounds
+- RPE: 4-5 max (very light, conversational throughout)
+- Exercises: 4-5 bodyweight or very light movements
+  - Example: 10 air squats, 8 push-ups (or incline push-ups), 20m easy walk, 10 glute bridges, 30s plank
+- NO cardio machines, NO HYROX stations, NO race weights
+- Heart rate should stay in Zone 1-2 throughout
+
+**CRITICAL RULES:**
+
+- This is RECOVERY, not training
+- If in doubt, skip the session entirely
+- Better to do easy bike than any strength work
+- NO metabolic fatigue, NO high heart rate, NO heavy loads
+- Athletes should leave feeling refreshed, not tired
+
+**Output format:**
+
+If a Strength Endurance session appears in the skeleton, replace it with Option 1 (Easy Aerobic Session) or clearly state "SKIP - Use rest day or light 30-min bike at Z1-2 instead." """
+
     return f"""Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand only the Strength Endurance sessions into full detail.
 
 **CRITICAL DEFINITION:**
@@ -947,9 +1064,20 @@ def get_layer_5_prompt(hyrox_weights, block_objectives):
         )
     else:  # TRANSITION
         focus_instructions = (
-            "Focus: DECOMPRESSION OR OPTIONAL PRACTICE.\n"
-            "- This session can be skipped or kept very light.\n"
-            "- If included, use very low station volumes and short runs (≤400 m) at T1+30 to T1+60 sec/km.\n"
+            "Focus: SKIP THIS SESSION ENTIRELY.\n\n"
+            "**TRANSITION PHASE: HYROX combo/brick sessions should NOT be included.**\n\n"
+            "This is a RECOVERY phase. The athlete is recovering from a competition or hard training block.\n\n"
+            "**DO NOT prescribe:**\n"
+            "- Any HYROX combo sessions\n"
+            "- Any brick sessions\n"
+            "- Any compromised running\n"
+            "- Any race-weight station work\n"
+            "- Any Zone 3+ work\n\n"
+            "**Instead, if the skeleton from Layer 1 mistakenly includes a HYROX combo session, REPLACE it with:**\n"
+            "- Option 1: Complete rest day (PREFERRED)\n"
+            "- Option 2: 30-40 min easy aerobic work (bike/erg/swim at Zone 1-2, HR 60-75% max, RPE 3-4)\n"
+            "- Option 3: Gentle mobility/yoga session (30-40 min, no strength work)\n\n"
+            "**CRITICAL:** Do NOT provide a traditional HYROX combo workout. State clearly: 'SKIP - TRANSITION phase focuses on recovery. Use a rest day or replace with 30-40 min easy bike/erg at Z1-2 instead.'\n"
         )
 
     return f"""Using Layer 0 rules, the current TrainingPhase, and the weekly skeleton from Layer 1, expand only the HYROX Combo / Brick session into a fully detailed workout.
