@@ -166,7 +166,7 @@ class TrainingBlockGenerator:
         # Layer 4: Strength Endurance Sessions
         layer_4 = self.generate_layer(
             "Layer 4",
-            get_layer_4_prompt(hyrox_weights, block_objectives),
+            get_layer_4_prompt(hyrox_weights, objectives),
             context=f"{layer_0}\n\n{layer_1}"
         )
 
