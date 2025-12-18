@@ -239,14 +239,14 @@ def generate(config, output_dir, api_key, model, save_layers):
     help='Save intermediate layer outputs'
 )
 def generate_agentic(config, output_dir, api_key, model, save_layers):
-    """Generate a training block using the agentic architecture (Stage 1 - Planning Agent only)."""
+    """Generate a training block using the agentic architecture (Stage 2 - Parallel Coach Agents)."""
 
     if not api_key:
         click.echo("Error: API key not provided. Set ANTHROPIC_API_KEY environment variable or use --api-key", err=True)
         sys.exit(1)
 
     click.echo(f"\n{'='*60}")
-    click.echo("Blocksmith - Agentic Architecture (Stage 1)")
+    click.echo("Blocksmith - Agentic Architecture (Stage 2)")
     click.echo(f"{'='*60}\n")
 
     # Load configuration (auto-detects format)
@@ -271,8 +271,8 @@ def generate_agentic(config, output_dir, api_key, model, save_layers):
     click.echo(f"Starting Mileage: {input_data.block_objectives.running_mileage_week1} km/week")
     click.echo(f"Output Directory: {output_dir}")
     click.echo(f"Model: {model}")
-    click.echo(f"\nStage 1: Planning Agent (Proof of Concept)")
-    click.echo(f"Future Stages: Coach Agents, Coordinator, QA Agent\n")
+    click.echo(f"\nStage 2: Planning + Parallel Coach Agents")
+    click.echo(f"Future Stages: Coordinator Agent, QA Agent\n")
 
     # Confirm
     if not click.confirm("Proceed with agentic generation?"):
@@ -285,17 +285,25 @@ def generate_agentic(config, output_dir, api_key, model, save_layers):
         summary = orchestrator.run_generate(input_data)
 
         click.echo(f"\n{'='*60}")
-        click.echo("STAGE 1 COMPLETE!")
+        click.echo("STAGE 2 COMPLETE!")
         click.echo(f"{'='*60}")
-        click.echo(f"\nPlanning Agent outputs saved to:")
-        click.echo(f"  {Path(output_dir) / 'AGENTIC_STAGE_1_SUMMARY.md'}")
+        click.echo(f"\nGeneration summary saved to:")
+        click.echo(f"  {Path(output_dir) / 'AGENTIC_STAGE_2_SUMMARY.md'}")
 
         if save_layers:
             click.echo(f"\nAgent outputs saved in: {output_dir}/")
-            click.echo(f"  - agentic_layer_0_context.md (Global Training Context)")
-            click.echo(f"  - agentic_layer_1_skeleton.md (Week 1 Skeleton)")
+            click.echo(f"  Phase 1 (Planning):")
+            click.echo(f"    - agentic_layer_0_context.md")
+            click.echo(f"    - agentic_layer_1_skeleton.md")
+            click.echo(f"  Phase 2 (Parallel Coaches):")
+            click.echo(f"    - agentic_layer_2_running.md")
+            click.echo(f"    - agentic_layer_3_strength.md")
+            click.echo(f"    - agentic_layer_4_strength_endurance.md")
+            click.echo(f"    - agentic_layer_5_hyrox.md")
+            click.echo(f"    - agentic_layer_6_recovery.md")
 
-        click.echo(f"\nNext: Implement Stage 2 (Specialist Coach Agents)")
+        click.echo(f"\nNext: Implement Stage 3 (Programming Coordinator)")
+        click.echo(f"      Implement Stage 4 (Quality Assurance Agent)")
 
     except Exception as e:
         click.echo(f"\n✗ Generation failed: {str(e)}", err=True)
