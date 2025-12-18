@@ -19,6 +19,7 @@ from models import (
     GenerationConfig,
 )
 from generator import TrainingBlockGenerator
+from orchestrator import AgenticOrchestrator
 from simple_config import load_simple_config, create_simple_config_template
 
 
@@ -202,6 +203,104 @@ def generate(config, output_dir, api_key, model, save_layers):
 
     except Exception as e:
         click.echo(f"\n✗ Generation failed: {str(e)}", err=True)
+        sys.exit(1)
+
+
+@cli.command()
+@click.option(
+    '--config',
+    '-c',
+    type=click.Path(exists=True),
+    required=True,
+    help='Path to configuration file (.txt, .yaml, or .yml)'
+)
+@click.option(
+    '--output-dir',
+    '-o',
+    type=click.Path(),
+    default='output-agentic',
+    help='Output directory for generated files'
+)
+@click.option(
+    '--api-key',
+    '-k',
+    envvar='ANTHROPIC_API_KEY',
+    help='Anthropic API key (or set ANTHROPIC_API_KEY env var)'
+)
+@click.option(
+    '--model',
+    '-m',
+    default='claude-sonnet-4-5-20250929',
+    help='Claude model to use'
+)
+@click.option(
+    '--save-layers/--no-save-layers',
+    default=True,
+    help='Save intermediate layer outputs'
+)
+def generate_agentic(config, output_dir, api_key, model, save_layers):
+    """Generate a training block using the agentic architecture (Stage 1 - Planning Agent only)."""
+
+    if not api_key:
+        click.echo("Error: API key not provided. Set ANTHROPIC_API_KEY environment variable or use --api-key", err=True)
+        sys.exit(1)
+
+    click.echo(f"\n{'='*60}")
+    click.echo("Blocksmith - Agentic Architecture (Stage 1)")
+    click.echo(f"{'='*60}\n")
+
+    # Load configuration (auto-detects format)
+    click.echo(f"Loading configuration from: {config}")
+    try:
+        input_data = load_config(config)
+    except Exception as e:
+        click.echo(f"Error loading configuration: {str(e)}", err=True)
+        sys.exit(1)
+
+    # Create generation config
+    gen_config = GenerationConfig(
+        model_name=model,
+        save_intermediate_layers=save_layers,
+        output_directory=output_dir
+    )
+
+    # Display summary
+    click.echo(f"\nAthlete: {input_data.athlete_profile.name}, {input_data.athlete_profile.age} years old")
+    click.echo(f"Block Type: {input_data.block_objectives.primary_goal}")
+    click.echo(f"Duration: {input_data.block_objectives.block_duration_weeks} weeks + {'deload' if input_data.block_objectives.deload_week else 'no deload'}")
+    click.echo(f"Starting Mileage: {input_data.block_objectives.running_mileage_week1} km/week")
+    click.echo(f"Output Directory: {output_dir}")
+    click.echo(f"Model: {model}")
+    click.echo(f"\nStage 1: Planning Agent (Proof of Concept)")
+    click.echo(f"Future Stages: Coach Agents, Coordinator, QA Agent\n")
+
+    # Confirm
+    if not click.confirm("Proceed with agentic generation?"):
+        click.echo("Cancelled.")
+        sys.exit(0)
+
+    # Generate using agentic architecture
+    try:
+        orchestrator = AgenticOrchestrator(gen_config, api_key)
+        summary = orchestrator.run_generate(input_data)
+
+        click.echo(f"\n{'='*60}")
+        click.echo("STAGE 1 COMPLETE!")
+        click.echo(f"{'='*60}")
+        click.echo(f"\nPlanning Agent outputs saved to:")
+        click.echo(f"  {Path(output_dir) / 'AGENTIC_STAGE_1_SUMMARY.md'}")
+
+        if save_layers:
+            click.echo(f"\nAgent outputs saved in: {output_dir}/")
+            click.echo(f"  - agentic_layer_0_context.md (Global Training Context)")
+            click.echo(f"  - agentic_layer_1_skeleton.md (Week 1 Skeleton)")
+
+        click.echo(f"\nNext: Implement Stage 2 (Specialist Coach Agents)")
+
+    except Exception as e:
+        click.echo(f"\n✗ Generation failed: {str(e)}", err=True)
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
 
