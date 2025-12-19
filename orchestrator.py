@@ -184,7 +184,10 @@ class AgenticOrchestrator:
                 athlete, objectives, global_context, week_skeleton
             ),
             self.strength_coach.design_all_strength_sessions(
-                global_context, week_skeleton
+                global_context,
+                week_skeleton,
+                week_number=1,
+                block_duration_weeks=objectives.block_duration_weeks
             ),
             self.hyrox_specialist.design_hyrox_session(
                 global_context, week_skeleton
