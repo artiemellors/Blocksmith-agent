@@ -10,6 +10,10 @@ import tempfile
 import shutil
 from datetime import datetime
 import uuid
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from models import (
     TrainingBlockInput,
