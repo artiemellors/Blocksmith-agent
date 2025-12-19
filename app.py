@@ -116,11 +116,17 @@ def generate_block():
             config=gen_config
         )
 
+        # Get API key from environment
+        api_key = os.getenv('ANTHROPIC_API_KEY')
+        if not api_key:
+            raise ValueError("ANTHROPIC_API_KEY not found in environment variables")
+
         # Run the orchestrator asynchronously
+        orchestrator = AgenticOrchestrator(gen_config, api_key)
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         result = loop.run_until_complete(
-            AgenticOrchestrator(training_input).run_generate()
+            orchestrator.run_generate(training_input)
         )
         loop.close()
 
