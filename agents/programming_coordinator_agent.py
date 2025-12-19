@@ -115,6 +115,9 @@ You create complete training blocks that build fitness progressively while manag
         # Calculate weekly volumes using the new VolumeProgressionStrategy
         weekly_volumes = block_objectives.get_weekly_volumes()
 
+        # Get number of weeks for the block
+        num_weeks = block_objectives.block_duration_weeks
+
         # Prepare week structure info
         rest_day = athlete_profile.week_structure.rest_day
         training_days = athlete_profile.week_structure.get_training_days_range()
