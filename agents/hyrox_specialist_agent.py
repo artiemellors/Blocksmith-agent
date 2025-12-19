@@ -79,7 +79,7 @@ You create HYROX sessions that prepare athletes for the unique demands of hybrid
             Detailed HYROX combo/brick session design
         """
         # Import here to avoid circular dependency
-        from models import HyroxWeights, BlockObjectives
+        from models import HyroxWeights, BlockObjectives, TrainingPhase
 
         # Use default Men's weights if not provided
         if hyrox_weights is None:
@@ -87,11 +87,11 @@ You create HYROX sessions that prepare athletes for the unique demands of hybrid
 
         # Determine focus instructions based on phase
         if block_objectives and block_objectives.primary_goal:
-            phase = block_objectives.primary_goal.upper()
+            phase = block_objectives.primary_goal
         else:
-            phase = "BUILD"  # Default to BUILD if not specified
+            phase = TrainingPhase.BUILD  # Default to BUILD if not specified
 
-        if phase == "BASE":
+        if phase == TrainingPhase.BASE:
             focus_instructions = (
                 "Focus: BASE STATION STRENGTH & ACTIVE RECOVERY.\n"
                 "- Primary purpose is to build base strength and skill on key HYROX stations WITHOUT compromising aerobic development.\n"
@@ -103,7 +103,7 @@ You create HYROX sessions that prepare athletes for the unique demands of hybrid
                 "- Example session: 5 rounds of Sled Push 25m + Sled Pull 25m, then 2:00 easy bike (Z2, breathing focus) + 1:00 standing rest.\n"
                 "- Progression: Start with complete rest in weeks 1-2, add active recovery cardio in weeks 3-4.\n"
             )
-        elif phase == "BUILD":
+        elif phase == TrainingPhase.BUILD:
             focus_instructions = (
                 "Focus: THRESHOLD INTEGRATION.\n"
                 "- Purpose is to connect your clean threshold work to HYROX specificity: running strongly at or just below T1 after hard stations.\n"
@@ -111,7 +111,7 @@ You create HYROX sessions that prepare athletes for the unique demands of hybrid
                 "- Total compromised running should be ~3–5 km.\n"
                 "- Station loads are typically at race weight; mild overload (5–10%) is allowed for one key station.\n"
             )
-        elif phase == "PEAK":
+        elif phase == TrainingPhase.PEAK:
             focus_instructions = (
                 "Focus: RACE SIMULATION.\n"
                 "- Purpose is to rehearse race-day demands with mini HYROX blocks.\n"
@@ -120,7 +120,7 @@ You create HYROX sessions that prepare athletes for the unique demands of hybrid
                 "- Total compromised running should be ~4–6 km.\n"
                 "- Station volumes should be 70–100% of race volume for selected stations; at most one station may be slightly overloaded.\n"
             )
-        elif phase == "TAPER":
+        elif phase == TrainingPhase.TAPER:
             focus_instructions = (
                 "Focus: SHARPNESS & CONFIDENCE.\n"
                 "- Purpose is to remind the body of HYROX patterns without creating heavy fatigue.\n"
