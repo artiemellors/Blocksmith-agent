@@ -109,6 +109,9 @@ You ensure athletes receive safe, effective, scientifically-sound training block
         # Calculate expected weekly volumes
         weekly_volumes = block_objectives.get_weekly_volumes()
 
+        # Get number of weeks for the block
+        num_weeks = block_objectives.block_duration_weeks
+
         # Format expected volumes
         volume_targets = "\n".join([
             f"- Week {i+1}: {vol}km (±5% tolerance: {vol*0.95:.1f}-{vol*1.05:.1f}km)"
