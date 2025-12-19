@@ -107,11 +107,7 @@ You ensure athletes receive safe, effective, scientifically-sound training block
             Validation report with PASS/FAIL status and detailed findings
         """
         # Calculate expected weekly volumes
-        num_weeks = block_objectives.block_duration_weeks
-        weekly_volumes = block_objectives.get_weekly_volumes(
-            starting_volume=block_objectives.running_mileage_week1,
-            num_weeks=num_weeks
-        )
+        weekly_volumes = block_objectives.get_weekly_volumes()
 
         # Format expected volumes
         volume_targets = "\n".join([
