@@ -440,51 +440,265 @@ Present sessions as: **Max Strength Session 1** or **Max Strength Session 2** (a
     async def design_strength_endurance_sessions(
         self,
         global_context: str,
-        week_skeleton: str
+        week_skeleton: str,
+        hyrox_weights = None
     ) -> str:
         """
-        Design strength endurance sessions for Week 1.
+        Design strength endurance sessions with sophisticated format rules.
 
         Args:
             global_context: Global training context from Planning Agent
-            week_skeleton: Week 1 skeleton from Planning Agent
+            week_skeleton: Week skeleton from Planning Agent
+            hyrox_weights: Official HYROX race weights (HyroxWeights object)
 
         Returns:
             Detailed strength endurance session designs
         """
-        prompt = """Design all Strength Endurance sessions for Week 1 based on the skeleton plan.
+        # Import here to avoid circular dependency
+        from models import HyroxWeights
+
+        # Use default Men's weights if not provided
+        if hyrox_weights is None:
+            hyrox_weights = HyroxWeights.for_division("Men")
+
+        prompt = f"""Using Layer 0 rules and the Week 1 skeleton from Layer 1, expand only the Strength Endurance sessions into full detail.
+
+**CRITICAL DEFINITION:**
+
+Strength endurance sessions build the ability to sustain power output under metabolic fatigue. These are NOT traditional strength sessions.
+
+**What They Are NOT:**
+❌ Traditional strength with 5/3/1 progressions
+❌ Heavy singles or triples (>85% 1RM)
+❌ 2-3 minute rest periods between sets
+❌ Maximal load focus
+❌ "NFT" (Not For Time) accessory work at walking pace
+
+**What They ARE:**
+✅ Time-constrained work formats
+✅ Under 2 minutes rest maximum
+✅ Moderate loads (40-70% 1RM)
+✅ High heart rate / lactate focus
+✅ Sustained output across multiple rounds
+
+**FOUR VALID FORMATS:**
+
+Choose ONE to TWO formats per session. Total work time across all formats in the session must add up to 35-50 minutes.
+
+**Format 1: CIRCUIT**
+- 3-6 rounds with 1-3 min rest between rounds
+- 5-7 exercises per round
+- MUST include cardio machine (Row/Ski/Bike)
+- Structured, repeatable progression
+
+**Format 2: AMRAP (As Many Rounds As Possible)**
+- 20-40 minute time cap
+- 5-7 exercises per round
+- MUST include cardio machine (Row/Ski/Bike)
+- No rest - continuous work
+- Self-regulated pacing, mental toughness focus
+
+**Format 3: EMOM (Every Minute on the Minute)**
+- 15-30 minute duration
+- 5-6 exercises rotating
+- MUST include cardio machine (Row/Ski/Bike)
+- 10-20s built-in rest per minute
+
+**Format 4: IWT (Interval Weight Training)**
+- 5-6 rounds, 90s-3 min work per round
+- 60-90s rest between rounds
+- MUST include cardio machine (Row/Ski/Bike)
+- ALWAYS: Cardio machine FIRST, then strength movement
+- High-intensity lactate training
+
+**CRITICAL:** All four formats MUST include cardio machines (Row, Ski Erg, or Air Bike). This is non-negotiable.
+
+**Official HYROX Station Weights (Use These Exactly):**
+
+- Sled Push: {hyrox_weights.sled_push_kg}kg
+- Sled Pull: {hyrox_weights.sled_pull_kg}kg
+- Wall Balls: {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m
+- Sandbag: {hyrox_weights.sandbag_kg}kg
+- Farmers Carry: 2×{hyrox_weights.farmers_carry_kg[0]}kg
+
+**EXERCISE SELECTION (Must Include 3 Categories):**
+
+**A. HYROX-Specific (2-3 exercises):**
+- SkiErg: 250-500m
+- Rowing: 250-500m
+- Sled Push/Pull: 12.5-25m
+- Farmer's Carry: 40-100m
+- Wall Balls: 20-35 reps
+- Burpees: 10-20 reps or 20-60m
+- Lunges (weighted): 15-40 reps or 25-80m
+
+**B. Functional Movements (2-3 exercises):**
+- DB Thrusters: 15-25 reps
+- KB Swings: 15-25 reps
+- Devil Press: 10-20 reps
+- Box Step-ups: 15-25 reps
+- Burpee box jumps: 10-20 reps
+- Air Squat jumps: 15-25 reps
+- Push-ups: 10-20 reps
+- DB Snatch (alternating): 15-25 reps
+
+**C. Traditional Strength (0-2 exercises, OPTIONAL):**
+- ONLY moderate loads (RPE 5-7)
+- KB/DB Deadlifts: 15-25 reps
+- DB Press variations: 12-20 reps
+- Pull-up variations: 8-15 reps
+- NOT heavy barbell work
+
+**Exercise Selection Philosophy:**
+
+**Priority Order:**
+1. Target muscle groups effectively
+2. Use HYROX stations when they're the best tool for the job
+3. Freely substitute superior alternatives when appropriate
+4. Quality of training stimulus > literal race simulation
+
+Example: A trap bar deadlift might build sled-pulling capacity better than doing sleds twice a week. Bulgarian split squats might develop quad endurance more effectively than sandbag lunges in certain contexts.
+
+**FORMAT-SPECIFIC RULES:**
+
+**CIRCUIT Format:**
+- Rest: 1-3 minutes between rounds
+- MUST include cardio machine (Row/Ski/Bike) - NOT optional
+- Progression: Weeks 1-4 (2-3' rest), Weeks 5-8 (1-2' rest), Weeks 9-12 (1' rest or race pace)
+- Load: Sustainable across all rounds, RPE 5-7
+- Example structure: 5 rounds, 2' rest: 500m Row @2k+10" → 20 KB Deadlifts → 20 Air Squats → 15 Push-ups → 10 Burpees
+
+**AMRAP Format:**
+- Time cap: 15-30 minutes
+- NO rest - continuous work
+- MUST include cardio machine (Row/Ski/Bike) - NOT optional
+- Conservative loads for sustained effort, RPE 6-7
+- Emphasizes pacing strategy and mental game
+- Example: 20-min AMRAP: 250m Row → 15 Wall Balls → 25m Sled Push → 10 Devil Press → 80m Farmer's Carry
+
+**EMOM Format:**
+- Duration: 15-30 minutes
+- MANDATORY: Must include cardio machine in rotation
+- 5-6 exercises rotating (NOT just 2)
+- Work fills 40-50 seconds, 10-20s rest per minute
+
+**5-Exercise Rotation:**
+Minute 1: Cardio Machine 1 (e.g., Row 15 cal)
+Minute 2: Functional Movement (e.g., Push-ups 15-20)
+Minute 3: HYROX Movement (e.g., Wall Balls 20)
+Minute 4: Functional Movement (e.g., KB Swings 15)
+Minute 5: Cardio Machine 2 (e.g., Ski 15 cal)
+Repeat 3-6 rounds
+
+**6-Exercise Rotation:**
+Minute 1: Cardio Machine 1 (e.g., Row 15 cal)
+Minute 2: Functional Movement (e.g., DB Thrusters 15)
+Minute 3: HYROX Movement (e.g., Sled Push 12.5m)
+Minute 4: Functional Movement (e.g., Box Step-ups 20)
+Minute 5: Cardio Machine 2 (e.g., Ski 15 cal)
+Minute 6: HYROX Movement (e.g., Burpees 12)
+Repeat 3-5 rounds
+
+**IWT Format:**
+- Structure: ALWAYS Cardio Machine → Strength Movement
+- 5-6 rounds, 90s-3 min work per round
+- 60-90s rest between rounds
+- Cardio: 85-90% effort (NOT max)
+- Strength: Max reps with good form until time cap
+
+**Cardio Options (60-90s):**
+- Row: 20-30 calories or 500m
+- Ski Erg: 500m @ 85-90%
+- Air Bike: 20-30 calories @ 85-90%
+
+**Strength Options (remaining time until 2:00):**
+- Shoulder to Overhead (95-135lb): max reps
+- Thrusters (95-135lb): max reps
+- Devil Press (35-70lb): max reps
+- Power Snatch (95-135lb): max reps
+- Wall Balls: max reps
+- Burpee Pull-ups: max reps
+
+Example: 6 rounds every 3:00: 500m Ski @ 85-90% → Max Thrusters 95lb until 2:00 → Rest remaining time
+
+**LOAD GUIDELINES:**
+
+**General:**
+- Barbell: 95-165lb (typically 95-135lb)
+- Kettlebell: 35-70lb
+- Dumbbell: 35-70lb
+- Should allow "finish each set with some left in the tank"
+
+**Progression (choose 1-2, NOT all):**
+1. Density: Reduce rest between efforts
+2. Volume: More rounds/reps at same intensity
+3. Load: Heavier resistance at same volume
+
+**INTENSITY MARKERS:**
+
+- Circuit/AMRAP: RPE 6-7, HR Z2-Z4
+- EMOM: RPE 6-8, should have 10-15s rest each minute
+- IWT: "Lactate explosion," 85-90% on cardio, described as "very hard to make the shift"
 
 **Objectives:**
 
-- Build the ability to sustain submaximal strength under fatigue.
-- Improve work capacity and efficiency in HYROX-specific stations (sleds, carries, wall balls, lunges, burpees).
-- Force adaptation by pairing **strength movements with cardio intervals** to simulate race demands.
-- Time cap: 60–75 min.
+- Build the ability to sustain submaximal strength under fatigue
+- Develop work capacity and lactate tolerance
+- Force adaptation by pairing strength movements with cardio intervals
+- Time cap: 60–75 min total session
 
 **Structure required in output:**
 
-For each strength endurance session, include:
+For EACH strength endurance session, include:
 
-- **Purpose** (clear link to HYROX transfer).
-- **Warm-up** (mobility, activation, light machine work).
-- **Main Blocks** (2–3 blocks using EMOMs, AMRAPs, circuits, or interval pairings of cardio + functional strength). Must include at least one machine (run, ski, row, echo/bike) per block. Explicit reps/sets/duration, intensity targets (HR zone, RPE, or pace).
-- **Cooldown** (walk, flush, mobility, breathing).
-- **Progression knob** (volume, density, load, or machine interval length).
+- **Purpose** (clear link to HYROX transfer and why this format was chosen)
+- **Format** (Circuit / AMRAP / EMOM / IWT)
+- **Warm-up** (mobility, activation, light machine work, 5-10 min)
+- **Main Blocks** (full session prescription using chosen format)
+
+  For EVERY exercise, specify:
+  - Movement name
+  - Exact weight in kg (race weight for HYROX stations)
+  - Target height for wall balls
+  - Distance, reps, or duration
+  - Rest periods (for Circuit/IWT) or work structure (for EMOM/AMRAP)
+  - Intensity targets (HR zone, RPE, pace reference like @2k+10")
+
+  Example formats:
+  - Circuit: "5 rounds, 2' rest: 400m Row @2k+5" → 15 Thrusters 2x15kg DB → 25m Sled Push {hyrox_weights.sled_push_kg}kg → 15 Wall Balls {hyrox_weights.wall_ball_kg}kg to {hyrox_weights.wall_ball_target_m}m"
+  - AMRAP: "20-min AMRAP: 250m Row → 15 KB Swings 24kg → 10 Box Step-ups 20" → 10 Push-ups → 50m Sled Push {hyrox_weights.sled_push_kg}kg"
+  - EMOM: "21-min EMOM (7 rounds): Min 1: 15 cal Row | Min 2: 15-20 Push-ups | Min 3: 12-15 KB Cleans 2x24kg"
+  - IWT: "6 rounds every 3:00: 25 cal Row (target sub-60s) → Max Thrusters 95lb until 2:00 → Rest remaining time"
+
+- **Cooldown** (walk, flush, mobility, breathing, 10-15 min)
+- **Transfer Explanation** (how this builds toward HYROX race demands)
+- **Progression Knob** (how to scale in later weeks - volume, density, load, or machine interval adjustments)
 
 **Rules:**
 
-- Keep heart rate between **upper Zone 2 → mid Zone 4**, depending on block.
-- Alternate knee-dominant vs. hip-dominant strength movements to manage fatigue.
-- Each block should last **8–20 minutes**.
-- Sessions should balance load: one more *sled/carry/burpee focused*; one more *wall ball/lunge/erg focused*.
-- Explicit substitutions if running volume needs capping (swap to bike/erg).
+- ALL formats MUST include cardio machines - NOT optional
+- EMOM must use 5-6 exercises rotating, NOT just 2
+- Keep heart rate between upper Zone 2 → mid Zone 4 depending on format
+- Each main block should last 12–25 minutes
+- Balance sessions across the week: one more sled/carry focused; one more erg/wall ball focused
+- Explicit substitutions if needed (bike for run, alternatives for missing equipment)
+
+**Format Selection Guidance:**
+
+- Circuit: Structured practice, clear rounds, good for learning stations
+- AMRAP: Continuous work, teaches pacing, mental toughness
+- EMOM: Variety with time constraints, lactate tolerance, 5-6 movement rotation
+- IWT: Maximum intensity intervals, explicit cardio-strength pairing
+
+Choose formats that match athlete experience level and training phase objectives.
 
 **Output convention:**
 
-- Present as a **list of 2 Strength Endurance sessions** (as per Week 1 skeleton).
-- Label clearly: *Strength Endurance Session 1 (Erg + Functional Strength)*, *Strength Endurance Session 2 (Run + HYROX Circuit)*.
+- Present as a **list of 2 Strength Endurance sessions** (as per Week 1 skeleton)
+- Label clearly with format: *Strength Endurance Session 1 (EMOM - Row/Ski/Strength)*, *Strength Endurance Session 2 (Circuit - HYROX Stations)*
+- Each session should be fully detailed with all numbers, loads, paces, and rest periods
 
-Design strength endurance sessions that build work capacity and HYROX-specific resilience."""
+Design strength endurance sessions that build metabolic capacity and HYROX-specific work capacity."""
 
         context = f"{global_context}\n\n---\n\n{week_skeleton}"
         return await self.generate(prompt, context=context)
@@ -494,7 +708,8 @@ Design strength endurance sessions that build work capacity and HYROX-specific r
         global_context: str,
         week_skeleton: str,
         week_number: int = 1,
-        block_duration_weeks: int = 4
+        block_duration_weeks: int = 4,
+        hyrox_weights = None
     ) -> tuple[str, str]:
         """
         Design both max strength and strength endurance sessions.
@@ -504,6 +719,7 @@ Design strength endurance sessions that build work capacity and HYROX-specific r
             week_skeleton: Week skeleton from Planning Agent
             week_number: Current week number (default 1)
             block_duration_weeks: Total block duration (default 4)
+            hyrox_weights: Official HYROX race weights (HyroxWeights object)
 
         Returns:
             Tuple of (max_strength_sessions, strength_endurance_sessions)
@@ -516,10 +732,11 @@ Design strength endurance sessions that build work capacity and HYROX-specific r
             block_duration_weeks
         )
 
-        # Design strength endurance sessions
+        # Design strength endurance sessions with HYROX weights
         strength_endurance = await self.design_strength_endurance_sessions(
             global_context,
-            week_skeleton
+            week_skeleton,
+            hyrox_weights
         )
 
         return max_strength, strength_endurance

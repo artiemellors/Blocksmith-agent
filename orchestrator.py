@@ -187,7 +187,8 @@ class AgenticOrchestrator:
                 global_context,
                 week_skeleton,
                 week_number=1,
-                block_duration_weeks=objectives.block_duration_weeks
+                block_duration_weeks=objectives.block_duration_weeks,
+                hyrox_weights=athlete.hyrox_weights
             ),
             self.hyrox_specialist.design_hyrox_session(
                 global_context, week_skeleton

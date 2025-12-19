@@ -80,6 +80,66 @@ class InjuryInformation(BaseModel):
     volume_reduction_percent: int = Field(default=25, description="% to reduce volume if soreness exceeds cutoff")
 
 
+class HyroxWeights(BaseModel):
+    """Official HYROX race weights for specific division."""
+    division: str = Field(default="Men", description="HYROX division (Men, Women, Pro Men, Pro Women, Doubles)")
+    sled_push_kg: float = Field(default=102, description="Sled push weight in kg")
+    sled_pull_kg: float = Field(default=78, description="Sled pull weight in kg")
+    wall_ball_kg: float = Field(default=9, description="Wall ball weight in kg")
+    wall_ball_target_m: float = Field(default=3.0, description="Wall ball target height in meters")
+    sandbag_kg: float = Field(default=20, description="Sandbag lunges weight in kg")
+    farmers_carry_kg: List[float] = Field(default=[24, 24], description="Farmer's carry weight per hand in kg")
+
+    @classmethod
+    def for_division(cls, division: str) -> "HyroxWeights":
+        """Get official HYROX weights for a specific division."""
+        weights_by_division = {
+            "Men": {
+                "sled_push_kg": 102,
+                "sled_pull_kg": 78,
+                "wall_ball_kg": 9,
+                "wall_ball_target_m": 3.0,
+                "sandbag_kg": 20,
+                "farmers_carry_kg": [24, 24]
+            },
+            "Women": {
+                "sled_push_kg": 78,
+                "sled_pull_kg": 56,
+                "wall_ball_kg": 6,
+                "wall_ball_target_m": 2.7,
+                "sandbag_kg": 10,
+                "farmers_carry_kg": [16, 16]
+            },
+            "Pro Men": {
+                "sled_push_kg": 152,
+                "sled_pull_kg": 103,
+                "wall_ball_kg": 12,
+                "wall_ball_target_m": 3.0,
+                "sandbag_kg": 30,
+                "farmers_carry_kg": [32, 32]
+            },
+            "Pro Women": {
+                "sled_push_kg": 102,
+                "sled_pull_kg": 78,
+                "wall_ball_kg": 9,
+                "wall_ball_target_m": 3.0,
+                "sandbag_kg": 20,
+                "farmers_carry_kg": [24, 24]
+            },
+            "Doubles": {
+                "sled_push_kg": 152,
+                "sled_pull_kg": 103,
+                "wall_ball_kg": 9,
+                "wall_ball_target_m": 3.0,
+                "sandbag_kg": 20,
+                "farmers_carry_kg": [24, 24]
+            }
+        }
+
+        config = weights_by_division.get(division, weights_by_division["Men"])
+        return cls(division=division, **config)
+
+
 class BlockObjectives(BaseModel):
     """Objectives and focus areas for the training block."""
     primary_goal: str = Field(..., description="Main goal for this block (e.g., 'BUILD', 'PEAK', 'Base building')")
@@ -101,6 +161,7 @@ class AthleteProfile(BaseModel):
     week_structure: TrainingWeekStructure = Field(default_factory=TrainingWeekStructure)
     equipment: Equipment = Field(default_factory=Equipment)
     injury_info: InjuryInformation = Field(default_factory=InjuryInformation)
+    hyrox_weights: HyroxWeights = Field(default_factory=lambda: HyroxWeights.for_division("Men"))
 
 
 class TrainingBlockInput(BaseModel):
