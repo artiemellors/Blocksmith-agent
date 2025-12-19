@@ -191,7 +191,10 @@ class AgenticOrchestrator:
                 hyrox_weights=athlete.hyrox_weights
             ),
             self.hyrox_specialist.design_hyrox_session(
-                global_context, week_skeleton
+                global_context,
+                week_skeleton,
+                hyrox_weights=athlete.hyrox_weights,
+                block_objectives=objectives
             ),
             self.recovery_coach.design_recovery_session(
                 global_context, week_skeleton
