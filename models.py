@@ -330,4 +330,8 @@ class GenerationConfig(BaseModel):
         default=True,
         description="Save output from each layer to separate files"
     )
+    skip_qa_validation: bool = Field(
+        default=False,
+        description="Skip QA validation stage (faster generation)"
+    )
     output_directory: str = "output"

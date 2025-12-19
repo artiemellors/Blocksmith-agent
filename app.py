@@ -128,7 +128,8 @@ def generate_block():
             output_dir=str(output_dir),
             model_name=data.get('model_name', 'claude-sonnet-4-5-20250929'),
             max_tokens=int(data.get('max_tokens', 16000)),
-            temperature=float(data.get('temperature', 1.0))
+            temperature=float(data.get('temperature', 1.0)),
+            skip_qa_validation=data.get('skip_qa_validation', True)  # Skip QA by default for speed
         )
 
         # Build complete input

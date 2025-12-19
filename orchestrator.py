@@ -296,29 +296,35 @@ class AgenticOrchestrator:
         # STAGE 4: QUALITY ASSURANCE
         # ============================================================
 
-        print("\n" + "="*60)
-        print("PHASE 4: Quality Assurance & Validation")
-        print("="*60 + "\n")
+        if not self.config.skip_qa_validation:
+            print("\n" + "="*60)
+            print("PHASE 4: Quality Assurance & Validation")
+            print("="*60 + "\n")
 
-        # Validate the complete training block
-        validation_report = await self.qa_agent.validate_training_block(
-            athlete_profile=athlete,
-            block_objectives=objectives,
-            training_block=training_block,
-            global_context=global_context
-        )
+            # Validate the complete training block
+            validation_report = await self.qa_agent.validate_training_block(
+                athlete_profile=athlete,
+                block_objectives=objectives,
+                training_block=training_block,
+                global_context=global_context
+            )
 
-        # Save validation report
-        self.save_output(
-            "agentic_validation_report",
-            validation_report,
-            "Quality Assurance Validation Report"
-        )
+            # Save validation report
+            self.save_output(
+                "agentic_validation_report",
+                validation_report,
+                "Quality Assurance Validation Report"
+            )
 
-        # Store for future use
-        self.outputs["validation_report"] = validation_report
+            # Store for future use
+            self.outputs["validation_report"] = validation_report
 
-        print("\n✓ Quality Assurance completed - Validation report generated")
+            print("\n✓ Quality Assurance completed - Validation report generated")
+        else:
+            print("\n" + "="*60)
+            print("PHASE 4: Quality Assurance - SKIPPED")
+            print("="*60 + "\n")
+            self.outputs["validation_report"] = "QA validation skipped"
 
         # Create summary for Stage 4
         summary = self._create_stage_4_summary(athlete, objectives)
