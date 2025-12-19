@@ -41,13 +41,19 @@ def run_generation_background(session_id, training_input, gen_config, api_key, a
     try:
         # Run the orchestrator (run_generate is synchronous, handles asyncio internally)
         orchestrator = AgenticOrchestrator(gen_config, api_key)
+        start_time = datetime.now()
         result = orchestrator.run_generate(training_input)
+        end_time = datetime.now()
+
+        elapsed_seconds = (end_time - start_time).total_seconds()
 
         # Update status to completed
         generation_results[session_id]['status'] = 'completed'
         generation_results[session_id]['result'] = result
         generation_results[session_id]['athlete_name'] = athlete_name
-        generation_results[session_id]['completed_at'] = datetime.now().isoformat()
+        generation_results[session_id]['completed_at'] = end_time.isoformat()
+        generation_results[session_id]['generation_time'] = f"{elapsed_seconds:.1f}s"
+        generation_results[session_id]['total_tokens'] = 0  # Token tracking not available in current architecture
 
     except Exception as e:
         # Update status to failed
@@ -196,15 +202,14 @@ def check_status(session_id):
         response['message'] = 'Generation in progress...'
 
     elif status == 'completed':
-        result = session_data.get('result')
         response['success'] = True
         response['summary'] = {
             'athlete': session_data['athlete_name'],
             'phase': session_data['phase'],
             'weeks': session_data['weeks'],
             'starting_mileage': session_data['starting_mileage'],
-            'total_tokens': result.total_tokens_used if result else 0,
-            'generation_time': f"{result.total_time_seconds:.1f}s" if result else '0s'
+            'total_tokens': session_data.get('total_tokens', 0),
+            'generation_time': session_data.get('generation_time', 'N/A')
         }
 
     elif status == 'failed':
