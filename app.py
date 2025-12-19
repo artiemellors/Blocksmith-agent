@@ -242,4 +242,5 @@ def cleanup_session(session_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Use port 5001 by default (port 5000 is used by AirPlay Receiver on macOS)
+    app.run(debug=True, host='0.0.0.0', port=5001)
