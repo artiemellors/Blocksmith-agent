@@ -113,11 +113,10 @@ You create complete training blocks that build fitness progressively while manag
             Complete training block with Weeks 1-4 (+ deload if enabled)
         """
         # Calculate weekly volumes using the new VolumeProgressionStrategy
+        weekly_volumes = block_objectives.get_weekly_volumes()
+
+        # Get number of weeks for the block
         num_weeks = block_objectives.block_duration_weeks
-        weekly_volumes = block_objectives.get_weekly_volumes(
-            starting_volume=block_objectives.running_mileage_week1,
-            num_weeks=num_weeks
-        )
 
         # Prepare week structure info
         rest_day = athlete_profile.week_structure.rest_day

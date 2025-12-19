@@ -4,12 +4,17 @@ Web interface for generating HYROX training blocks using the agentic architectur
 """
 import os
 import asyncio
+import threading
 from flask import Flask, render_template, request, jsonify, send_file, session
 from pathlib import Path
 import tempfile
 import shutil
 from datetime import datetime
 import uuid
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from models import (
     TrainingBlockInput,
@@ -27,7 +32,33 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'blocksmith-dev-key-change-in-production')
 
 # Store generation results temporarily (in production, use Redis or database)
+# Format: {session_id: {'status': 'running'|'completed'|'failed', 'result': ..., 'error': ..., ...}}
 generation_results = {}
+
+
+def run_generation_background(session_id, training_input, gen_config, api_key, athlete_name):
+    """Run the generation in a background thread."""
+    try:
+        # Run the orchestrator
+        orchestrator = AgenticOrchestrator(gen_config, api_key)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        result = loop.run_until_complete(
+            orchestrator.run_generate(training_input)
+        )
+        loop.close()
+
+        # Update status to completed
+        generation_results[session_id]['status'] = 'completed'
+        generation_results[session_id]['result'] = result
+        generation_results[session_id]['athlete_name'] = athlete_name
+        generation_results[session_id]['completed_at'] = datetime.now().isoformat()
+
+    except Exception as e:
+        # Update status to failed
+        generation_results[session_id]['status'] = 'failed'
+        generation_results[session_id]['error'] = str(e)
+        app.logger.error(f"Generation failed for session {session_id}: {str(e)}", exc_info=True)
 
 
 @app.route('/')
@@ -36,16 +67,9 @@ def index():
     return render_template('index.html')
 
 
-def convert_pace_to_mmss(decimal_minutes):
-    """Convert decimal minutes (e.g., 5.5) to mm:ss format (e.g., '05:30')."""
-    minutes = int(decimal_minutes)
-    seconds = int((decimal_minutes - minutes) * 60)
-    return f"{minutes:02d}:{seconds:02d}"
-
-
 @app.route('/generate', methods=['POST'])
 def generate_block():
-    """Generate a training block from form data."""
+    """Start a training block generation in the background."""
     try:
         data = request.json
 
@@ -63,14 +87,11 @@ def generate_block():
         )
 
         # Build physiological parameters
-        # Convert decimal pace to mm:ss format
-        t1_pace_decimal = float(data.get('T1_pace_min_per_km', 5.5))
-        t2_pace_decimal = float(data.get('T2_pace_min_per_km', 4.8))
-
+        # Pace is now in mm:ss format from the form, pass through directly
         phys_params = PhysiologicalParameters(
             hr_max=int(data.get('hr_max', 180)),
-            threshold_t1_pace=convert_pace_to_mmss(t1_pace_decimal),
-            threshold_t2_pace=convert_pace_to_mmss(t2_pace_decimal),
+            threshold_t1_pace=data.get('T1_pace_min_per_km', '05:30'),
+            threshold_t2_pace=data.get('T2_pace_min_per_km', '04:48'),
             vo2_max=int(data.get('vo2_max_ml_kg_min', 50)) if data.get('vo2_max_ml_kg_min') else None
         )
 
@@ -122,33 +143,35 @@ def generate_block():
             config=gen_config
         )
 
-        # Run the orchestrator asynchronously
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        result = loop.run_until_complete(
-            AgenticOrchestrator(training_input).run_generate()
-        )
-        loop.close()
+        # Get API key from environment
+        api_key = os.getenv('ANTHROPIC_API_KEY')
+        if not api_key:
+            raise ValueError("ANTHROPIC_API_KEY not found in environment variables")
 
-        # Store results
+        # Initialize session tracking
         generation_results[session_id] = {
-            'result': result,
+            'status': 'running',
             'output_dir': str(output_dir),
             'timestamp': datetime.now().isoformat(),
-            'athlete_name': athlete.name
+            'athlete_name': athlete.name,
+            'phase': primary_goal.value,
+            'weeks': block_objectives.block_duration_weeks,
+            'starting_mileage': block_objectives.running_mileage_week1
         }
 
+        # Start generation in background thread
+        thread = threading.Thread(
+            target=run_generation_background,
+            args=(session_id, training_input, gen_config, api_key, athlete.name)
+        )
+        thread.daemon = True
+        thread.start()
+
+        # Return immediately with session ID
         return jsonify({
             'success': True,
             'session_id': session_id,
-            'summary': {
-                'athlete': athlete.name,
-                'phase': primary_goal.value,
-                'weeks': block_objectives.block_duration_weeks,
-                'starting_mileage': block_objectives.running_mileage_week1,
-                'total_tokens': result.total_tokens_used,
-                'generation_time': f"{result.total_time_seconds:.1f}s"
-            }
+            'message': 'Generation started. Poll /status/<session_id> for progress.'
         })
 
     except Exception as e:
@@ -157,6 +180,42 @@ def generate_block():
             'success': False,
             'error': str(e)
         }), 500
+
+
+@app.route('/status/<session_id>')
+def check_status(session_id):
+    """Check the status of a generation task."""
+    if session_id not in generation_results:
+        return jsonify({'error': 'Session not found'}), 404
+
+    session_data = generation_results[session_id]
+    status = session_data['status']
+
+    response = {
+        'status': status,
+        'session_id': session_id
+    }
+
+    if status == 'running':
+        response['message'] = 'Generation in progress...'
+
+    elif status == 'completed':
+        result = session_data.get('result')
+        response['success'] = True
+        response['summary'] = {
+            'athlete': session_data['athlete_name'],
+            'phase': session_data['phase'],
+            'weeks': session_data['weeks'],
+            'starting_mileage': session_data['starting_mileage'],
+            'total_tokens': result.total_tokens_used if result else 0,
+            'generation_time': f"{result.total_time_seconds:.1f}s" if result else '0s'
+        }
+
+    elif status == 'failed':
+        response['success'] = False
+        response['error'] = session_data.get('error', 'Unknown error')
+
+    return jsonify(response)
 
 
 @app.route('/download/<session_id>/<file_type>')
@@ -252,4 +311,5 @@ def cleanup_session(session_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Use port 5001 by default (port 5000 is used by AirPlay Receiver on macOS)
+    app.run(debug=True, host='0.0.0.0', port=5001)
