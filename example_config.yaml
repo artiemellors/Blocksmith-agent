@@ -4,6 +4,34 @@
 athlete:
   name: "Arthur Mellors"
   age: 41
+  # Optional: HYROX race category (automatically loads official weights)
+  # Options: "Men", "Women", "Pro Men", "Pro Women", "Doubles"
+  # race_category: "Men"
+
+week_structure:
+  # Which day is your rest day (no training)
+  rest_day: "Monday"
+
+  # Total number of main training sessions per week (includes doubles)
+  main_sessions_per_week: 8
+
+  # Which days have double sessions (AM + PM)
+  # Example: "Wednesday, Saturday" for 2 double days
+  double_days: "Wednesday, Saturday"
+
+  # Number of running sessions per week
+  runs_per_week: 4
+
+  # Which day should have the long run
+  long_run_day: "Sunday"
+
+  # Session time constraints for weekdays (minutes)
+  weekday_session_time_min: 45
+  weekday_session_time_max: 75
+
+  # Session time constraints for weekends (minutes)
+  weekend_session_time_min: 90
+  weekend_session_time_max: 105
 
 physiological_parameters:
   hr_max: 188
@@ -50,10 +78,6 @@ block_objectives:
 
   # Optional: Target race date (YYYY-MM-DD format)
   # target_race_date: "2025-03-15"
-
-  # Optional: HYROX race category (automatically loads official weights)
-  # Options: "Men", "Women", "Pro Men", "Pro Women", "Doubles"
-  # race_type: "Men"
 
   # Specific areas to focus on during this block
   specific_focus_areas:

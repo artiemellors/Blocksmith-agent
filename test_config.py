@@ -27,10 +27,23 @@ def test_config_loading():
         print(f"  Duration: {config.block_objectives.block_duration_weeks} weeks")
         print(f"  Deload: {config.block_objectives.deload_week}")
 
+        print(f"\nWeek Structure:")
+        print(f"  Rest Day: {config.athlete_profile.week_structure.rest_day}")
+        print(f"  Training Days: {config.athlete_profile.week_structure.get_training_days_range()}")
+        print(f"  Main Sessions/Week: {config.athlete_profile.week_structure.main_sessions_per_week}")
+        print(f"  Double Days: {config.athlete_profile.week_structure.double_days}")
+        print(f"  Runs/Week: {config.athlete_profile.week_structure.runs_per_week}")
+        print(f"  Long Run Day: {config.athlete_profile.week_structure.long_run_day}")
+
         print(f"\nInjury Information:")
         print(f"  Active Injuries: {config.athlete_profile.injury_info.active_injuries or 'None'}")
         print(f"  Pain Threshold (during): {config.athlete_profile.injury_info.pain_threshold_during}/10")
         print(f"  Pain Threshold (next day): {config.athlete_profile.injury_info.pain_threshold_next_day}/10")
+
+        if config.athlete_profile.race_category:
+            print(f"\nHYROX Configuration:")
+            print(f"  Race Category: {config.athlete_profile.race_category}")
+            print(f"  Weights Auto-Loaded: Yes")
 
         print("\n✓ All configuration fields validated successfully!")
         return True

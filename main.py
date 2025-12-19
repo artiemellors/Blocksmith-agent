@@ -17,6 +17,7 @@ from models import (
     BlockObjectives,
     InjuryInformation,
     GenerationConfig,
+    TrainingWeekStructure,
 )
 from generator import TrainingBlockGenerator
 from orchestrator import AgenticOrchestrator
@@ -80,11 +81,20 @@ def load_config_from_yaml(config_file: str) -> TrainingBlockInput:
     if 'injury_information' in data:
         injury_info = InjuryInformation(**data['injury_information'])
 
+    week_structure = TrainingWeekStructure()
+    if 'week_structure' in data:
+        week_structure = TrainingWeekStructure(**data['week_structure'])
+
+    # Get race_category if provided (for auto-loading HYROX weights)
+    race_category = data['athlete'].get('race_category', None)
+
     athlete = AthleteProfile(
         name=data['athlete']['name'],
         age=data['athlete']['age'],
         physiological_params=phys_params,
-        injury_info=injury_info
+        injury_info=injury_info,
+        week_structure=week_structure,
+        race_category=race_category
     )
 
     # Build block objectives
