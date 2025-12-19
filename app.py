@@ -39,14 +39,9 @@ generation_results = {}
 def run_generation_background(session_id, training_input, gen_config, api_key, athlete_name):
     """Run the generation in a background thread."""
     try:
-        # Run the orchestrator
+        # Run the orchestrator (run_generate is synchronous, handles asyncio internally)
         orchestrator = AgenticOrchestrator(gen_config, api_key)
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        result = loop.run_until_complete(
-            orchestrator.run_generate(training_input)
-        )
-        loop.close()
+        result = orchestrator.run_generate(training_input)
 
         # Update status to completed
         generation_results[session_id]['status'] = 'completed'
