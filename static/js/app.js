@@ -125,6 +125,33 @@ function validateForm(data) {
 }
 
 /**
+ * Poll status endpoint
+ */
+async function pollStatus(sessionId) {
+    try {
+        const response = await fetch(`/status/${sessionId}`);
+        const result = await response.json();
+
+        if (result.status === 'completed') {
+            stopProgressSimulation();
+            currentSessionId = sessionId;
+            showResults(result.summary);
+            return true; // Stop polling
+        } else if (result.status === 'failed') {
+            stopProgressSimulation();
+            alert('Generation failed: ' + result.error);
+            resetForm();
+            return true; // Stop polling
+        }
+
+        return false; // Keep polling
+    } catch (error) {
+        console.error('Error polling status:', error);
+        return false; // Keep polling
+    }
+}
+
+/**
  * Handle form submission
  */
 async function handleFormSubmit(event) {
@@ -150,7 +177,7 @@ async function handleFormSubmit(event) {
     startProgressSimulation();
 
     try {
-        // Submit to backend
+        // Submit to backend (starts background task)
         const response = await fetch('/generate', {
             method: 'POST',
             headers: {
@@ -161,14 +188,16 @@ async function handleFormSubmit(event) {
 
         const result = await response.json();
 
-        // Stop progress simulation
-        stopProgressSimulation();
-
-        if (result.success) {
-            currentSessionId = result.session_id;
-            showResults(result.summary);
+        if (result.success && result.session_id) {
+            // Start polling for status every 3 seconds
+            const pollInterval = setInterval(async () => {
+                const done = await pollStatus(result.session_id);
+                if (done) {
+                    clearInterval(pollInterval);
+                }
+            }, 3000);
         } else {
-            throw new Error(result.error || 'Generation failed');
+            throw new Error(result.error || 'Failed to start generation');
         }
 
     } catch (error) {
