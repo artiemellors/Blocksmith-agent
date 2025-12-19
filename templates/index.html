@@ -272,37 +272,37 @@
 
                         <div class="form-group">
                             <label for="T1_pace_min_per_km" class="form-label">
-                                T1 Pace (min/km)
-                                <span class="info-icon" data-tooltip="Threshold pace zone 1">ℹ️</span>
+                                T1 Pace (mm:ss/km)
+                                <span class="info-icon" data-tooltip="Threshold pace zone 1, format: 05:30">ℹ️</span>
                             </label>
                             <input
-                                type="number"
+                                type="text"
                                 id="T1_pace_min_per_km"
                                 name="T1_pace_min_per_km"
                                 class="form-input"
-                                placeholder="5.5"
-                                value="5.5"
-                                step="0.1"
-                                min="3.0"
-                                max="10.0"
+                                placeholder="05:30"
+                                value="05:30"
+                                pattern="[0-9]{2}:[0-5][0-9]"
+                                title="Enter pace in mm:ss format (e.g., 05:30)"
+                                required
                             >
                         </div>
 
                         <div class="form-group">
                             <label for="T2_pace_min_per_km" class="form-label">
-                                T2 Pace (min/km)
-                                <span class="info-icon" data-tooltip="Threshold pace zone 2">ℹ️</span>
+                                T2 Pace (mm:ss/km)
+                                <span class="info-icon" data-tooltip="Threshold pace zone 2, format: 04:48">ℹ️</span>
                             </label>
                             <input
-                                type="number"
+                                type="text"
                                 id="T2_pace_min_per_km"
                                 name="T2_pace_min_per_km"
                                 class="form-input"
-                                placeholder="4.8"
-                                value="4.8"
-                                step="0.1"
-                                min="3.0"
-                                max="10.0"
+                                placeholder="04:48"
+                                value="04:48"
+                                pattern="[0-9]{2}:[0-5][0-9]"
+                                title="Enter pace in mm:ss format (e.g., 04:48)"
+                                required
                             >
                         </div>
 

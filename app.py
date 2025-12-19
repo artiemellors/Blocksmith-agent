@@ -36,13 +36,6 @@ def index():
     return render_template('index.html')
 
 
-def convert_pace_to_mmss(decimal_minutes):
-    """Convert decimal minutes (e.g., 5.5) to mm:ss format (e.g., '05:30')."""
-    minutes = int(decimal_minutes)
-    seconds = int((decimal_minutes - minutes) * 60)
-    return f"{minutes:02d}:{seconds:02d}"
-
-
 @app.route('/generate', methods=['POST'])
 def generate_block():
     """Generate a training block from form data."""
@@ -63,14 +56,11 @@ def generate_block():
         )
 
         # Build physiological parameters
-        # Convert decimal pace to mm:ss format
-        t1_pace_decimal = float(data.get('T1_pace_min_per_km', 5.5))
-        t2_pace_decimal = float(data.get('T2_pace_min_per_km', 4.8))
-
+        # Pace is now in mm:ss format from the form, pass through directly
         phys_params = PhysiologicalParameters(
             hr_max=int(data.get('hr_max', 180)),
-            threshold_t1_pace=convert_pace_to_mmss(t1_pace_decimal),
-            threshold_t2_pace=convert_pace_to_mmss(t2_pace_decimal),
+            threshold_t1_pace=data.get('T1_pace_min_per_km', '05:30'),
+            threshold_t2_pace=data.get('T2_pace_min_per_km', '04:48'),
             vo2_max=int(data.get('vo2_max_ml_kg_min', 50)) if data.get('vo2_max_ml_kg_min') else None
         )
 
