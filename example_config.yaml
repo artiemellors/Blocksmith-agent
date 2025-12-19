@@ -4,11 +4,40 @@
 athlete:
   name: "Arthur Mellors"
   age: 41
+  # Optional: HYROX race category (automatically loads official weights)
+  # Options: "Men", "Women", "Pro Men", "Pro Women", "Doubles"
+  # race_category: "Men"
+
+week_structure:
+  # Which day is your rest day (no training)
+  rest_day: "Monday"
+
+  # Total number of main training sessions per week (includes doubles)
+  main_sessions_per_week: 8
+
+  # Which days have double sessions (AM + PM)
+  # Example: "Wednesday, Saturday" for 2 double days
+  double_days: "Wednesday, Saturday"
+
+  # Number of running sessions per week
+  runs_per_week: 4
+
+  # Which day should have the long run
+  long_run_day: "Sunday"
+
+  # Session time constraints for weekdays (minutes)
+  weekday_session_time_min: 45
+  weekday_session_time_max: 75
+
+  # Session time constraints for weekends (minutes)
+  weekend_session_time_min: 90
+  weekend_session_time_max: 105
 
 physiological_parameters:
   hr_max: 188
   threshold_t1_pace: "4:37"  # mm:ss per km (T1 threshold)
   threshold_t2_pace: "4:17"  # mm:ss per km (T2 threshold)
+  # vo2_max: 55  # Optional: VO2 max in ml/kg/min
 
 injury_information:
   # List any active injuries that need to be considered
@@ -26,21 +55,29 @@ injury_information:
   volume_reduction_percent: 25
 
 block_objectives:
-  # Primary goal: Describe your training phase
-  # Examples: "BUILD endurance and strength", "PEAK for race", "Base building", etc.
+  # Primary goal: Specify your training phase (one of: BASE, BUILD, PEAK, TAPER, TRANSITION)
+  # - BASE: Aerobic capacity building (10% weekly progression)
+  # - BUILD: Threshold development (5% weekly progression)
+  # - PEAK: Race-specific training (2.5% weekly progression)
+  # - TAPER: Pre-race freshness (-20% weekly volume)
+  # - TRANSITION: Active recovery (0% progression)
   primary_goal: "BUILD"
 
   # Starting weekly running mileage in kilometers
   running_mileage_week1: 40
 
-  # Percentage increase in mileage per week
-  weekly_progression_percent: 10
+  # Optional: Manual override for weekly progression percentage
+  # If not specified, uses phase-appropriate default (see above)
+  # weekly_progression_override: 10
 
   # Number of progressive build weeks before deload
   block_duration_weeks: 4
 
   # Include a deload week at the end?
   deload_week: true
+
+  # Optional: Target race date (YYYY-MM-DD format)
+  # target_race_date: "2025-03-15"
 
   # Specific areas to focus on during this block
   specific_focus_areas:

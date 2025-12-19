@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blocksmith - HYROX Training Block Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="header-title">Blocksmith</h1>
+                <p class="header-subtitle">AI-Powered HYROX Training Block Generator</p>
+            </div>
+        </header>
+
+        <!-- Main Form -->
+        <div id="formContainer" class="form-container">
+            <form id="trainingForm">
+
+                <!-- Athlete Information Section -->
+                <section class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Athlete Information</h2>
+                        <span class="info-icon" data-tooltip="Basic information about the athlete">ℹ️</span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name" class="form-label">
+                                Athlete Name
+                                <span class="required">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                class="form-input"
+                                placeholder="Enter athlete name"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="age" class="form-label">
+                                Age
+                                <span class="required">*</span>
+                            </label>
+                            <input
+                                type="number"
+                                id="age"
+                                name="age"
+                                class="form-input"
+                                placeholder="30"
+                                min="15"
+                                max="80"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="race_category" class="form-label">
+                                HYROX Category
+                                <span class="info-icon" data-tooltip="Used to auto-load category-specific weights">ℹ️</span>
+                            </label>
+                            <select id="race_category" name="race_category" class="form-select">
+                                <option value="">Select category (optional)</option>
+                                <option value="Men">Men</option>
+                                <option value="Women">Women</option>
+                                <option value="Men Doubles">Men Doubles</option>
+                                <option value="Women Doubles">Women Doubles</option>
+                                <option value="Mixed Doubles">Mixed Doubles</option>
+                                <option value="Men Pro">Men Pro</option>
+                                <option value="Women Pro">Women Pro</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Week Structure Section -->
+                <section class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Week Structure</h2>
+                        <span class="info-icon" data-tooltip="Configure your weekly training schedule">ℹ️</span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="rest_day" class="form-label">
+                                Rest Day
+                                <span class="required">*</span>
+                            </label>
+                            <select id="rest_day" name="rest_day" class="form-select" required>
+                                <option value="Monday" selected>Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                                <option value="Sunday">Sunday</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="long_run_day" class="form-label">
+                                Long Run Day
+                                <span class="required">*</span>
+                            </label>
+                            <select id="long_run_day" name="long_run_day" class="form-select" required>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                                <option value="Sunday" selected>Sunday</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="main_sessions_per_week" class="form-label">
+                                Main Sessions Per Week
+                                <span class="info-icon" data-tooltip="Total number of training sessions (including doubles)">ℹ️</span>
+                            </label>
+                            <input
+                                type="number"
+                                id="main_sessions_per_week"
+                                name="main_sessions_per_week"
+                                class="form-input"
+                                placeholder="8"
+                                value="8"
+                                min="4"
+                                max="14"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="runs_per_week" class="form-label">
+                                Runs Per Week
+                                <span class="required">*</span>
+                            </label>
+                            <input
+                                type="number"
+                                id="runs_per_week"
+                                name="runs_per_week"
+                                class="form-input"
+                                placeholder="4"
+                                value="4"
+                                min="2"
+                                max="7"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="double_days" class="form-label">
+                                Double Session Days
+                                <span class="info-icon" data-tooltip="e.g., 'Wednesday, Saturday'">ℹ️</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="double_days"
+                                name="double_days"
+                                class="form-input"
+                                placeholder="Wednesday, Saturday"
+                                value="Wednesday, Saturday"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="weekday_session_time_min" class="form-label">
+                                Weekday Session (Min)
+                                <span class="info-icon" data-tooltip="Minutes available for weekday training">ℹ️</span>
+                            </label>
+                            <input
+                                type="number"
+                                id="weekday_session_time_min"
+                                name="weekday_session_time_min"
+                                class="form-input"
+                                placeholder="45"
+                                value="45"
+                                min="30"
+                                max="180"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="weekday_session_time_max" class="form-label">
+                                Weekday Session (Max)
+                            </label>
+                            <input
+                                type="number"
+                                id="weekday_session_time_max"
+                                name="weekday_session_time_max"
+                                class="form-input"
+                                placeholder="75"
+                                value="75"
+                                min="30"
+                                max="180"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="weekend_session_time_min" class="form-label">
+                                Weekend Session (Min)
+                            </label>
+                            <input
+                                type="number"
+                                id="weekend_session_time_min"
+                                name="weekend_session_time_min"
+                                class="form-input"
+                                placeholder="90"
+                                value="90"
+                                min="60"
+                                max="240"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="weekend_session_time_max" class="form-label">
+                                Weekend Session (Max)
+                            </label>
+                            <input
+                                type="number"
+                                id="weekend_session_time_max"
+                                name="weekend_session_time_max"
+                                class="form-input"
+                                placeholder="105"
+                                value="105"
+                                min="60"
+                                max="240"
+                            >
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Physiological Parameters Section -->
+                <section class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Physiological Parameters</h2>
+                        <span class="info-icon" data-tooltip="Key fitness metrics for programming">ℹ️</span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hr_max" class="form-label">
+                                Max Heart Rate (bpm)
+                                <span class="required">*</span>
+                            </label>
+                            <input
+                                type="number"
+                                id="hr_max"
+                                name="hr_max"
+                                class="form-input"
+                                placeholder="180"
+                                value="180"
+                                min="140"
+                                max="220"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="T1_pace_min_per_km" class="form-label">
+                                T1 Pace (min/km)
+                                <span class="info-icon" data-tooltip="Threshold pace zone 1">ℹ️</span>
+                            </label>
+                            <input
+                                type="number"
+                                id="T1_pace_min_per_km"
+                                name="T1_pace_min_per_km"
+                                class="form-input"
+                                placeholder="5.5"
+                                value="5.5"
+                                step="0.1"
+                                min="3.0"
+                                max="10.0"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="T2_pace_min_per_km" class="form-label">
+                                T2 Pace (min/km)
+                                <span class="info-icon" data-tooltip="Threshold pace zone 2">ℹ️</span>
+                            </label>
+                            <input
+                                type="number"
+                                id="T2_pace_min_per_km"
+                                name="T2_pace_min_per_km"
+                                class="form-input"
+                                placeholder="4.8"
+                                value="4.8"
+                                step="0.1"
+                                min="3.0"
+                                max="10.0"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="vo2_max_ml_kg_min" class="form-label">
+                                VO2 Max (ml/kg/min)
+                            </label>
+                            <input
+                                type="number"
+                                id="vo2_max_ml_kg_min"
+                                name="vo2_max_ml_kg_min"
+                                class="form-input"
+                                placeholder="50.0"
+                                value="50.0"
+                                step="0.1"
+                                min="20.0"
+                                max="90.0"
+                            >
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Block Objectives Section -->
+                <section class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Block Objectives</h2>
+                        <span class="info-icon" data-tooltip="Define your training block goals">ℹ️</span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="primary_goal" class="form-label">
+                                Training Phase
+                                <span class="required">*</span>
+                            </label>
+                            <select id="primary_goal" name="primary_goal" class="form-select" required>
+                                <option value="BASE">BASE - Foundation Building</option>
+                                <option value="BUILD" selected>BUILD - Fitness Development</option>
+                                <option value="PEAK">PEAK - Race Preparation</option>
+                                <option value="TAPER">TAPER - Pre-Race Sharpening</option>
+                                <option value="TRANSITION">TRANSITION - Recovery</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="running_mileage_week1" class="form-label">
+                                Week 1 Mileage (km)
+                                <span class="required">*</span>
+                            </label>
+                            <input
+                                type="number"
+                                id="running_mileage_week1"
+                                name="running_mileage_week1"
+                                class="form-input"
+                                placeholder="40"
+                                value="40"
+                                step="1"
+                                min="15"
+                                max="100"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="block_duration_weeks" class="form-label">
+                                Block Duration (weeks)
+                                <span class="required">*</span>
+                            </label>
+                            <input
+                                type="number"
+                                id="block_duration_weeks"
+                                name="block_duration_weeks"
+                                class="form-input"
+                                placeholder="4"
+                                value="4"
+                                min="2"
+                                max="8"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="deload_week" class="form-label">
+                                Include Deload Week
+                                <span class="info-icon" data-tooltip="Add a recovery week after the block">ℹ️</span>
+                            </label>
+                            <select id="deload_week" name="deload_week" class="form-select">
+                                <option value="true" selected>Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="specific_focus_areas" class="form-label">
+                            Specific Focus Areas
+                            <span class="info-icon" data-tooltip="Comma-separated list, e.g., 'sled push, burpee broad jumps'">ℹ️</span>
+                        </label>
+                        <textarea
+                            id="specific_focus_areas"
+                            name="specific_focus_areas"
+                            class="form-textarea"
+                            rows="3"
+                            placeholder="Enter specific focus areas (optional, comma-separated)"
+                        ></textarea>
+                    </div>
+                </section>
+
+                <!-- Injury Information Section (Collapsible) -->
+                <section class="form-section collapsible">
+                    <div class="section-header clickable" onclick="toggleSection(this)">
+                        <h2 class="section-title">Injury Information (Optional)</h2>
+                        <span class="collapse-icon">▼</span>
+                    </div>
+
+                    <div class="section-content collapsed">
+                        <div class="form-group">
+                            <label for="current_injuries" class="form-label">
+                                Current Injuries
+                                <span class="info-icon" data-tooltip="Any current injuries or niggles">ℹ️</span>
+                            </label>
+                            <textarea
+                                id="current_injuries"
+                                name="current_injuries"
+                                class="form-textarea"
+                                rows="2"
+                                placeholder="Enter current injuries (optional, comma-separated)"
+                            ></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="injury_history" class="form-label">
+                                Injury History
+                            </label>
+                            <textarea
+                                id="injury_history"
+                                name="injury_history"
+                                class="form-textarea"
+                                rows="2"
+                                placeholder="Enter relevant injury history (optional, comma-separated)"
+                            ></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="movement_restrictions" class="form-label">
+                                Movement Restrictions
+                            </label>
+                            <textarea
+                                id="movement_restrictions"
+                                name="movement_restrictions"
+                                class="form-textarea"
+                                rows="2"
+                                placeholder="Enter any movement restrictions (optional, comma-separated)"
+                            ></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Advanced Settings Section (Collapsible) -->
+                <section class="form-section collapsible">
+                    <div class="section-header clickable" onclick="toggleSection(this)">
+                        <h2 class="section-title">Advanced Settings</h2>
+                        <span class="collapse-icon">▼</span>
+                    </div>
+
+                    <div class="section-content collapsed">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="model_name" class="form-label">
+                                    AI Model
+                                    <span class="info-icon" data-tooltip="Claude model to use for generation">ℹ️</span>
+                                </label>
+                                <select id="model_name" name="model_name" class="form-select">
+                                    <option value="claude-sonnet-4-5-20250929" selected>Claude Sonnet 4.5</option>
+                                    <option value="claude-opus-4-5-20251101">Claude Opus 4.5</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="max_tokens" class="form-label">
+                                    Max Tokens
+                                </label>
+                                <input
+                                    type="number"
+                                    id="max_tokens"
+                                    name="max_tokens"
+                                    class="form-input"
+                                    placeholder="16000"
+                                    value="16000"
+                                    min="4000"
+                                    max="32000"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="temperature" class="form-label">
+                                    Temperature
+                                </label>
+                                <input
+                                    type="number"
+                                    id="temperature"
+                                    name="temperature"
+                                    class="form-input"
+                                    placeholder="1.0"
+                                    value="1.0"
+                                    step="0.1"
+                                    min="0.0"
+                                    max="2.0"
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Submit Button -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-large">
+                        Generate Training Block
+                    </button>
+                    <p class="help-text">Generation typically takes 14-18 minutes</p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Progress Container (Hidden by default) -->
+        <div id="progressContainer" class="progress-container" style="display: none;">
+            <div class="progress-card">
+                <h2 class="progress-title">Generating Your Training Block</h2>
+                <p class="progress-subtitle">This may take 14-18 minutes. Please don't close this window.</p>
+
+                <div class="progress-bar-container">
+                    <div class="progress-bar">
+                        <div id="progressBar" class="progress-fill"></div>
+                    </div>
+                    <div id="progressText" class="progress-text">Starting generation...</div>
+                </div>
+
+                <div class="progress-stages">
+                    <div class="stage-item" id="stage-planning">
+                        <span class="stage-icon">⏳</span>
+                        <span class="stage-text">Planning Agent</span>
+                    </div>
+                    <div class="stage-item" id="stage-running">
+                        <span class="stage-icon">⏳</span>
+                        <span class="stage-text">Running Coach</span>
+                    </div>
+                    <div class="stage-item" id="stage-strength">
+                        <span class="stage-icon">⏳</span>
+                        <span class="stage-text">Strength Coach</span>
+                    </div>
+                    <div class="stage-item" id="stage-hyrox">
+                        <span class="stage-icon">⏳</span>
+                        <span class="stage-text">HYROX Specialist</span>
+                    </div>
+                    <div class="stage-item" id="stage-recovery">
+                        <span class="stage-icon">⏳</span>
+                        <span class="stage-text">Recovery Coach</span>
+                    </div>
+                    <div class="stage-item" id="stage-coordinator">
+                        <span class="stage-icon">⏳</span>
+                        <span class="stage-text">Programming Coordinator</span>
+                    </div>
+                    <div class="stage-item" id="stage-qa">
+                        <span class="stage-icon">⏳</span>
+                        <span class="stage-text">Quality Assurance</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Container (Hidden by default) -->
+        <div id="resultsContainer" class="results-container" style="display: none;">
+            <div class="results-card">
+                <div class="success-badge">✅ Generation Complete!</div>
+
+                <h2 class="results-title">Your Training Block is Ready</h2>
+
+                <div class="results-summary" id="resultsSummary">
+                    <!-- Summary will be populated by JavaScript -->
+                </div>
+
+                <div class="download-section">
+                    <h3 class="download-title">Download Your Files</h3>
+                    <div class="download-grid">
+                        <button onclick="downloadFile('training_block')" class="btn btn-primary">
+                            📄 Training Block
+                        </button>
+                        <button onclick="downloadFile('validation_report')" class="btn btn-secondary">
+                            ✅ Validation Report
+                        </button>
+                        <button onclick="downloadFile('summary')" class="btn btn-secondary">
+                            📊 Summary
+                        </button>
+                    </div>
+                </div>
+
+                <div class="preview-section">
+                    <h3 class="preview-title">Preview</h3>
+                    <div class="preview-tabs">
+                        <button onclick="viewContent('training_block')" class="tab-btn active" data-tab="training_block">
+                            Training Block
+                        </button>
+                        <button onclick="viewContent('validation')" class="tab-btn" data-tab="validation">
+                            Validation Report
+                        </button>
+                        <button onclick="viewContent('summary')" class="tab-btn" data-tab="summary">
+                            Summary
+                        </button>
+                    </div>
+                    <div id="previewContent" class="preview-content">
+                        <!-- Content will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button onclick="resetForm()" class="btn btn-secondary">
+                        Generate Another Block
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

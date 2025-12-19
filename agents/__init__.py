@@ -8,6 +8,8 @@ from .running_coach_agent import RunningCoachAgent
 from .strength_coach_agent import StrengthCoachAgent
 from .hyrox_specialist_agent import HYROXSpecialistAgent
 from .recovery_coach_agent import RecoveryCoachAgent
+from .programming_coordinator_agent import ProgrammingCoordinatorAgent
+from .qa_agent import QualityAssuranceAgent
 
 __all__ = [
     'BaseAgent',
@@ -15,5 +17,7 @@ __all__ = [
     'RunningCoachAgent',
     'StrengthCoachAgent',
     'HYROXSpecialistAgent',
-    'RecoveryCoachAgent'
+    'RecoveryCoachAgent',
+    'ProgrammingCoordinatorAgent',
+    'QualityAssuranceAgent'
 ]
